@@ -1,0 +1,6 @@
+[submodule "lib/hats"]
+	path = lib/hats
+	url = https://github.com/Hayden-Allen/hats.git
+[submodule "lib/mingl"]
+	path = lib/mingl
+	url = https://github.com/Hayden-Allen/mingl.git

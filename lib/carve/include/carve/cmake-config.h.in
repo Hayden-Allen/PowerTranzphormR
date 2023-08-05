@@ -1,0 +1,14 @@
+#pragma once
+
+#define CARVE_VERSION "@CARVE_VERSION@"
+#define CARVE_VERSION_MAJOR @carve_VERSION_MAJOR@
+#define CARVE_VERSION_MINOR @carve_VERSION_MINOR@
+#define CARVE_VERSION_PATCH @carve_VERSION_PATCH@
+
+#cmakedefine CARVE_STATIC
+#cmakedefine CARVE_USE_TIMINGS
+#cmakedefine CARVE_NODEBUG
+#cmakedefine CARVE_DEBUG
+#cmakedefine CARVE_DEBUG_WRITE_PLY_DATA
+
+#cmakedefine CARVE_USE_EXACT_PREDICATES
