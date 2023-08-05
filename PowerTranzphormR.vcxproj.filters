@@ -34,7 +34,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="lib\hats\src\mat.asm">
+    <MASM Include="lib\mingl\lib\hats\src\mat.asm">
       <Filter>Source Files</Filter>
     </MASM>
   </ItemGroup>

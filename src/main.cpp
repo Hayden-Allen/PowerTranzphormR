@@ -684,7 +684,7 @@ int main(int argc, char* argv[]) {
 		glClearColor(0.4f, 0.6f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 proj_mtx = glm::perspective(90.0f, static_cast<float>(display_w) / static_cast<float>(display_h), 0.001f, 1000.0f);
+		glm::mat4 proj_mtx = glm::perspective(90.0f * (float)M_PI / 180, static_cast<float>(display_w) / static_cast<float>(display_h), 0.001f, 1000.0f);
 		glm::mat4 mvp_mtx = proj_mtx * globals::camera.view_mtx;
 
 		for (auto it = vaos_for_mtl.begin(); it != vaos_for_mtl.end(); ++it) {
