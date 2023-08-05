@@ -216,7 +216,7 @@ tex_coord_t& operator+=(tex_coord_t& t1, const tex_coord_t& t2) {
 	return t1;
 }
 
-struct mtl_t {
+struct material_t {
 	GLfloat r = 1.0f, g = 1.0f, b = 1.0f;
 };
 
@@ -447,7 +447,7 @@ mesh_3_t* textured_torus(tex_coord_attr_t& tex_coord_attr, mtl_id_attr_t& mtl_id
 	return new mesh_3_t(faces);
 }
 
-void make_scene(carve::csg::CSG& csg, tex_coord_attr_t& tex_coord_attr, mtl_id_attr_t& mtl_id_attr, mesh_3_t*& out_mesh, std::unordered_map<GLuint, mtl_t>& out_mtls) {
+void make_scene(carve::csg::CSG& csg, tex_coord_attr_t& tex_coord_attr, mtl_id_attr_t& mtl_id_attr, mesh_3_t*& out_mesh, std::unordered_map<GLuint, material_t>& out_mtls) {
 	if (out_mesh) {
 		delete out_mesh;
 	}
@@ -469,7 +469,7 @@ void make_scene(carve::csg::CSG& csg, tex_coord_attr_t& tex_coord_attr, mtl_id_a
 	delete box_b;*/
 
 
-	mtl_t mtl1;
+	material_t mtl1;
 	out_mtls.insert(std::make_pair(1, mtl1));
 	mesh_3_t* cyl = textured_cylinder(tex_coord_attr, mtl_id_attr, 1,
 		{
@@ -478,7 +478,7 @@ void make_scene(carve::csg::CSG& csg, tex_coord_attr_t& tex_coord_attr, mtl_id_a
 			.transform = tmat_util::translation<space::OBJECT>(0, .5f, 0) * tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f)
 		}
 	);
-	mtl_t mtl2;
+	material_t mtl2;
 	out_mtls.insert(std::make_pair(2, mtl2));
 	mesh_3_t* box_b = textured_cuboid(tex_coord_attr, mtl_id_attr, 2,
 		{
@@ -530,7 +530,7 @@ void make_scene(carve::csg::CSG& csg, tex_coord_attr_t& tex_coord_attr, mtl_id_a
 	delete box_a;
 }
 
-void compute_csg(std::unordered_map<GLuint, mtl_t>& out_mtls, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl) {
+void compute_csg(std::unordered_map<GLuint, material_t>& out_mtls, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl) {
 	out_mtls.clear();
 	out_vtxs_for_mtl.clear();
 
@@ -592,7 +592,7 @@ void print_vtxs(const std::vector<GLfloat>& vtxs) {
 	std::cout << "\n";
 }
 
-int main(int argc, char* argv[]) {
+int main2(int argc, char* argv[]) {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -624,7 +624,7 @@ int main(int argc, char* argv[]) {
 	glAttachShader(shader_program, frag_shader);
 	glLinkProgram(shader_program);
 
-	std::unordered_map<GLuint, mtl_t> mtls;
+	std::unordered_map<GLuint, material_t> mtls;
 	std::unordered_map<GLuint, std::vector<GLfloat>> vtxs_for_mtl;
 
 	auto time_start = std::chrono::high_resolution_clock::now();
