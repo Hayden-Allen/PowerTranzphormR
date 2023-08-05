@@ -21,7 +21,7 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 		{
 			.top_radius = .5f,
 			.bottom_radius = .5f,
-			.transform = tmat_util::translation<space::OBJECT>(0, .5f, 0) * tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f)
+			.transform = tmat_util::scale<space::OBJECT>(1.f, 2.f, 1.f)
 		}
 	);
 	out_mesh = cyl;
