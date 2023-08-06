@@ -22,7 +22,11 @@ public:
 public:
 	void move(const f32 dt, const vec<space::WORLD>& amount)
 	{
+		// printf("ASDF1\n");
+		// amount.print();
+		// printf("ASDF2\n");
 		m_pos += m_speed * dt * amount;
+		// printf("ASDF3\n");
 		m_view = tmat_util::look_at<space::WORLD, space::CAMERA>(m_pos, m_dir, m_up);
 		m_vp = m_proj * m_view;
 	}
@@ -37,6 +41,10 @@ public:
 	mat<space::WORLD, space::CLIP> get_view_proj() const
 	{
 		return m_vp;
+	}
+	const point<space::WORLD>& get_pos() const
+	{
+		return m_pos;
 	}
 private:
 	point<space::WORLD> m_pos;

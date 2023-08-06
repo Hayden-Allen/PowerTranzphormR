@@ -123,32 +123,32 @@ int main(int argc, char** argv)
 	std::unordered_map<GLuint, std::vector<GLfloat>> vtxs_for_mtl;
 	compute_csg(mtls, vtxs_for_mtl);
 
-	std::unordered_map<GLuint, const static_vertex_array*> vaos_for_mtl;
+	std::unordered_map<GLuint, static_vertex_array> vaos_for_mtl;
 	for (auto it = vtxs_for_mtl.begin(); it != vtxs_for_mtl.end(); ++it) {
-		const static_vertex_array* vao = new static_vertex_array(it->second.data(), (u32)it->second.size(), { 3, 2 });
-		vaos_for_mtl.insert({ it->first, vao });
+		static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
+		vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
 
 	stbi_set_flip_vertically_on_load(true);
-	std::unordered_map<GLuint, const texture2d_rgb_u8*> texs_for_mtl;
+	std::unordered_map<GLuint, texture2d_rgb_u8> texs_for_mtl;
 	for (GLuint i = 1; i <= 2; ++i) {
 		int tex_w = -1, tex_h = -1, tex_c = -1;
 		stbi_uc* tex_data = stbi_load((std::string("res/") + std::to_string(i) + ".png").c_str(), &tex_w, &tex_h, &tex_c, 3);
-		const texture2d_rgb_u8* tex = new texture2d_rgb_u8(GL_RGB, tex_w, tex_h, tex_data,
+		texture2d_rgb_u8 tex(GL_RGB, tex_w, tex_h, tex_data,
 			{
 				.min_filter = GL_LINEAR,
 				.mag_filter = GL_LINEAR
 			}
 		);
 		stbi_image_free(tex_data);
-		texs_for_mtl.insert({ i, tex });
+		texs_for_mtl.emplace(i, std::move(tex));
 	}
 
 
 	bool show_demo_window = true;
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	constexpr u32 keycodes[] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
+	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
 	while (c.is_running())
 	{
@@ -158,22 +158,28 @@ int main(int argc, char** argv)
 		for (int i = 0; i < 7; i++)
 			keys[i] = c.get_key(keycodes[i]);
 
+		// printf("\n\nAAAA\n\n");
+		// printf("%d | %d-%d %d-%d %d-%d\n", keys[6], keys[3], keys[1], keys[4], keys[5], keys[2], keys[0]);
 		const direction<space::WORLD> move_dir(keys[3] - keys[1], keys[4] - keys[5], keys[2] - keys[0]);
+		// move_dir.print();
+		// printf("%f\n", spd);
+		// cam.get_pos().print();
 		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f));
+		// printf("\n\nBBBB\n\n");
 		const mat<space::OBJECT, space::CLIP>& mvp = cam.get_view_proj() * obj;
 
 		for (auto it = vaos_for_mtl.begin(); it != vaos_for_mtl.end(); ++it) {
-			const texture2d_rgb_u8* const tex = texs_for_mtl[it->first];
-			tex->bind(0);
+			const texture2d_rgb_u8& tex = texs_for_mtl[it->first];
+			tex.bind(0);
 			const material_t mat = mtls[it->first];
 			shaders.bind();
 			shaders.uniform_1i("u_tex", 0);
 			shaders.uniform_3f("u_col", mat.r, mat.g, mat.b);
 			shaders.uniform_mat4("u_mvp", mvp.e);
-			c.draw(*it->second, shaders);
+			c.draw(it->second, shaders);
 		}
 
-		ImGui_ImplOpenGL3_NewFrame();
+		/*ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
@@ -204,16 +210,11 @@ int main(int argc, char** argv)
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
-		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);*/
 
 		c.end_frame();
 	}
 
-
-	for (const auto& tex : texs_for_mtl)
-		delete tex.second;
-	for (const auto& vao : vaos_for_mtl)
-		delete vao.second;
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
