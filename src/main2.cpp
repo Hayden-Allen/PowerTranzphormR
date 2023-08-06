@@ -88,62 +88,27 @@ static void compute_csg(std::unordered_map<GLuint, material_t>& out_mtls, std::u
 	delete in_scene;
 }
 
-//static void compute_csg(std::unordered_map<GLuint, material_t>& out_mtls, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl) {
-//	out_mtls.clear();
-//	out_vtxs_for_mtl.clear();
-//
-//	carve::csg::CSG csg;
-//	attr_tex_coord_t tex_coord_attr;
-//	tex_coord_attr.installHooks(csg);
-//	attr_material_t mtl_id_attr;
-//	mtl_id_attr.installHooks(csg);
-//
-//	mesh_t* in_scene = nullptr;
-//	make_scene(csg, tex_coord_attr, mtl_id_attr, in_scene, out_mtls);
-//	for (auto it = out_mtls.begin(); it != out_mtls.end(); ++it) {
-//		out_vtxs_for_mtl.insert(std::make_pair(it->first, std::vector<GLfloat>()));
-//	}
-//
-//	GLUtesselator* tess = gluNewTess();
-//	gluTessCallback(tess, GLU_TESS_BEGIN, (GLUTessCallback)tess_callback_begin);
-//	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
-//	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
-//	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
-//	for (mesh_t::face_iter i = in_scene->faceBegin(); i != in_scene->faceEnd(); ++i) {
-//		mesh_t::face_t* f = *i;
-//		GLuint mtl_id = mtl_id_attr.getAttribute(f, 0);
-//
-//		std::vector<tess_vtx> vtxs;
-//		for (mesh_t::face_t::edge_iter_t e = f->begin(); e != f->end(); ++e) {
-//			auto t = tex_coord_attr.getAttribute(f, e.idx());
-//			tess_vtx v;
-//			v.x = e->vert->v.x;
-//			v.y = e->vert->v.y;
-//			v.z = e->vert->v.z;
-//			v.u = t.u;
-//			v.v = t.v;
-//			v.target = &out_vtxs_for_mtl[mtl_id];
-//			vtxs.emplace_back(v);
-//		}
-//
-//		gluTessBeginPolygon(tess, nullptr);
-//		gluTessBeginContour(tess);
-//		for (const tess_vtx& v : vtxs) {
-//			gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
-//		}
-//		gluTessEndContour(tess);
-//		gluTessEndPolygon(tess);
-//	}
-//	gluDeleteTess(tess);
-//
-//	delete in_scene;
-//}
-
-
 int main(int argc, char** argv)
 {
 	context c(1920, 1080, "PowerTranzphormR", true);
 	c.set_clear_color(0, 0, 1);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	ImGui::StyleColorsDark();
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+	ImGui_ImplGlfw_InitForOpenGL(c.window, true);
+	ImGui_ImplOpenGL3_Init("#version 430 core");
 
 	const shaders& shaders = shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag");
 
@@ -179,6 +144,10 @@ int main(int argc, char** argv)
 		texs_for_mtl.insert({ i, tex });
 	}
 
+
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	constexpr u32 keycodes[] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
 	while (c.is_running())
@@ -204,6 +173,39 @@ int main(int argc, char** argv)
 			c.draw(*it->second, shaders);
 		}
 
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		if (ImGui::Begin("DOCKSPACE", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus))
+		{
+			ImGuiID dockspace_id = ImGui::GetID("DOCKSPACE");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
+			if (show_demo_window)
+				ImGui::ShowDemoWindow(&show_demo_window);
+			ImGui::End();
+		}
+
+		ImGui::PopStyleVar(2);
+
+		ImGui::Render();
+		glDisable(GL_DEPTH_TEST);
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+		glEnable(GL_DEPTH_TEST);
+
 		c.end_frame();
 	}
 
@@ -212,5 +214,8 @@ int main(int argc, char** argv)
 		delete tex.second;
 	for (const auto& vao : vaos_for_mtl)
 		delete vao.second;
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	return 0;
 }

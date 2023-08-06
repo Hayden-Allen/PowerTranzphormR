@@ -8,6 +8,9 @@
 #include "GLFW/glfw3.h"
 // absolutely hilarious
 #undef APIENTRY
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #include "stb_image/stb_image.h"
 
@@ -25,5 +28,4 @@
 #include <gl/GLU.h>
 
 #include "hats/hats.h"
-
 #include "mingl/mingl.h"
