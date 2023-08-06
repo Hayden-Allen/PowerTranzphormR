@@ -85,8 +85,8 @@ static mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t
 
 	for (size_t i = 0; i < 6; ++i) {
 		const float top = 1.0f, bottom = 0.0f;
-		const float left = 0.f, right = 1.f;
-		// const float left = i * (1.f / 6.f), right = (i + 1) * (1.f / 6.f);
+		// const float left = 0.f, right = 1.f;
+		const float left = i * (1.f / 6.f), right = (i + 1) * (1.f / 6.f);
 		tex_coord_attr.setAttribute(faces[i], 0, tex_coord_t(left, bottom));
 		tex_coord_attr.setAttribute(faces[i], 1, tex_coord_t(right, bottom));
 		tex_coord_attr.setAttribute(faces[i], 2, tex_coord_t(right, top));
