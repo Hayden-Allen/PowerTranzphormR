@@ -114,7 +114,6 @@ int main(int argc, char** argv)
 
 	const point<space::WORLD> cam_pos(0, 0, 5);
 	const direction<space::WORLD>& cam_dir = -direction_util::k_hat<space::WORLD>();
-	const direction<space::WORLD>& cam_up = direction_util::j_hat<space::WORLD>();
 	const f32 ar = c.get_aspect_ratio();
 	camera cam(cam_pos, cam_dir, 108 / ar, ar, .01f, 1000.f, 5.f);
 	tmat<space::OBJECT, space::WORLD> obj;
@@ -134,20 +133,15 @@ int main(int argc, char** argv)
 	for (GLuint i = 1; i <= 2; ++i) {
 		int tex_w = -1, tex_h = -1, tex_c = -1;
 		stbi_uc* tex_data = stbi_load((std::string("res/") + std::to_string(i) + ".png").c_str(), &tex_w, &tex_h, &tex_c, 3);
-		texture2d_rgb_u8 tex(GL_RGB, tex_w, tex_h, tex_data,
-			{
-				.min_filter = GL_LINEAR,
-				.mag_filter = GL_LINEAR
-			}
-		);
+		texture2d_rgb_u8 tex(GL_RGB, tex_w, tex_h, tex_data);
 		stbi_image_free(tex_data);
 		texs_for_mtl.emplace(i, std::move(tex));
 	}
 
 
-	bool show_demo_window = true;
+	/*bool show_demo_window = true;
 	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);*/
 	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
 	while (c.is_running())
@@ -164,6 +158,8 @@ int main(int argc, char** argv)
 		// move_dir.print();
 		// printf("%f\n", spd);
 		// cam.get_pos().print();
+		/*constexpr f32 speeds[2] = { 1.f, 2.f };
+		cam.move(c.time.delta, move_dir * speeds[keys[6]]);*/
 		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f));
 		// printf("\n\nBBBB\n\n");
 		const mat<space::OBJECT, space::CLIP>& mvp = cam.get_view_proj() * obj;
