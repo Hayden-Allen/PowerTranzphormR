@@ -139,11 +139,13 @@ int main(int argc, char** argv)
 	}
 
 
-	/*bool show_demo_window = true;
+	framebuffer_u8 framebuffer(c.width, c.height);
+	bool show_demo_window = true;
 	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);*/
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
+	u32 lastw = c.width, lasth = c.height;
 	while (c.is_running())
 	{
 		c.begin_frame();
@@ -152,18 +154,20 @@ int main(int argc, char** argv)
 		for (int i = 0; i < 7; i++)
 			keys[i] = c.get_key(keycodes[i]);
 
-		// printf("\n\nAAAA\n\n");
-		// printf("%d | %d-%d %d-%d %d-%d\n", keys[6], keys[3], keys[1], keys[4], keys[5], keys[2], keys[0]);
 		const direction<space::WORLD> move_dir(keys[3] - keys[1], keys[4] - keys[5], keys[2] - keys[0]);
-		// move_dir.print();
-		// printf("%f\n", spd);
-		// cam.get_pos().print();
-		/*constexpr f32 speeds[2] = { 1.f, 2.f };
-		cam.move(c.time.delta, move_dir * speeds[keys[6]]);*/
 		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f));
-		// printf("\n\nBBBB\n\n");
 		const mat<space::OBJECT, space::CLIP>& mvp = cam.get_view_proj() * obj;
 
+		if (c.width != lastw || c.height != lasth)
+		{
+			lastw = c.width;
+			lasth = c.height;
+			framebuffer = std::move(framebuffer_u8(lastw, lasth));
+			printf("TEST\n");
+		}
+		// RENDER SCENE
+		framebuffer.bind();
+		c.clear();
 		for (auto it = vaos_for_mtl.begin(); it != vaos_for_mtl.end(); ++it) {
 			const texture2d_rgb_u8& tex = texs_for_mtl[it->first];
 			tex.bind(0);
@@ -174,8 +178,11 @@ int main(int argc, char** argv)
 			shaders.uniform_mat4("u_mvp", mvp.e);
 			c.draw(it->second, shaders);
 		}
+		framebuffer.unbind();
 
-		/*ImGui_ImplOpenGL3_NewFrame();
+		// RENDER UI
+		c.clear();
+		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
@@ -191,6 +198,14 @@ int main(int argc, char** argv)
 			ImGui::DockSpace(dockspace_id, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
 			if (show_demo_window)
 				ImGui::ShowDemoWindow(&show_demo_window);
+
+			if (ImGui::Begin("TEST"))
+			{
+				ImGui::Text("Hello,w rodl!");
+				ImGui::Image(framebuffer.get_imgui_color_id(), ImVec2(640, 680), ImVec2(0, 1), ImVec2(1, 0));
+				ImGui::End();
+			}
+
 			ImGui::End();
 		}
 
@@ -206,7 +221,7 @@ int main(int argc, char** argv)
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
-		glEnable(GL_DEPTH_TEST);*/
+		glEnable(GL_DEPTH_TEST);
 
 		c.end_frame();
 	}
