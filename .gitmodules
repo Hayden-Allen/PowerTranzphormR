@@ -1,6 +1,3 @@
 [submodule "lib/mingl"]
 	path = lib/mingl
 	url = https://github.com/Hayden-Allen/mingl.git
-[submodule "lib/imgui"]
-	path = lib/imgui
-	url = https://github.com/ocornut/imgui.git
