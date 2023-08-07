@@ -139,13 +139,13 @@ int main(int argc, char** argv)
 	}
 
 
+	u32 lastw = c.width, lasth = c.height;
 	framebuffer_u8 framebuffer(c.width, c.height);
+
 	bool show_demo_window = true;
-	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
-	u32 lastw = c.width, lasth = c.height;
 	while (c.is_running())
 	{
 		c.begin_frame();
@@ -158,12 +158,12 @@ int main(int argc, char** argv)
 		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f));
 		const mat<space::OBJECT, space::CLIP>& mvp = cam.get_view_proj() * obj;
 
+		// TODO better way to handle this?
 		if (c.width != lastw || c.height != lasth)
 		{
 			lastw = c.width;
 			lasth = c.height;
-			framebuffer = std::move(framebuffer_u8(lastw, lasth));
-			printf("TEST\n");
+			framebuffer = framebuffer_u8(lastw, lasth);
 		}
 		// RENDER SCENE
 		framebuffer.bind();
