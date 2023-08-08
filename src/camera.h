@@ -23,7 +23,7 @@ public:
 public:
 	void move(const f32 dt, vec<space::CAMERA> amount, const f32 mx, const f32 my)
 	{
-		const f32 ls = .5f * dt;
+		const f32 ls = std::clamp(1.f * dt, -.005f, .005f);
 		m_angle_x += ls * my;
 		m_angle_y += ls * mx;
 		if (fabs(m_angle_x) >= c::PI / 2)

@@ -129,8 +129,8 @@ int main(int argc, char** argv)
 	preview_window preview(framebuffer);
 	ic.add_window(&preview);
 
-	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
-	bool keys[7] = { false };
+	constexpr u32 keycodes[11] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_UP, GLFW_KEY_DOWN };
+	bool keys[11] = { false };
 
 	constexpr u32 NSAMPLES = 128;
 	f32 fps_samples[NSAMPLES] = { 0.f };
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 		c.begin_frame();
 		if (c.get_key(GLFW_KEY_ESCAPE))
 			break;
-		for (int i = 0; i < 7; i++)
+		for (int i = 0; i < 11; i++)
 			keys[i] = c.get_key(keycodes[i]);
 
 		const f32 cur_fps = 1.f / c.time.delta;
