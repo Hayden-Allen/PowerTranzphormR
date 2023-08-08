@@ -2,13 +2,19 @@
 
 #include "imgui_window.h"
 
-class preview_window : public imgui_window {
+template<typename FB>
+class preview_window : public imgui_window
+{
 public:
-	preview_window(const mgl::framebuffer_u8 &framebuffer);
+	preview_window(const FB& framebuffer);
 	virtual ~preview_window();
-
-	void handle_frame();
-
+public:
+	virtual void handle_frame() override;
 private:
-	const mgl::framebuffer_u8& m_fb;
+	const FB& m_fb;
 };
+
+typedef preview_window<mgl::framebuffer_u8> preview_window_u8;
+typedef preview_window<mgl::framebuffer_f32> preview_window_f32;
+
+#include "preview_window.cpp"

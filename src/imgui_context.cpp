@@ -26,7 +26,8 @@ imgui_context::~imgui_context() {
 	ImGui::DestroyContext();
 }
 
-void imgui_context::on_frame(const f32 dt) {
+void imgui_context::on_frame(const f32 dt)
+{
 	ImGui::GetIO().DeltaTime = dt;
 
 	ImGui_ImplOpenGL3_NewFrame();
@@ -69,12 +70,14 @@ void imgui_context::on_frame(const f32 dt) {
 	}
 }
 
-void imgui_context::add_window(imgui_window* window) {
+void imgui_context::add_window(imgui_window* window)
+{
 	remove_window(window);
 	m_windows.push_back(window);
 }
 
-void imgui_context::remove_window(imgui_window* window) {
+void imgui_context::remove_window(imgui_window* window)
+{
 	for (size_t i = 0; i < m_windows.size(); ++i) {
 		if (m_windows[i] == window) {
 			m_windows.erase(m_windows.begin() + i);
@@ -83,11 +86,13 @@ void imgui_context::remove_window(imgui_window* window) {
 	}
 }
 
-void imgui_context::on_window_resize(const s32 width, const s32 height) {
-	ImGui::GetIO().DisplaySize = ImVec2(width, height);
+void imgui_context::on_window_resize(const s32 width, const s32 height)
+{
+	ImGui::GetIO().DisplaySize = ImVec2(MGL_CAST(f32, width), MGL_CAST(f32, height));
 }
 
-void imgui_context::on_mouse_button(const s32 button, const s32 action, const s32 mods) {
+void imgui_context::on_mouse_button(const s32 button, const s32 action, const s32 mods)
+{
 	ImGuiIO& io = ImGui::GetIO();
 	if (button < ImGuiMouseButton_COUNT) {
 		if (action == GLFW_PRESS) {
@@ -99,20 +104,24 @@ void imgui_context::on_mouse_button(const s32 button, const s32 action, const s3
 	}
 }
 
-void imgui_context::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy) {
+void imgui_context::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
+{
 	//
 	// FIXME
 	//
+	// printf("%f %f | %f %f\n", x, y, dx, dy);
 	ImGui::GetIO().MousePos = ImVec2(x, y);
 }
 
-void imgui_context::on_scroll(const f32 x, const f32 y) {
+void imgui_context::on_scroll(const f32 x, const f32 y)
+{
 	ImGuiIO& io = ImGui::GetIO();
 	io.MouseWheel += y;
 	io.MouseWheelH += x;
 }
 
-void imgui_context::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods) {
+void imgui_context::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
+{
 	if ((action != GLFW_PRESS && action != GLFW_RELEASE) || key < 0 || key >= ImGuiKey_COUNT) {
 		return;
 	}

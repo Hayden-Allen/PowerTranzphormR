@@ -30,7 +30,6 @@
 #include "hats/hats.h"
 #include "mingl/mingl.h"
 
-
 template<typename T>
 static int sign(const T t)
 {
