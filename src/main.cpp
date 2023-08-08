@@ -1,4 +1,7 @@
 #include "pch.h"
+#include "../lib/glm/glm/glm.hpp"
+#include "../lib/glm/glm/ext/matrix_transform.hpp"
+#include "../lib/glm/glm/ext/matrix_clip_space.hpp"
 
 using namespace hats;
 
@@ -592,7 +595,7 @@ void print_vtxs(const std::vector<GLfloat>& vtxs) {
 	std::cout << "\n";
 }
 
-int main2(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

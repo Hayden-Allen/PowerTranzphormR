@@ -6,28 +6,37 @@ using namespace hats;
 class camera
 {
 public:
-	camera(const point<space::WORLD>& pos, const direction<space::WORLD>& dir, const f32 fov_y, const f32 aspect, const f32 near, const f32 far, const f32 speed, const direction<space::WORLD>& up = direction_util::j_hat<space::WORLD>()) :
+	camera(const point<space::WORLD>& pos, const f32 angle_x, const f32 angle_y, const f32 fov_y, const f32 aspect, const f32 near, const f32 far, const f32 speed, const direction<space::WORLD>& up = direction_util::j_hat<space::WORLD>()) :
 		m_pos(pos),
-		m_dir(dir),
 		m_up(up),
 		/*m_fov_y(fov_y),
 		m_aspect(aspect),
 		m_near(near),
 		m_far(far),*/
+		m_angle_x(angle_x),
+		m_angle_y(angle_y),
 		m_speed(speed),
 		m_proj(pmat_util::projection(fov_y, aspect, near, far)),
-		m_view(tmat_util::look_at<space::WORLD, space::CAMERA>(m_pos, m_dir, m_up)),
+		m_view(tmat_util::translation<space::WORLD, space::CAMERA>(m_pos)),
 		m_vp(m_proj * m_view)
 	{}
 public:
-	void move(const f32 dt, const vec<space::WORLD>& amount)
+	void move(const f32 dt, vec<space::CAMERA> amount, const f32 mx, const f32 my)
 	{
-		// printf("ASDF1\n");
-		// amount.print();
-		// printf("ASDF2\n");
-		m_pos += m_speed * dt * amount;
-		// printf("ASDF3\n");
-		m_view = tmat_util::look_at<space::WORLD, space::CAMERA>(m_pos, m_dir, m_up);
+		const f32 ls = .5f * dt;
+		m_angle_x += ls * my;
+		m_angle_y += ls * mx;
+		if (fabs(m_angle_x) >= c::PI / 2)
+		{
+			m_angle_x -= ls * my;
+		}
+		m_angle_y = clean_angle(m_angle_y);
+
+		vec<space::WORLD> wamount = amount.transform_copy(m_view.invert_copy());
+		m_pos += wamount * m_speed * dt;
+		m_view = tmat_util::rotation_x<space::CAMERA>(m_angle_x) * 
+			tmat_util::rotation_y<space::CAMERA>(m_angle_y) *
+			tmat_util::translation<space::WORLD, space::CAMERA>(m_pos);
 		m_vp = m_proj * m_view;
 	}
 	pmat<space::CAMERA, space::CLIP> get_proj() const
@@ -48,10 +57,9 @@ public:
 	}
 private:
 	point<space::WORLD> m_pos;
-	direction<space::WORLD> m_dir;
 	direction<space::WORLD> m_up;
 	// f32 m_fov_y, m_aspect, m_near, m_far, m_speed;
-	f32 m_speed;
+	f32 m_angle_x, m_angle_y, m_speed;
 	pmat<space::CAMERA, space::CLIP> m_proj;
 	tmat<space::WORLD, space::CAMERA> m_view;
 	mat<space::WORLD, space::CLIP> m_vp;

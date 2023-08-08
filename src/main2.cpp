@@ -109,13 +109,12 @@ int main(int argc, char** argv)
 	}
 	ImGui_ImplGlfw_InitForOpenGL(c.window, true);
 	ImGui_ImplOpenGL3_Init("#version 430 core");
-
 	const shaders& shaders = shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag");
 
+
 	const point<space::WORLD> cam_pos(0, 0, 5);
-	const direction<space::WORLD>& cam_dir = -direction_util::k_hat<space::WORLD>();
 	const f32 ar = c.get_aspect_ratio();
-	camera cam(cam_pos, cam_dir, 108 / ar, ar, .01f, 1000.f, 5.f);
+	camera cam(cam_pos, 0, 0, 108 / ar, ar, .01f, 1000.f, 5.f);
 	tmat<space::OBJECT, space::WORLD> obj;
 
 	std::unordered_map<GLuint, material_t> mtls;
@@ -146,6 +145,12 @@ int main(int argc, char** argv)
 
 	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
+
+	constexpr u32 NSAMPLES = 128;
+	f32 fps_samples[NSAMPLES] = { 0.f };
+	s32 cur_sample = 0;
+	f32 avg_fps = 0.f;
+
 	while (c.is_running())
 	{
 		c.begin_frame();
@@ -154,8 +159,15 @@ int main(int argc, char** argv)
 		for (int i = 0; i < 7; i++)
 			keys[i] = c.get_key(keycodes[i]);
 
-		const direction<space::WORLD> move_dir(keys[3] - keys[1], keys[4] - keys[5], keys[2] - keys[0]);
-		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f));
+		const f32 cur_fps = 1.f / c.time.delta;
+		avg_fps -= fps_samples[cur_sample] / NSAMPLES;
+		fps_samples[cur_sample] = cur_fps;
+		avg_fps += fps_samples[cur_sample] / NSAMPLES;
+		cur_sample = (cur_sample + 1) % NSAMPLES;
+
+		// const direction<space::CAMERA> move_dir(keys[3] - keys[1], keys[4] - keys[5], keys[2] - keys[0]);
+		const direction<space::CAMERA> move_dir(keys[3] - keys[1], 0, keys[2] - keys[0]);
+		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f), c.mouse.delta.x, c.mouse.delta.y);
 		const mat<space::OBJECT, space::CLIP>& mvp = cam.get_view_proj() * obj;
 
 		// TODO better way to handle this?
@@ -201,8 +213,8 @@ int main(int argc, char** argv)
 
 			if (ImGui::Begin("TEST"))
 			{
-				ImGui::Text("Hello,w rodl!");
-				ImGui::Image(framebuffer.get_imgui_color_id(), ImVec2(640, 680), ImVec2(0, 1), ImVec2(1, 0));
+				ImGui::Text("%.02f\n", avg_fps);
+				ImGui::Image(framebuffer.get_imgui_color_id(), ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
 				ImGui::End();
 			}
 
