@@ -29,3 +29,10 @@
 
 #include "hats/hats.h"
 #include "mingl/mingl.h"
+
+
+template<typename T>
+static int sign(const T t)
+{
+	return t == 0 ? 0 : (t > 0 ? 1 : -1);
+}
