@@ -2,6 +2,8 @@
 #include "camera.h"
 #include "carve.h"
 #include "glu_tess.h"
+#include "imgui_context.h"
+#include "preview_window.h"
 
 using namespace mgl;
 using namespace hats;
@@ -92,25 +94,10 @@ int main(int argc, char** argv)
 {
 	context c(1920, 1080, "PowerTranzphormR", true);
 	c.set_clear_color(0, 0, 1);
+	imgui_context ic(c);
+	c.add_layer(&ic);
 
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	ImGui::StyleColorsDark();
-	ImGuiStyle& style = ImGui::GetStyle();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
-	ImGui_ImplGlfw_InitForOpenGL(c.window, true);
-	ImGui_ImplOpenGL3_Init("#version 430 core");
 	const shaders& shaders = shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag");
-
 
 	const point<space::WORLD> cam_pos(0, 0, 5);
 	const f32 ar = c.get_aspect_ratio();
@@ -137,11 +124,10 @@ int main(int argc, char** argv)
 		texs_for_mtl.emplace(i, std::move(tex));
 	}
 
-
 	u32 lastw = c.width, lasth = c.height;
 	framebuffer_u8 framebuffer(c.width, c.height);
-
-	bool show_demo_window = true;
+	preview_window preview(framebuffer);
+	ic.add_window(&preview);
 
 	constexpr u32 keycodes[7] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL };
 	bool keys[7] = { false };
@@ -164,6 +150,8 @@ int main(int argc, char** argv)
 		fps_samples[cur_sample] = cur_fps;
 		avg_fps += fps_samples[cur_sample] / NSAMPLES;
 		cur_sample = (cur_sample + 1) % NSAMPLES;
+		std::string window_title = "PowerTranzphormR (" + std::to_string((u32)std::round(avg_fps)) + " FPS)";
+		glfwSetWindowTitle(c.window, window_title.c_str());
 
 		// const direction<space::CAMERA> move_dir(keys[3] - keys[1], keys[4] - keys[5], keys[2] - keys[0]);
 		const direction<space::CAMERA> move_dir(keys[3] - keys[1], 0, keys[2] - keys[0]);
@@ -179,6 +167,7 @@ int main(int argc, char** argv)
 		}
 		// RENDER SCENE
 		framebuffer.bind();
+		glEnable(GL_DEPTH_TEST);
 		c.clear();
 		for (auto it = vaos_for_mtl.begin(); it != vaos_for_mtl.end(); ++it) {
 			const texture2d_rgb_u8& tex = texs_for_mtl[it->first];
@@ -193,53 +182,10 @@ int main(int argc, char** argv)
 		framebuffer.unbind();
 
 		// RENDER UI
-		c.clear();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->Pos);
-		ImGui::SetNextWindowSize(viewport->Size);
-		ImGui::SetNextWindowViewport(viewport->ID);
-		if (ImGui::Begin("DOCKSPACE", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus))
-		{
-			ImGuiID dockspace_id = ImGui::GetID("DOCKSPACE");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
-			if (show_demo_window)
-				ImGui::ShowDemoWindow(&show_demo_window);
-
-			if (ImGui::Begin("TEST"))
-			{
-				ImGui::Text("%.02f\n", avg_fps);
-				ImGui::Image(framebuffer.get_imgui_color_id(), ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
-				ImGui::End();
-			}
-
-			ImGui::End();
-		}
-
-		ImGui::PopStyleVar(2);
-
-		ImGui::Render();
-		glDisable(GL_DEPTH_TEST);
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
-		glEnable(GL_DEPTH_TEST);
+		c.handle_layers_for_frame();
 
 		c.end_frame();
 	}
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
 	return 0;
 }
