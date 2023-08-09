@@ -5,7 +5,8 @@ imgui_context::imgui_context(const mgl::context& mgl_context) : mgl::layer(), m_
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// TODO
+	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -109,7 +110,6 @@ void imgui_context::on_mouse_move(const f32 x, const f32 y, const f32 dx, const 
 	//
 	// FIXME
 	//
-	// printf("%f %f | %f %f\n", x, y, dx, dy);
 	ImGui::GetIO().MousePos = ImVec2(x, y);
 }
 

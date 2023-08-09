@@ -80,14 +80,26 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 
 	mesh_t* tor2 = textured_torus(tex_coord_attr, mtl_id_attr, 1,
 		{
-			.tube_radius = .5f,
-			.num_tube_steps = 8,
-			// .transform = carve::math::Matrix::TRANS(3.f, 0, 0)
 			.transform = tmat_util::translation<space::OBJECT>(3.f, 0, 0)
 		}
 	);
 	out_mesh = csg.compute(out_mesh, tor2, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 
+	mesh_t* sphere = textured_ellipsoid(tex_coord_attr, mtl_id_attr, 2,
+		{
+			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0)
+		}
+	);
+	out_mesh = csg.compute(out_mesh, sphere, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+	mesh_t* sphere2 = textured_ellipsoid(tex_coord_attr, mtl_id_attr, 1,
+		{
+			.transform = tmat_util::translation<space::OBJECT>(-1.5f, -1.f, 0)
+		}
+	);
+	out_mesh = csg.compute(out_mesh, sphere2, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+
+	delete sphere;
+	delete sphere2;
 	delete tor;
 	delete tor2;
 	delete cone;

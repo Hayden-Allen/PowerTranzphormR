@@ -54,9 +54,15 @@ struct cone_options
 };
 struct torus_options
 {
-	float center_radius = 1.f, tube_radius = 1.f;
-	uint32_t num_center_steps = 16, num_tube_steps = 16;
+	float center_radius = 1.f, tube_radius = .5f;
+	uint32_t num_center_steps = 8, num_tube_steps = 8;
 	// carve::math::Matrix transform = carve::math::Matrix::IDENT();
+	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
+};
+struct ellipsoid_options
+{
+	float radius_x = 1.f, radius_y = 1.f, radius_z = 1.f;
+	uint32_t num_horizontal_steps = 12, num_vertical_steps = 6;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 
@@ -64,3 +70,4 @@ mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_i
 mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cylinder_options& options = {});
 mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cone_options& options = {});
 mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const torus_options& options = {});
+mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const ellipsoid_options& options = {});
