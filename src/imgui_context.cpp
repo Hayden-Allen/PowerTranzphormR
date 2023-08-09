@@ -9,6 +9,7 @@ imgui_context::imgui_context(const mgl::context& mgl_context) : mgl::layer(), m_
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
 	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
