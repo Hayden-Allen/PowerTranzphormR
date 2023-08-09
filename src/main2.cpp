@@ -8,8 +8,9 @@
 using namespace mgl;
 using namespace hats;
 
-static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, mesh_t*& out_mesh, std::unordered_map<GLuint, material_t>& out_mtls) {
-	if (out_mesh) {
+static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, mesh_t*& out_mesh, std::unordered_map<GLuint, material_t>& out_mtls)
+{
+	/*if (out_mesh) {
 		delete out_mesh;
 	}
 	out_mtls.clear();
@@ -31,7 +32,68 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 	out_mesh = csg.compute(cube, cyl, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 
 	delete cyl;
-	delete cube;
+	delete cube;*/
+	material_t mtl1;
+	out_mtls.insert(std::make_pair(1, mtl1));
+	mesh_t* cyl = textured_cylinder(tex_coord_attr, mtl_id_attr, 1,
+		{
+			.top_radius = .5f,
+			.bottom_radius = .5f,
+			.transform = tmat_util::translation<space::OBJECT>(0, .5f, 0) * tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f)
+		}
+	);
+	material_t mtl2;
+	out_mtls.insert(std::make_pair(2, mtl2));
+	mesh_t* box_b = textured_cuboid(tex_coord_attr, mtl_id_attr, 2,
+		{
+			.width = 3.f,
+			.transform = tmat_util::translation<space::OBJECT>(0, -1.f, 0)
+		}
+	);
+	mesh_t* box_a = textured_cuboid(tex_coord_attr, mtl_id_attr, 1,
+		{
+			.transform = tmat_util::translation<space::OBJECT>(1.5f, 0.f, 0)
+		}
+	);
+	out_mesh = csg.compute(cyl, box_b, carve::csg::CSG::B_MINUS_A, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+	// out_mesh = csg.compute(out_mesh, box_a, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+
+	mesh_t* cone = textured_cone(tex_coord_attr, mtl_id_attr, 1,
+		{
+			.radius = .5f,
+			.height = 1.f,
+			// .transform = carve::math::Matrix::TRANS(0.f, 1.5f, 0)
+			.transform = tmat_util::translation<space::OBJECT>(0.f, 1.5f, 0)
+		}
+	);
+	out_mesh = csg.compute(out_mesh, cone, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+
+	mesh_t* tor = textured_torus(tex_coord_attr, mtl_id_attr, 2,
+		{
+			.tube_radius = .5f,
+			.num_tube_steps = 8,
+			// .transform = carve::math::Matrix::TRANS(1.f, 0, 0)
+			.transform = tmat_util::translation<space::OBJECT>(1.f, 0, 0)
+		}
+	);
+	out_mesh = csg.compute(out_mesh, tor, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+
+	mesh_t* tor2 = textured_torus(tex_coord_attr, mtl_id_attr, 1,
+		{
+			.tube_radius = .5f,
+			.num_tube_steps = 8,
+			// .transform = carve::math::Matrix::TRANS(3.f, 0, 0)
+			.transform = tmat_util::translation<space::OBJECT>(3.f, 0, 0)
+		}
+	);
+	out_mesh = csg.compute(out_mesh, tor2, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+
+	delete tor;
+	delete tor2;
+	delete cone;
+	delete cyl;
+	delete box_b;
+	delete box_a;
 }
 
 static void tesselate(mesh_t* in_scene, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl, attr_tex_coord_t tex_coord_attr, attr_material_t mtl_id_attr)
