@@ -90,11 +90,55 @@ static void compute_csg(std::unordered_map<GLuint, material_t>& out_mtls, std::u
 	delete in_scene;
 }
 
+const std::vector<imgui_menu> construct_app_menus() {
+	std::vector<imgui_menu> result;
+
+	imgui_menu file_menu;
+	file_menu.name = "File";
+	imgui_menu_item file_new = {
+		"New Phonky Phorm",
+		[]() {
+			std::cout << "MENU: NEW\n";
+		},
+		"Ctrl+N",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }
+	};
+	imgui_menu_item file_open = {
+		"Open Phonky Phorm",
+		[]() {
+			std::cout << "MENU: OPEN\n";
+		},
+		"Ctrl+O",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }
+	};
+	imgui_menu_item file_save = {
+		"Save Phonky Phorm",
+		[]() {
+			std::cout << "MENU: SAVE\n";
+		},
+		"Ctrl+S",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }
+	};
+	imgui_menu_item file_save_as = {
+		"Save Phonky Phorm As...",
+		[]() {
+			std::cout << "MENU: SAVE AS\n";
+		},
+		"Ctrl+Shift+S",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }
+	};
+	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
+	result.push_back(file_menu);
+
+	return result;
+}
+
 int main(int argc, char** argv)
 {
-	context c(1920, 1080, "PowerTranzphormR", true);
+	context c(1280, 720, "PowerTranzphormR", true);
 	c.set_clear_color(0, 0, 1);
 	imgui_context ic(c);
+	ic.set_menus(construct_app_menus());
 	c.add_layer(&ic);
 
 	const shaders& shaders = shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag");

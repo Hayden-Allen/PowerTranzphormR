@@ -42,6 +42,30 @@ void imgui_context::on_frame(const f32 dt)
 	ImGui::SetNextWindowViewport(viewport->ID);
 	if (ImGui::Begin("imgui_context_dockspace", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus))
 	{
+		if (m_menus.size() > 0) {
+			if (ImGui::BeginMenuBar()) {
+				for (const imgui_menu& menu : m_menus) {
+					if (ImGui::BeginMenu(menu.name.c_str())) {
+						for (size_t i = 0; i < menu.groups.size(); ++i) {
+							const imgui_menu_item_group& group = menu.groups[i];
+							for (const imgui_menu_item& item : group) {
+								if (ImGui::MenuItem(item.name.c_str(), item.shortcut_text.c_str())) {
+									item.handler();
+								}
+							}
+
+							if (i != menu.groups.size() - 1) {
+								ImGui::Separator();
+							}
+						}
+
+						ImGui::EndMenu();
+					}
+				}
+				ImGui::EndMenuBar();
+			}
+		}
+
 		ImGuiID dockspace_id = ImGui::GetID("imgui_context_dockspace");
 		ImGui::DockSpace(dockspace_id, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
 
@@ -84,6 +108,10 @@ void imgui_context::remove_window(imgui_window* window)
 			break;
 		}
 	}
+}
+
+void imgui_context::set_menus(const std::vector<imgui_menu>& menus) {
+	m_menus = menus;
 }
 
 void imgui_context::on_window_resize(const s32 width, const s32 height)
