@@ -362,6 +362,7 @@
     <ClInclude Include="src\carve.h" />
     <ClInclude Include="src\glu_tess.h" />
     <ClInclude Include="src\imgui_context.h" />
+    <ClInclude Include="src\imgui_menu.h" />
     <ClInclude Include="src\imgui_window.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\preview_window.h" />

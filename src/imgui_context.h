@@ -1,6 +1,7 @@
 #pragma once
 
 #include "imgui_window.h"
+#include "imgui_menu.h"
 
 class imgui_context : public mgl::layer
 {
@@ -16,7 +17,9 @@ public:
 	virtual void on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods) override;
 	void add_window(imgui_window* window);
 	void remove_window(imgui_window* window);
+	void set_menus(const std::vector<imgui_menu>& menus);
 private:
 	const mgl::context& m_mgl_context;
 	std::vector<imgui_window*> m_windows;
+	std::vector<imgui_menu> m_menus;
 };
