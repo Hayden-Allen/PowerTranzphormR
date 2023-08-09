@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.h"
 
-struct imgui_menu_item {
+struct imgui_menu_item
+{
 	std::string name;
 	std::function<void()> handler = [](){};
 	std::string shortcut_text;
@@ -10,7 +11,8 @@ struct imgui_menu_item {
 
 typedef std::vector<imgui_menu_item> imgui_menu_item_group;
 
-struct imgui_menu {
+struct imgui_menu
+{
 	std::string name;
 	std::vector<imgui_menu_item_group> groups;
 };

@@ -7,7 +7,7 @@ mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_i
 	assert(options.height > 0.f);
 	assert(options.depth > 0.f);
 
-	const f32 w = options.width / 2, h = options.height / 2, d = options.depth / 2;
+	const f32			  w = options.width / 2, h = options.height / 2, d = options.depth / 2;
 	std::vector<vertex_t> v;
 	v.reserve(8);
 	// 0 - ftr
@@ -42,7 +42,8 @@ mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_i
 	// bottom
 	faces.push_back(new face_t(&v[6], &v[7], &v[3], &v[2]));
 
-	for (s32 i = 0; i < 6; ++i) {
+	for (s32 i = 0; i < 6; ++i)
+	{
 		const f32 top = 1.0f, bottom = 0.0f;
 		// const float left = 0.f, right = 1.f;
 		const f32 left = i * (1.f / 6.f), right = (i + 1) * (1.f / 6.f);
@@ -63,9 +64,9 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 	assert(options.bottom_radius > 0.f);
 	assert(options.height > 0.f);
 
-	const u32 STEPS = options.num_steps;
-	const f32 DTHETA = c::TWO_PI / STEPS;
-	const f32 radii[2] = { options.bottom_radius, options.top_radius };
+	const u32			   STEPS	= options.num_steps;
+	const f32			   DTHETA	= c::TWO_PI / STEPS;
+	const f32			   radii[2] = { options.bottom_radius, options.top_radius };
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(2 * STEPS);
 	for (int i = 0; i < 2; i++)
@@ -97,7 +98,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 	{
 		const u32 a = i, b = (i + 1) % STEPS;
 		const u32 c = i + STEPS, d = b + STEPS;
-		face_t* face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
+		face_t*	  face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
 		tex_coord_attr.setAttribute(face, 0, tex_coord_t(1.f * i / STEPS, 0));
 		tex_coord_attr.setAttribute(face, 1, tex_coord_t(1.f * i / STEPS, 1));
 		tex_coord_attr.setAttribute(face, 2, tex_coord_t(1.f * (i + 1) / STEPS, 1));
@@ -106,9 +107,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 	}
 
 	for (const face_t* const face : faces)
-	{
 		mtl_id_attr.setAttribute(face, mtl_id);
-	}
 
 	return new mesh_t(faces);
 }
@@ -119,8 +118,8 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	assert(options.height > 0.f);
 	assert(options.num_steps > 0);
 
-	const u32 STEPS = options.num_steps;
-	const f32 DTHETA = c::TWO_PI / STEPS;
+	const u32			   STEPS  = options.num_steps;
+	const f32			   DTHETA = c::TWO_PI / STEPS;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(STEPS + 1);
 	for (u32 j = 0; j < STEPS; j++)
@@ -151,9 +150,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	}
 
 	for (const face_t* const face : faces)
-	{
 		mtl_id_attr.setAttribute(face, mtl_id);
-	}
 
 	return new mesh_t(faces);
 }
@@ -165,10 +162,10 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 	assert(options.num_center_steps > 0);
 	assert(options.num_tube_steps > 0);
 
-	const u32 CENTER_STEPS = options.num_center_steps;
-	const u32 TUBE_STEPS = options.num_tube_steps;
-	const f32 DTHETA = c::TWO_PI / CENTER_STEPS;
-	const f32 DPHI = c::TWO_PI / TUBE_STEPS;
+	const u32			   CENTER_STEPS = options.num_center_steps;
+	const u32			   TUBE_STEPS	= options.num_tube_steps;
+	const f32			   DTHETA		= c::TWO_PI / CENTER_STEPS;
+	const f32			   DPHI			= c::TWO_PI / TUBE_STEPS;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(TUBE_STEPS * CENTER_STEPS);
 	for (u32 i = 0; i < CENTER_STEPS; i++)
@@ -188,13 +185,13 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 	std::vector<face_t*> faces;
 	for (u32 i = 0; i < CENTER_STEPS; i++)
 	{
-		const u32 cur = i * TUBE_STEPS;
+		const u32 cur  = i * TUBE_STEPS;
 		const u32 next = ((i + 1) % CENTER_STEPS) * TUBE_STEPS;
 		for (u32 j = 0; j < TUBE_STEPS; j++)
 		{
-			const u32 mj = (j + 1) % TUBE_STEPS;
-			const u32 a = cur + j, b = cur + mj;
-			const u32 c = next + j, d = next + mj;
+			const u32	  mj = (j + 1) % TUBE_STEPS;
+			const u32	  a = cur + j, b = cur + mj;
+			const u32	  c = next + j, d = next + mj;
 			face_t* const face = new face_t(vertices[a], vertices[b], vertices[d], vertices[c]);
 			tex_coord_attr.setAttribute(face, 0, tex_coord_t(1.f * i / CENTER_STEPS, 1 - 1.f * j / TUBE_STEPS));
 			tex_coord_attr.setAttribute(face, 1, tex_coord_t(1.f * i / CENTER_STEPS, 1 - 1.f * (j + 1) / TUBE_STEPS));
@@ -216,8 +213,8 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	assert(options.num_horizontal_steps > 2);
 	assert(options.num_vertical_steps > 3);
 
-	const u32 nv = options.num_vertical_steps, nh = options.num_horizontal_steps;
-	const f32 DPHI = c::PI / nv, DTHETA = c::TWO_PI / nh;
+	const u32			   nv = options.num_vertical_steps, nh = options.num_horizontal_steps;
+	const f32			   DPHI = c::PI / nv, DTHETA = c::TWO_PI / nh;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(nh * nv + 2);
 	// [1, nv-1] because poles are added separately
@@ -231,14 +228,14 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 			const f32 theta = ix * DTHETA;
 			const f32 ct = cos(theta), st = sin(theta);
 			const f32 x = sp * ct * options.radius_x;
-			f32 z = 0.f;
+			f32		  z = 0.f;
 			if (abs(abs(ct) - 1) > c::EPSILON)
 			{
 				const f32 sp2 = sp * sp, ct2 = ct * ct;
 				const f32 tmp = sin(phi - c::PI / 2) * sin(phi - c::PI / 2);
 				const f32 rz2 = options.radius_z * options.radius_z;
 				const f32 rad = 1 - ct2 * sp2 - tmp;
-				z = sign(st) * options.radius_z * sqrt(rad);
+				z			  = sign(st) * options.radius_z * sqrt(rad);
 			}
 			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
 		}
@@ -251,8 +248,8 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	// poles
 	for (u32 i = 0; i < nh; i++)
 	{
-		const u32 a = i, b = (i + 1) % nh;
-		const u32 c = MGL_CAST(u32, vertices.size() - 2);
+		const u32	  a = i, b = (i + 1) % nh;
+		const u32	  c	   = MGL_CAST(u32, vertices.size() - 2);
 		face_t* const face = new face_t(vertices[a], vertices[b], vertices[c]);
 		tex_coord_attr.setAttribute(face, 0, tex_coord_t(1.f * i / nh, 1.f / nv));
 		tex_coord_attr.setAttribute(face, 1, tex_coord_t((i + 1.f) / nh, 1.f / nv));
@@ -262,9 +259,9 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	}
 	for (u32 i = 0; i < nh; i++)
 	{
-		const u32 off = nh * (nv - 2);
-		const u32 a = i + off, b = (i + 1) % nh + off;
-		const u32 c = MGL_CAST(u32, vertices.size() - 1);
+		const u32	  off = nh * (nv - 2);
+		const u32	  a = i + off, b = (i + 1) % nh + off;
+		const u32	  c	   = MGL_CAST(u32, vertices.size() - 1);
 		face_t* const face = new face_t(vertices[a], vertices[c], vertices[b]);
 		tex_coord_attr.setAttribute(face, 0, tex_coord_t(1.f * i / nh, (nv - 1.f) / nv));
 		tex_coord_attr.setAttribute(face, 1, tex_coord_t((i + .5f) / nh, 1));
@@ -275,14 +272,14 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	// body
 	for (u32 iy = 1; iy < nv - 1; iy++)
 	{
-		const u32 cur_off = (iy - 1) * nh;
+		const u32 cur_off  = (iy - 1) * nh;
 		const u32 next_off = iy * nh;
 		const f32 cty = 1.f * iy / nv, nty = 1.f * (iy + 1) / nv;
 		for (u32 ix = 0; ix < nh; ix++)
 		{
-			const f32 ctx = 1.f * ix / nh, ntx = 1.f * (ix + 1) / nh;
-			const u32 a = ix + cur_off, b = (ix + 1) % nh + cur_off;
-			const u32 c = ix + next_off, d = (ix + 1) % nh + next_off;
+			const f32	  ctx = 1.f * ix / nh, ntx = 1.f * (ix + 1) / nh;
+			const u32	  a = ix + cur_off, b = (ix + 1) % nh + cur_off;
+			const u32	  c = ix + next_off, d = (ix + 1) % nh + next_off;
 			face_t* const face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
 			tex_coord_attr.setAttribute(face, 0, tex_coord_t(ctx, cty));
 			tex_coord_attr.setAttribute(face, 1, tex_coord_t(ctx, nty));
