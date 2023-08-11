@@ -7,12 +7,10 @@ imgui_context::imgui_context(const mgl::context& mgl_context) :
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	// TODO
-	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
 	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -33,8 +31,6 @@ imgui_context::~imgui_context()
 
 void imgui_context::on_frame(const f32 dt)
 {
-	ImGui::GetIO().DeltaTime = dt;
-
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -104,55 +100,27 @@ void imgui_context::set_menus(const std::vector<imgui_menu>& menus)
 
 void imgui_context::on_window_resize(const s32 width, const s32 height)
 {
-	ImGui::GetIO().DisplaySize = ImVec2(MGL_CAST(f32, width), MGL_CAST(f32, height));
+	//
 }
 
 void imgui_context::on_mouse_button(const s32 button, const s32 action, const s32 mods)
 {
-	ImGuiIO& io = ImGui::GetIO();
-	if (button < ImGuiMouseButton_COUNT)
-	{
-		if (action == GLFW_PRESS)
-		{
-			io.MouseDown[button] = true;
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			io.MouseDown[button] = false;
-		}
-	}
+	ImGui_ImplGlfw_MouseButtonCallback(m_mgl_context.window, button, action, mods);
 }
 
 void imgui_context::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
 {
-	//
-	// FIXME
-	//
-	ImGui::GetIO().MousePos = ImVec2(x, y);
+	ImGui_ImplGlfw_CursorPosCallback(m_mgl_context.window, x, y);
 }
 
 void imgui_context::on_scroll(const f32 x, const f32 y)
 {
-	ImGuiIO& io = ImGui::GetIO();
-	io.MouseWheel += y;
-	io.MouseWheelH += x;
+	ImGui_ImplGlfw_ScrollCallback(m_mgl_context.window, x, y);
 }
 
 void imgui_context::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
-	if ((action != GLFW_PRESS && action != GLFW_RELEASE) || key < 0 || key >= ImGuiKey_COUNT)
-	{
-		return;
-	}
-
-	ImGuiIO& io = ImGui::GetIO();
-	bool pressed = action == GLFW_PRESS;
-
-	io.KeysDown[key] = pressed;
-	io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
-	io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
-	io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
-	io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
+	ImGui_ImplGlfw_KeyCallback(m_mgl_context.window, key, scancode, action, mods);
 }
 
 void imgui_context::draw_menus()
