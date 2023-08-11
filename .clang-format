@@ -8,8 +8,6 @@ Standard: Latest
 # align
 AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Right
-AlignConsecutiveDeclarations: Consecutive
-AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveMacros: Consecutive
 AlignConsecutiveBitFields: Consecutive
 AllowShortCaseLabelsOnASingleLine: true
@@ -27,7 +25,24 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: Both
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: true
+  BeforeWhile: false
+  SplitEmptyFunction: false
+  SplitEmptyNamespace: false
+  SplitEmptyRecord: false
 BreakConstructorInitializers: AfterColon
 BreakBeforeBinaryOperators: None
 BreakInheritanceList: AfterColon
@@ -40,7 +55,8 @@ IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 LambdaBodyIndentation: Signature
 NamespaceIndentation: All
-SeparateDefinitionBlocks: Always
+PackConstructorInitializers: BinPack
+SeparateDefinitionBlocks: Leave
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
@@ -54,7 +70,6 @@ SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
 SpacesInAngles: Never
-
 
 # pointer/ref
 DerivePointerAlignment: false
@@ -76,7 +91,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 3
 QualifierAlignment: Custom
 QualifierOrder: ['constexpr', 'static', 'const', 'inline', 'type']
-RemoveBracesLLVM: true
+RemoveBracesLLVM: false
 SortUsingDeclarations: true
 SortIncludes: Never
 TabWidth: 4

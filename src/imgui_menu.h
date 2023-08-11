@@ -4,7 +4,7 @@
 struct imgui_menu_item
 {
 	std::string name;
-	std::function<void()> handler = [](){};
+	std::function<void()> handler = []() {};
 	std::string shortcut_text;
 	std::vector<u32> shortcut_keys;
 };

@@ -15,7 +15,8 @@ struct tess_vtx
 
 static void tess_callback_begin(GLenum type)
 {
-	if (type != GL_TRIANGLES) {
+	if (type != GL_TRIANGLES)
+	{
 		std::cerr << "Error: tess_callback_begin received value: " << type << "\n";
 	}
 }

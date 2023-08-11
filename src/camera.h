@@ -34,9 +34,9 @@ public:
 
 		vec<space::WORLD> wamount = amount.transform_copy(m_view.invert_copy());
 		m_pos += wamount * m_speed * dt;
-		m_view = tmat_util::rotation_x<space::CAMERA>(m_angle_x) * 
-			tmat_util::rotation_y<space::CAMERA>(m_angle_y) *
-			tmat_util::translation<space::WORLD, space::CAMERA>(m_pos);
+		m_view = tmat_util::rotation_x<space::CAMERA>(m_angle_x) *
+				 tmat_util::rotation_y<space::CAMERA>(m_angle_y) *
+				 tmat_util::translation<space::WORLD, space::CAMERA>(m_pos);
 		m_vp = m_proj * m_view;
 	}
 	pmat<space::CAMERA, space::CLIP> get_proj() const

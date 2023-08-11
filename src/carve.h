@@ -5,8 +5,10 @@
 struct tex_coord_t
 {
 	f32 u, v;
-	tex_coord_t() : u(0.0f), v(0.0f) {}
-	tex_coord_t(const f32 s, const f32 t) : u(s), v(t) {}
+	tex_coord_t() :
+		u(0.0f), v(0.0f) {}
+	tex_coord_t(const f32 s, const f32 t) :
+		u(s), v(t) {}
 };
 static tex_coord_t operator*(const f64 s, const tex_coord_t& t)
 {
