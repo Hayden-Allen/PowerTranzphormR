@@ -366,6 +366,7 @@
     <ClInclude Include="src\imgui_window.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\preview_window.h" />
+    <ClInclude Include="src\scene_graph.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
