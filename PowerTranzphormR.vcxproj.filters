@@ -89,6 +89,9 @@
     <ClInclude Include="src\scene_graph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

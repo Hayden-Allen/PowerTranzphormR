@@ -31,6 +31,9 @@
 #include "hats/hats.h"
 #include "mingl/mingl.h"
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 template<typename T>
 static int sign(const T t)
 {

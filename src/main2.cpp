@@ -5,6 +5,7 @@
 #include "imgui_context.h"
 #include "preview_window.h"
 #include "scene_graph.h"
+#include "log.h"
 
 using namespace mgl;
 using namespace hats;
@@ -224,6 +225,8 @@ const std::vector<imgui_menu> construct_app_menus()
 
 int main(int argc, char** argv)
 {
+	LOG_LEVEL(warn);
+
 	context c(1280, 720, "PowerTranzphormR", true);
 	c.set_clear_color(0, 0, 1);
 	imgui_context ic(c);
@@ -309,9 +312,11 @@ int main(int argc, char** argv)
 		glfwSetWindowTitle(c.window, window_title.c_str());
 
 		const f32 tdx = 1.f * keys[8] - keys[7];
-		if (tdx != 0)
+		const f32 tdy = 1.f * keys[9] - keys[10];
+		if (tdx != 0 || tdy != 0)
 		{
-			tor_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
+			LOG_WARN("tranzphorming by ({}, {}) units", tdx * c.time.delta, tdy * c.time.delta);
+			tor_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, tdy * c.time.delta, 0));
 			// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
 			tesselate(sg->mesh, vtxs_for_mtl, ctx.tex_coord_attr, ctx.mtl_id_attr);
 			vaos_for_mtl.clear();
@@ -324,7 +329,7 @@ int main(int argc, char** argv)
 
 		const direction<space::CAMERA> move_dir(keys[3] - keys[1], keys[4] - keys[5], keys[2] - keys[0]);
 		// const direction<space::CAMERA> move_dir(keys[3] - keys[1], 0, keys[2] - keys[0]);
-		cam.move(c.time.delta, move_dir * (keys[6] ? 2.f : 1.f), c.mouse.delta.x, c.mouse.delta.y);
+		cam.move(c.time.delta, move_dir * (keys[6] ? .2f : 1.f), c.mouse.delta.x, c.mouse.delta.y);
 		const mat<space::OBJECT, space::CLIP>& mvp = cam.get_view_proj() * obj;
 
 		// TODO better way to handle this?
