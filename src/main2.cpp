@@ -9,7 +9,7 @@
 using namespace mgl;
 using namespace hats;
 
-static sgnode *sg = nullptr, *tor_node = nullptr;
+static sgnode *sg = nullptr, *tor_node = nullptr, *sphere_node = nullptr;
 static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, mesh_t** out_mesh, std::unordered_map<GLuint, material_t>& out_mtls)
 {
 	material_t mtl1;
@@ -20,16 +20,20 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 
 	mesh_t* cyl = textured_cylinder(
 		tex_coord_attr, mtl_id_attr, 1,
-		{ .top_radius = .5f,
+		{
+			.top_radius = .5f,
 			.bottom_radius = .5f,
 			.transform = tmat_util::translation<space::OBJECT>(0, .5f, 0) *
-						 tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f) });
+						 tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f),
+		});
 	sgnode* n0 = new sgnode(nullptr, cyl);
 
 	mesh_t* box_b = textured_cuboid(
 		tex_coord_attr, mtl_id_attr, 2,
-		{ .width = 3.f,
-			.transform = tmat_util::translation<space::OBJECT>(0, -1.f, 0) });
+		{
+			.width = 3.f,
+			.transform = tmat_util::translation<space::OBJECT>(0, -1.f, 0),
+		});
 	sgnode* n1 = new sgnode(nullptr, box_b);
 
 	// out_mesh = csg.compute(cyl, box_b, carve::csg::CSG::B_MINUS_A, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
@@ -38,19 +42,23 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 
 	mesh_t* cone = textured_cone(
 		tex_coord_attr, mtl_id_attr, 1,
-		{ .radius = .5f,
+		{
+			.radius = .5f,
 			.height = 1.f,
-			.transform = tmat_util::translation<space::OBJECT>(0.f, 1.5f, 0) });
+			.transform = tmat_util::translation<space::OBJECT>(0.f, 1.5f, 0),
+		});
 	// out_mesh = csg.compute(out_mesh, cone, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	sgnode* n3 = new sgnode(nullptr, cone);
 	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, n2, n3);
 	n2->parent = n3->parent = n4;
 
-	mesh_t* tor = textured_torus(
-		tex_coord_attr, mtl_id_attr, 2,
-		{ .tube_radius = .5f,
-			.num_tube_steps = 8,
-			.transform = tmat_util::translation<space::OBJECT>(1.f, c::EPSILON, 0) });
+	mesh_t* tor = textured_torus(tex_coord_attr, mtl_id_attr, 2,
+		{
+			.tube_radius = .5f,
+			// .num_center_steps = 64,
+			// .num_tube_steps = 64,
+			.transform = tmat_util::translation<space::OBJECT>(1.f, c::EPSILON, 0),
+		});
 	// out_mesh = csg.compute(out_mesh, tor, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	tor_node = new sgnode(nullptr, tor);
 	sgnode* n6 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, n4, tor_node);
@@ -58,7 +66,9 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 
 	mesh_t* tor2 = textured_torus(
 		tex_coord_attr, mtl_id_attr, 1,
-		{ .transform = tmat_util::translation<space::OBJECT>(3.f, 0, 0) });
+		{
+			.transform = tmat_util::translation<space::OBJECT>(3.f, 0, 0),
+		});
 	// out_mesh = csg.compute(out_mesh, tor2, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	sgnode* n7 = new sgnode(nullptr, tor2);
 	sgnode* n8 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, n6, n7);
@@ -66,7 +76,9 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 
 	mesh_t* sphere = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 2,
-		{ .transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0) });
+		{
+			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0),
+		});
 	// out_mesh = csg.compute(out_mesh, sphere, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	sgnode* n9 = new sgnode(nullptr, sphere);
 	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, n8, n9);
@@ -74,11 +86,13 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 
 	mesh_t* sphere2 = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 1,
-		{ .transform = tmat_util::translation<space::OBJECT>(-1.5f, -1.f, 0) });
+		{
+			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
+		});
 	// out_mesh = csg.compute(out_mesh, sphere2, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
-	sgnode* nb = new sgnode(nullptr, sphere2);
-	sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, na, nb);
-	na->parent = nb->parent = sg;
+	sphere_node = new sgnode(nullptr, sphere2);
+	sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, na, sphere_node);
+	na->parent = sphere_node->parent = sg;
 
 	// sg->operation = carve::csg::CSG::OP::UNION;
 	// sg->recompute(csg);
@@ -216,8 +230,7 @@ int main(int argc, char** argv)
 	ic.set_menus(construct_app_menus());
 	c.add_layer(&ic);
 
-	const shaders& shaders =
-		shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag");
+	const shaders& shaders = shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag");
 
 	const point<space::WORLD> cam_pos(0, 0, 5);
 	const f32 ar = c.get_aspect_ratio();
@@ -299,6 +312,7 @@ int main(int argc, char** argv)
 		if (tdx != 0)
 		{
 			tor_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
+			// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
 			tesselate(sg->mesh, vtxs_for_mtl, ctx.tex_coord_attr, ctx.mtl_id_attr);
 			vaos_for_mtl.clear();
 			for (auto it = vtxs_for_mtl.begin(); it != vtxs_for_mtl.end(); ++it)
