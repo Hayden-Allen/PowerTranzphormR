@@ -31,6 +31,7 @@ public:
 	MGL_DCM(sgnode);
 	virtual ~sgnode()
 	{
+		// printf("DELETE %p\n", mesh);
 		delete mesh;
 	}
 public:
@@ -42,10 +43,9 @@ public:
 	{
 		return !left && !right;
 	}
-	template<typename FN>
-	void transform(carve::csg::CSG& scene, const FN& fn)
+	void transform(carve::csg::CSG& scene, const carve::math::Matrix& m)
 	{
-		transform_base(scene, fn);
+		transform_base(scene, m);
 		recompute(scene);
 	}
 	// recomputes the scene graph from this node up
@@ -58,23 +58,26 @@ public:
 			return;
 		}
 
+		// printf("RECOMPUTE %p\n", mesh);
 		delete mesh;
 		// children do not need to be recomputed, because any change to this mesh does not affect them
-		mesh = scene.compute(left->mesh, right->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
+		mesh = scene.compute(left->mesh, right->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
 		// parent needs to be recomputed now that this node has changed
 		if (parent)
 			parent->recompute(scene);
 	}
 private:
-	template<typename FN>
-	void transform_base(carve::csg::CSG& scene, const FN& fn)
+	void transform_base(carve::csg::CSG& scene, const carve::math::Matrix& m)
 	{
 		if (!is_leaf())
 		{
-			left->transform_base(scene, fn);
-			right->transform_base(scene, fn);
+			left->transform_base(scene, m);
+			right->transform_base(scene, m);
 		}
-		mesh->transform(fn);
+		mesh->transform([&](vertex_t::vector_t& v)
+			{
+				return m * v;
+			});
 	}
 };
 

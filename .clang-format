@@ -6,7 +6,7 @@ Language: Cpp
 Standard: Latest
 
 # align
-AlignAfterOpenBracket: BlockIndent
+AlignAfterOpenBracket: DontAlign
 AlignArrayOfStructures: Right
 AlignConsecutiveMacros: Consecutive
 AlignConsecutiveBitFields: Consecutive
