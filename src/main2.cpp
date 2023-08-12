@@ -87,6 +87,14 @@ static void make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, a
 	sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, &na, &nb);
 	na.parent = nb.parent = sg;
 
+	n7.transform(csg, [](vertex_t::vector_t& v)
+				 {
+					 return carve::math::Matrix::SCALE(.5, 1, 1) * v;
+				 });
+
+	sg->operation = carve::csg::CSG::OP::UNION;
+	sg->recompute(csg);
+
 	/*delete sphere;
 	delete sphere2;
 	delete tor;
@@ -174,28 +182,36 @@ const std::vector<imgui_menu> construct_app_menus()
 	imgui_menu_item file_new = {
 		"New Phonky Phorm",
 		[]()
-		{ std::cout << "MENU: NEW\n"; },
+		{
+			std::cout << "MENU: NEW\n";
+			},
 		"Ctrl+N",
 		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }
 	};
 	imgui_menu_item file_open = {
 		"Open Phonky Phorm",
 		[]()
-		{ std::cout << "MENU: OPEN\n"; },
+		{
+			std::cout << "MENU: OPEN\n";
+			},
 		"Ctrl+O",
 		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }
 	};
 	imgui_menu_item file_save = {
 		"Save Phonky Phorm",
 		[]()
-		{ std::cout << "MENU: SAVE\n"; },
+		{
+			std::cout << "MENU: SAVE\n";
+			},
 		"Ctrl+S",
 		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }
 	};
 	imgui_menu_item file_save_as = {
 		"Save Phonky Phorm As...",
 		[]()
-		{ std::cout << "MENU: SAVE AS\n"; },
+		{
+			std::cout << "MENU: SAVE AS\n";
+			},
 		"Ctrl+Shift+S",
 		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }
 	};

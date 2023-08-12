@@ -42,11 +42,21 @@ public:
 	{
 		return !left && !right;
 	}
+	template<typename FN>
+	void transform(carve::csg::CSG& scene, const FN& fn)
+	{
+		transform_base(scene, fn);
+		recompute(scene);
+	}
 	// recomputes the scene graph from this node up
 	void recompute(carve::csg::CSG& scene)
 	{
-		// leaf nodes do not have children and so do not perform any CSG operations
-		if (is_leaf()) return;
+		if (is_leaf())
+		{
+			if (parent)
+				parent->recompute(scene);
+			return;
+		}
 
 		delete mesh;
 		// children do not need to be recomputed, because any change to this mesh does not affect them
@@ -54,6 +64,17 @@ public:
 		// parent needs to be recomputed now that this node has changed
 		if (parent)
 			parent->recompute(scene);
+	}
+private:
+	template<typename FN>
+	void transform_base(carve::csg::CSG& scene, const FN& fn)
+	{
+		if (!is_leaf())
+		{
+			left->transform_base(scene, fn);
+			right->transform_base(scene, fn);
+		}
+		mesh->transform(fn);
 	}
 };
 
