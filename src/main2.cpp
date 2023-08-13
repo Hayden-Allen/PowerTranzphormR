@@ -3,120 +3,43 @@
 #include "preview_layer.h"
 #include "preview_window.h"
 
-const std::vector<imgui_menu> construct_app_menus()
-{
-	std::vector<imgui_menu> result;
-
-	imgui_menu file_menu;
-	file_menu.name = "File";
-	imgui_menu_item file_new = {
-		"New Phonky Phorm",
-		[]()
-		{
-			std::cout << "MENU: NEW\n";
-			},
-		"Ctrl+N",
-		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }
-	};
-	imgui_menu_item file_open = {
-		"Open Phonky Phorm",
-		[]()
-		{
-			std::cout << "MENU: OPEN\n";
-			},
-		"Ctrl+O",
-		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }
-	};
-	imgui_menu_item file_save = {
-		"Save Phonky Phorm",
-		[]()
-		{
-			std::cout << "MENU: SAVE\n";
-			},
-		"Ctrl+S",
-		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }
-	};
-	imgui_menu_item file_save_as = {
-		"Save Phonky Phorm As...",
-		[]()
-		{
-			std::cout << "MENU: SAVE AS\n";
-			},
-		"Ctrl+Shift+S",
-		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }
-	};
-	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
-	result.push_back(file_menu);
-
-	imgui_menu edit_menu;
-	edit_menu.name = "Edit";
-	imgui_menu_item edit_undo = {
-		"Undo Tranzphormation",
-		[]()
-		{
-			std::cout << "MENU: UNDO\n";
-			},
-		"Ctrl+Z",
-		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_Z }
-	};
-	imgui_menu_item edit_redo = {
-		"Redo Tranzphormation",
-		[]()
-		{
-			std::cout << "MENU: REDO\n";
-			},
-		"Ctrl+Y",
-		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_Y }
-	};
-	edit_menu.groups.push_back({ edit_undo, edit_redo });
-	result.push_back(edit_menu);
-
-	return result;
-}
-
 int main(int argc, char** argv)
 {
-	mgl::context c(1280, 720, "PowerTranzphormR", true);
-	c.set_clear_color(0, 0, 1);
-	imgui_layer il(c);
-	il.set_menus(construct_app_menus());
+	mgl::context c(1280, 720, "PowerTranzphormR",
+		{ .vsync = true,
+			.clear = { .b = 1.f } });
+
+	imgui_layer il(&c);
 	c.add_layer(&il);
-	preview_layer pl(c, 1280, 720);
-	pl.set_enabled(false);
-	pl.set_exit_preview_callback([&]()
+
+	const f32 ar = c.get_aspect_ratio();
+	camera cam({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
+	preview_layer pl(&c, cam);
+	pl.disable();
+	pl.set_disable_callback([&]()
 		{
-			c.set_pointer_locked(false);
-			pl.set_enabled(false);
-			il.set_enabled(true);
+			c.unlock_cursor();
+			il.enable();
+		});
+	pl.set_enable_callback([&]()
+		{
+			c.lock_cursor();
+			il.disable();
 		});
 	c.add_layer(&pl);
-	preview_window preview(c, pl.get_framebuffer());
-	preview.set_enter_preview_callback([&]()
-		{
-			c.set_pointer_locked(true);
-			il.set_enabled(false);
-			pl.set_enabled(true);
-		});
-	il.add_window(&preview);
 
-	constexpr u32 NUM_FPS_SAMPLES = 128;
-	f32 fps_samples[NUM_FPS_SAMPLES] = { 0.f };
-	s32 cur_sample = 0;
-	f32 avg_fps = 0.f;
+	preview_window preview(c, &pl);
+	il.add_window(&preview);
 
 	while (c.is_running())
 	{
 		c.begin_frame();
-		const f32 cur_fps = 1.f / c.time.delta;
-		avg_fps -= fps_samples[cur_sample] / NUM_FPS_SAMPLES;
-		fps_samples[cur_sample] = cur_fps;
-		avg_fps += fps_samples[cur_sample] / NUM_FPS_SAMPLES;
-		cur_sample = (cur_sample + 1) % NUM_FPS_SAMPLES;
-		std::string window_title = "PowerTranzphormR (" +
-								   std::to_string((u32)std::round(avg_fps)) +
-								   " FPS)";
-		glfwSetWindowTitle(c.window, window_title.c_str());
-		c.handle_layers_for_frame();
+
+		char buf[64] = { 0 };
+		sprintf_s(buf, "PowerTranzphormR (%u FPS)", (u32)std::round(c.avg_fps));
+		c.set_title(buf);
+
+		c.update_layers();
 		c.end_frame();
 	}
 

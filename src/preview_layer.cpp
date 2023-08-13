@@ -4,16 +4,11 @@
 using namespace mgl;
 using namespace hats;
 
-preview_layer::preview_layer(const mgl::context& mgl_context, int fb_width, int fb_height) :
-	mgl::layer(),
+preview_layer::preview_layer(const mgl::context* const mgl_context, const camera& cam) :
 	m_mgl_context(mgl_context),
 	m_shaders(shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag")),
-	m_cam_pos(0, 0, 5),
-	m_fb_width(fb_width),
-	m_fb_height(fb_height),
-	m_ar((f32)m_fb_width / (f32)m_fb_height),
-	m_cam(m_cam_pos, 0, 0, 108 / m_ar, m_ar, 0.1f, 1000.0f, 5.0f),
-	m_fb(m_fb_width, m_fb_height)
+	m_fb(mgl_context->get_width(), mgl_context->get_height()),
+	m_cam(cam)
 {
 	m_compute_csg(m_mtls, m_vtxs_for_mtl);
 
@@ -38,16 +33,19 @@ preview_layer::preview_layer(const mgl::context& mgl_context, int fb_width, int 
 
 preview_layer::~preview_layer()
 {
-	//
+	delete m_sg;
 }
+
+
 
 void preview_layer::on_frame(const f32 dt)
 {
-	const f32 tdx = 1.f * m_keys[8] - m_keys[7];
-	const f32 tdy = 1.f * m_keys[9] - m_keys[10];
+	const f32 tdx = 1.f * get_key(GLFW_KEY_RIGHT) - get_key(GLFW_KEY_LEFT);
+	const f32 tdy = 1.f * get_key(GLFW_KEY_UP) - get_key(GLFW_KEY_DOWN);
 	if (tdx != 0 || tdy != 0)
 	{
-		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(tdx * m_mgl_context.time.delta, tdy * m_mgl_context.time.delta, 0));
+		const f32 dt = m_mgl_context->time.delta;
+		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(tdx * dt, tdy * dt, 0));
 		// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
 		m_tesselate(m_sg->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
 		m_vaos_for_mtl.clear();
@@ -58,17 +56,20 @@ void preview_layer::on_frame(const f32 dt)
 		}
 	}
 
-	const direction<space::CAMERA> move_dir(m_keys[3] - m_keys[1], m_keys[4] - m_keys[6], m_keys[2] - m_keys[0]);
-	m_cam.move(m_mgl_context.time.delta, move_dir * (m_keys[5] ? .2f : 1.f), m_mx, m_my);
-	m_mx = 0.0f;
-	m_my = 0.0f;
+	const direction<space::CAMERA> move_dir(
+		get_key(GLFW_KEY_D) - get_key(GLFW_KEY_A),
+		get_key(GLFW_KEY_SPACE) - get_key(GLFW_KEY_LEFT_CONTROL),
+		get_key(GLFW_KEY_S) - get_key(GLFW_KEY_W));
+	const auto& mouse_delta = get_mouse().delta;
+	m_cam.move(dt, move_dir * (get_key(GLFW_KEY_LEFT_SHIFT) ? .2f : 1.f), mouse_delta.x, mouse_delta.y);
 
-	const mat<space::OBJECT, space::CLIP>& mvp = m_cam.get_view_proj() * m_obj;
+
+	const tmat<space::OBJECT, space::WORLD> obj;
+	const mat<space::OBJECT, space::CLIP>& mvp = m_cam.get_view_proj() * obj;
 
 	m_fb.bind();
-	glViewport(0, 0, m_fb.get_width(), m_fb.get_height());
 	glEnable(GL_DEPTH_TEST);
-	m_mgl_context.clear();
+	m_mgl_context->clear();
 	for (auto it = m_vaos_for_mtl.begin(); it != m_vaos_for_mtl.end(); ++it)
 	{
 		const texture2d_rgb_u8& tex = m_texs_for_mtl[it->first];
@@ -78,74 +79,18 @@ void preview_layer::on_frame(const f32 dt)
 		m_shaders.uniform_1i("u_tex", 0);
 		m_shaders.uniform_3f("u_col", mat.r, mat.g, mat.b);
 		m_shaders.uniform_mat4("u_mvp", mvp.e);
-		m_mgl_context.draw(it->second, m_shaders);
+		m_mgl_context->draw(it->second, m_shaders);
 	}
 	m_fb.unbind();
 }
 
-void preview_layer::on_window_resize(const s32 width, const s32 height)
-{
-	//
-}
-
-void preview_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
-{
-	//
-}
-
-void preview_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
-{
-	m_mx = dx;
-	m_my = dy;
-}
-
-void preview_layer::on_scroll(const f32 x, const f32 y)
-{
-	//
-}
-
 void preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
-	constexpr u32 NUM_KEYS = 11;
-
 	if (key == GLFW_KEY_ESCAPE)
-	{
-		m_mx = 0.0f;
-		m_my = 0.0f;
-		for (int i = 0; i < NUM_KEYS; ++i)
-		{
-			m_keys[i] = false;
-		}
-		m_exit_preview_callback();
-		return;
-	}
-
-	constexpr static u32 keycodes[NUM_KEYS] = { GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_UP, GLFW_KEY_DOWN };
-	for (int i = 0; i < NUM_KEYS; ++i)
-	{
-		if (key == keycodes[i])
-		{
-			if (action == GLFW_PRESS)
-			{
-				m_keys[i] = true;
-			}
-			else if (action == GLFW_RELEASE)
-			{
-				m_keys[i] = false;
-			}
-		}
-	}
+		disable();
 }
 
-void preview_layer::set_exit_preview_callback(const std::function<void()>& callback)
-{
-	m_exit_preview_callback = callback;
-}
 
-const framebuffer_u8& preview_layer::get_framebuffer()
-{
-	return m_fb;
-}
 
 void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, mesh_t** out_mesh, std::unordered_map<GLuint, material_t>& out_mtls)
 {
@@ -153,7 +98,6 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 	out_mtls.insert(std::make_pair(1, mtl1));
 	material_t mtl2;
 	out_mtls.insert(std::make_pair(2, mtl2));
-
 
 	mesh_t* cyl = textured_cylinder(
 		tex_coord_attr, mtl_id_attr, 1,

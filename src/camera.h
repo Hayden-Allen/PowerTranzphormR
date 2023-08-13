@@ -6,13 +6,19 @@ using namespace hats;
 class camera
 {
 public:
+	camera() :
+		m_pos(0, 0, 0),
+		m_up(direction_util::j_hat<space::WORLD>()),
+		m_angle_x(0.f),
+		m_angle_y(0.f),
+		m_speed(1.f),
+		m_proj(pmat_util::projection(45, 1, .01, 1000)),
+		m_view(tmat_util::translation<space::WORLD, space::CAMERA>(m_pos)),
+		m_vp(m_proj * m_view)
+	{}
 	camera(const point<space::WORLD>& pos, const f32 angle_x, const f32 angle_y, const f32 fov_y, const f32 aspect, const f32 near, const f32 far, const f32 speed, const direction<space::WORLD>& up = direction_util::j_hat<space::WORLD>()) :
 		m_pos(pos),
 		m_up(up),
-		/*m_fov_y(fov_y),
-		m_aspect(aspect),
-		m_near(near),
-		m_far(far),*/
 		m_angle_x(angle_x),
 		m_angle_y(angle_y),
 		m_speed(speed),
@@ -63,7 +69,6 @@ public:
 private:
 	point<space::WORLD> m_pos;
 	direction<space::WORLD> m_up;
-	// f32 m_fov_y, m_aspect, m_near, m_far, m_speed;
 	f32 m_angle_x, m_angle_y, m_speed;
 	pmat<space::CAMERA, space::CLIP> m_proj;
 	tmat<space::WORLD, space::CAMERA> m_view;

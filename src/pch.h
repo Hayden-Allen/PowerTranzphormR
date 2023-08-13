@@ -33,6 +33,7 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "log.h"
 
 template<typename T>
 static int sign(const T t)

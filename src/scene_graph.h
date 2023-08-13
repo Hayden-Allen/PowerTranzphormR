@@ -4,7 +4,6 @@
 
 struct sgnode
 {
-	friend class scene_graph;
 public:
 	sgnode* parent;
 	std::vector<sgnode*> children;
@@ -29,7 +28,8 @@ public:
 	MGL_DCM(sgnode);
 	virtual ~sgnode()
 	{
-		// printf("DELETE %p\n", mesh);
+		for (sgnode* child : children)
+			delete child;
 		delete mesh;
 	}
 public:
@@ -60,7 +60,11 @@ public:
 		// children do not need to be recomputed, because any change to this mesh does not affect them
 		mesh = scene.compute(children[0]->mesh, children[1]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
 		for (s32 i = 2; i < children.size(); i++)
-			mesh = scene.compute(mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+		{
+			mesh_t* old_mesh = mesh;
+			mesh = scene.compute(old_mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+			delete old_mesh;
+		}
 		// parent needs to be recomputed now that this node has changed
 		if (parent)
 			parent->recompute(scene);
@@ -70,27 +74,10 @@ private:
 	{
 		for (sgnode* child : children)
 			child->transform_base(scene, m);
+		// HATODO seems to be a memory leak
 		mesh->transform([&](vertex_t::vector_t& v)
 			{
 				return m * v;
 			});
 	}
-};
-
-class scene_graph
-{
-public:
-	scene_graph()
-	{
-		std::vector<face_t*> faces;
-		m_root = new sgnode(nullptr, new mesh_t(faces));
-	}
-	MGL_DCM(scene_graph);
-	virtual ~scene_graph()
-	{
-		delete m_root;
-	}
-private:
-	sgnode* m_root;
-	carve::csg::CSG m_scene;
 };

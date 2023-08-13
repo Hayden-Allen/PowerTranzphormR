@@ -356,6 +356,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ASan|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\preview_layer.cpp" />
+    <ClCompile Include="src\preview_window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />

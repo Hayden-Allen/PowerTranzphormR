@@ -1,9 +1,11 @@
 #include "pch.h"
 #include "imgui_layer.h"
 
-imgui_layer::imgui_layer(const mgl::context& mgl_context) :
-	mgl::layer(), m_mgl_context(mgl_context)
+imgui_layer::imgui_layer(const mgl::context* const mgl_context) :
+	m_mgl_context(mgl_context)
 {
+	init_menus();
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -19,7 +21,7 @@ imgui_layer::imgui_layer(const mgl::context& mgl_context) :
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 	io.Fonts->AddFontFromFileTTF("res/fonts/Jost-Regular.ttf", 20);
-	ImGui_ImplGlfw_InitForOpenGL(m_mgl_context.window, false);
+	ImGui_ImplGlfw_InitForOpenGL(m_mgl_context->window, false);
 	ImGui_ImplOpenGL3_Init("#version 430 core");
 
 	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/ImGui/ImGuiLayer.cpp
@@ -50,6 +52,8 @@ imgui_layer::~imgui_layer()
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
+
+
 
 void imgui_layer::on_frame(const f32 dt)
 {
@@ -88,8 +92,8 @@ void imgui_layer::on_frame(const f32 dt)
 	ImGui::Render();
 
 	glDisable(GL_DEPTH_TEST);
-	m_mgl_context.clear();
-	glViewport(0, 0, m_mgl_context.width, m_mgl_context.height);
+	m_mgl_context->clear();
+	m_mgl_context->reset_viewport();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
@@ -98,6 +102,26 @@ void imgui_layer::on_frame(const f32 dt)
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
 	}
+}
+
+void imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
+{
+	ImGui_ImplGlfw_MouseButtonCallback(m_mgl_context->window, button, action, mods);
+}
+
+void imgui_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
+{
+	ImGui_ImplGlfw_CursorPosCallback(m_mgl_context->window, x, y);
+}
+
+void imgui_layer::on_scroll(const f32 x, const f32 y)
+{
+	ImGui_ImplGlfw_ScrollCallback(m_mgl_context->window, x, y);
+}
+
+void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
+{
+	ImGui_ImplGlfw_KeyCallback(m_mgl_context->window, key, scancode, action, mods);
 }
 
 void imgui_layer::add_window(imgui_window* window)
@@ -118,35 +142,7 @@ void imgui_layer::remove_window(imgui_window* window)
 	}
 }
 
-void imgui_layer::set_menus(const std::vector<imgui_menu>& menus)
-{
-	m_menus = menus;
-}
 
-void imgui_layer::on_window_resize(const s32 width, const s32 height)
-{
-	//
-}
-
-void imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
-{
-	ImGui_ImplGlfw_MouseButtonCallback(m_mgl_context.window, button, action, mods);
-}
-
-void imgui_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
-{
-	ImGui_ImplGlfw_CursorPosCallback(m_mgl_context.window, x, y);
-}
-
-void imgui_layer::on_scroll(const f32 x, const f32 y)
-{
-	ImGui_ImplGlfw_ScrollCallback(m_mgl_context.window, x, y);
-}
-
-void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
-{
-	ImGui_ImplGlfw_KeyCallback(m_mgl_context.window, key, scancode, action, mods);
-}
 
 void imgui_layer::draw_menus()
 {
@@ -182,4 +178,71 @@ void imgui_layer::draw_menu(const imgui_menu& menu)
 		}
 		ImGui::EndMenu();
 	}
+}
+
+void imgui_layer::init_menus()
+{
+	imgui_menu file_menu;
+	file_menu.name = "File";
+	imgui_menu_item file_new = {
+		"New Phonky Phorm",
+		[]()
+		{
+			std::cout << "MENU: NEW\n";
+			},
+		"Ctrl+N",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }
+	};
+	imgui_menu_item file_open = {
+		"Open Phonky Phorm",
+		[]()
+		{
+			std::cout << "MENU: OPEN\n";
+			},
+		"Ctrl+O",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }
+	};
+	imgui_menu_item file_save = {
+		"Save Phonky Phorm",
+		[]()
+		{
+			std::cout << "MENU: SAVE\n";
+			},
+		"Ctrl+S",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }
+	};
+	imgui_menu_item file_save_as = {
+		"Save Phonky Phorm As...",
+		[]()
+		{
+			std::cout << "MENU: SAVE AS\n";
+			},
+		"Ctrl+Shift+S",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }
+	};
+	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
+	m_menus.push_back(file_menu);
+
+	imgui_menu edit_menu;
+	edit_menu.name = "Edit";
+	imgui_menu_item edit_undo = {
+		"Undo Tranzphormation",
+		[]()
+		{
+			std::cout << "MENU: UNDO\n";
+			},
+		"Ctrl+Z",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_Z }
+	};
+	imgui_menu_item edit_redo = {
+		"Redo Tranzphormation",
+		[]()
+		{
+			std::cout << "MENU: REDO\n";
+			},
+		"Ctrl+Y",
+		{ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_Y }
+	};
+	edit_menu.groups.push_back({ edit_undo, edit_redo });
+	m_menus.push_back(edit_menu);
 }
