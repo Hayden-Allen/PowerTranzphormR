@@ -18,16 +18,10 @@ preview_layer::preview_layer(const mgl::context* const mgl_context, const camera
 		m_vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
 
-	stbi_set_flip_vertically_on_load(true);
 	for (GLuint i = 1; i <= 2; ++i)
 	{
-		int tex_w = -1, tex_h = -1, tex_c = -1;
-		stbi_uc* tex_data = stbi_load(
-			(std::string("res/") + std::to_string(i) + ".png").c_str(), &tex_w,
-			&tex_h, &tex_c, 3);
-		texture2d_rgb_u8 tex(GL_RGB, tex_w, tex_h, tex_data);
-		stbi_image_free(tex_data);
-		m_texs_for_mtl.emplace(i, std::move(tex));
+		const std::string& fp = std::string("res/") + std::to_string(i) + ".png";
+		m_texs_for_mtl.emplace(i, std::move(load_texture_rgb_u8(fp.c_str())));
 	}
 }
 
@@ -155,8 +149,15 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0),
 		});
 	sgnode* n9 = new sgnode(nullptr, sphere);
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n6, n7, n9 });
-	n6->parent = n7->parent = n9->parent = na;
+
+	const auto& hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
+	mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
+		{
+			.transform = tmat_util::translation<space::OBJECT>(0, -2.f, 3.f),
+		});
+	sgnode* nb = new sgnode(nullptr, heightmap);
+	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n6, n7, n9, nb });
+	nb->parent = n6->parent = n7->parent = n9->parent = na;
 
 	mesh_t* sphere2 = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -164,6 +165,7 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
 		});
 	m_sphere_node = new sgnode(nullptr, sphere2);
+
 	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
 	na->parent = m_sphere_node->parent = m_sg;
 

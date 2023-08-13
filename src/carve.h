@@ -39,31 +39,36 @@ static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
 
 struct cuboid_options
 {
-	float width = 2.f, height = 2.f, depth = 2.f;
+	f32 width = 2.f, height = 2.f, depth = 2.f;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct cylinder_options
 {
-	float top_radius = 1.f, bottom_radius = 1.f, height = 2.f;
-	uint32_t num_steps = 16;
+	f32 top_radius = 1.f, bottom_radius = 1.f, height = 2.f;
+	u32 num_steps = 16;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct cone_options
 {
-	float radius = 2.f, height = 2.f;
-	uint32_t num_steps = 16;
+	f32 radius = 2.f, height = 2.f;
+	u32 num_steps = 16;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct torus_options
 {
-	float center_radius = 1.f, tube_radius = .5f;
-	uint32_t num_center_steps = 8, num_tube_steps = 8;
+	f32 center_radius = 1.f, tube_radius = .5f;
+	u32 num_center_steps = 8, num_tube_steps = 8;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct ellipsoid_options
 {
-	float radius_x = 1.f, radius_y = 1.f, radius_z = 1.f;
-	uint32_t num_horizontal_steps = 12, num_vertical_steps = 6;
+	f32 radius_x = 1.f, radius_y = 1.f, radius_z = 1.f;
+	u32 num_horizontal_steps = 12, num_vertical_steps = 6;
+	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
+};
+struct heightmap_options
+{
+	f32 width = 1.f, max_height = 1.f, depth = 1.f;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 
@@ -72,3 +77,4 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cone_options& options = {});
 mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const torus_options& options = {});
 mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const ellipsoid_options& options = {});
+mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const mgl::retained_texture2d_rgb_u8& map, const heightmap_options& options = {});

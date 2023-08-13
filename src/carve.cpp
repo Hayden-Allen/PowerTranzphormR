@@ -292,3 +292,51 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 
 	return new mesh_t(faces);
 }
+
+mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const mgl::retained_texture2d_rgb_u8& map, const heightmap_options& options)
+{
+	const u32 mw = map.get_width(), mh = map.get_height();
+	const f32 x_step = options.width / (mw - 1);
+	const f32 z_step = options.depth / (mh - 1);
+	std::vector<vertex_t*> vertices;
+	vertices.reserve(mw * mh);
+	for (u32 iz = 0; iz < mh; iz++)
+	{
+		const f32 z = iz * z_step;
+		for (u32 ix = 0; ix < mw; ix++)
+		{
+			const f32 x = ix * x_step;
+			// only use red component
+			const u8 map_height = map.get_pixel_component(ix, mh - iz - 1, 0);
+			const f32 y = 1.f - 1.f * map_height / MAX_VALUE(map_height);
+			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
+		}
+	}
+
+	std::vector<face_t*> faces;
+	for (u32 iz = 0; iz < mh - 1; iz++)
+	{
+		for (u32 ix = 0; ix < mw - 1; ix++)
+		{
+			// square with current vertex (ix, iz) as bottom left
+			const u32 bl = iz * mw + ix, br = bl + 1;
+			const u32 tl = (iz + 1) * mw + ix, tr = tl + 1;
+			// bottom right triangle
+			face_t* face = new face_t(vertices[bl], vertices[tr], vertices[br]);
+			tex_coord_attr.setAttribute(face, 0, tex_coord_t(1.f * ix / mw, 1.f - 1.f * iz / mh));
+			tex_coord_attr.setAttribute(face, 1, tex_coord_t(1.f * (ix + 1) / mw, 1.f - 1.f * (iz + 1) / mh));
+			tex_coord_attr.setAttribute(face, 2, tex_coord_t(1.f * (ix + 1) / mw, 1.f - 1.f * iz / mh));
+			mtl_id_attr.setAttribute(face, mtl_id);
+			faces.push_back(face);
+			// top left triangle
+			face = new face_t(vertices[bl], vertices[tl], vertices[tr]);
+			tex_coord_attr.setAttribute(face, 0, tex_coord_t(1.f * ix / mw, 1.f - 1.f * iz / mh));
+			tex_coord_attr.setAttribute(face, 1, tex_coord_t(1.f * ix / mw, 1.f - 1.f * (iz + 1) / mh));
+			tex_coord_attr.setAttribute(face, 2, tex_coord_t(1.f * (ix + 1) / mw, 1.f - 1.f * (iz + 1) / mh));
+			mtl_id_attr.setAttribute(face, mtl_id);
+			faces.push_back(face);
+		}
+	}
+
+	return new mesh_t(faces);
+}
