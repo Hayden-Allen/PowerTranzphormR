@@ -59,7 +59,7 @@ void preview_layer::on_frame(const f32 dt)
 	}
 
 	const direction<space::CAMERA> move_dir(m_keys[3] - m_keys[1], m_keys[4] - m_keys[6], m_keys[2] - m_keys[0]);
-	m_cam.move(m_mgl_context.time.delta, move_dir * (m_keys[5] ? 2.f : 1.f), m_mx, m_my);
+	m_cam.move(m_mgl_context.time.delta, move_dir * (m_keys[5] ? .2f : 1.f), m_mx, m_my);
 	m_mx = 0.0f;
 	m_my = 0.0f;
 
@@ -173,8 +173,7 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		});
 	sgnode* n1 = new sgnode(nullptr, box_b);
 
-	// out_mesh = csg.compute(cyl, box_b, carve::csg::CSG::B_MINUS_A, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
-	sgnode* n2 = new sgnode(csg, nullptr, carve::csg::CSG::B_MINUS_A, n0, n1);
+	sgnode* n2 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n1, n0 });
 	n0->parent = n1->parent = n2;
 
 	mesh_t* cone = textured_cone(
@@ -184,9 +183,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			.height = 1.f,
 			.transform = tmat_util::translation<space::OBJECT>(0.f, 1.5f, 0),
 		});
-	// out_mesh = csg.compute(out_mesh, cone, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	sgnode* n3 = new sgnode(nullptr, cone);
-	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, n2, n3);
+	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n2, n3 });
 	n2->parent = n3->parent = n4;
 
 	mesh_t* tor = textured_torus(tex_coord_attr, mtl_id_attr, 2,
@@ -196,9 +194,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			// .num_tube_steps = 64,
 			.transform = tmat_util::translation<space::OBJECT>(1.f, c::EPSILON, 0),
 		});
-	// out_mesh = csg.compute(out_mesh, tor, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	m_tor_node = new sgnode(nullptr, tor);
-	sgnode* n6 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, n4, m_tor_node);
+	sgnode* n6 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n4, m_tor_node });
 	n4->parent = m_tor_node->parent = n6;
 
 	mesh_t* tor2 = textured_torus(
@@ -206,42 +203,26 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		{
 			.transform = tmat_util::translation<space::OBJECT>(3.f, 0, 0),
 		});
-	// out_mesh = csg.compute(out_mesh, tor2, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	sgnode* n7 = new sgnode(nullptr, tor2);
-	sgnode* n8 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, n6, n7);
-	n6->parent = n7->parent = n8;
 
 	mesh_t* sphere = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 2,
 		{
 			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0),
 		});
-	// out_mesh = csg.compute(out_mesh, sphere, carve::csg::CSG::UNION, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	sgnode* n9 = new sgnode(nullptr, sphere);
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, n8, n9);
-	n8->parent = n9->parent = na;
+	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n6, n7, n9 });
+	n6->parent = n7->parent = n9->parent = na;
 
 	mesh_t* sphere2 = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 1,
 		{
 			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
 		});
-	// out_mesh = csg.compute(out_mesh, sphere2, carve::csg::CSG::A_MINUS_B, nullptr, carve::csg::CSG::CLASSIFY_EDGE);
 	m_sphere_node = new sgnode(nullptr, sphere2);
-	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, na, m_sphere_node);
+	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
 	na->parent = m_sphere_node->parent = m_sg;
 
-	// sg->operation = carve::csg::CSG::OP::UNION;
-	// sg->recompute(csg);
-
-	/*delete sphere;
-	delete sphere2;
-	delete tor;
-	delete tor2;
-	delete cone;
-	delete cyl;
-	delete box_b;
-	delete box_a;*/
 	*out_mesh = m_sg->mesh;
 }
 
