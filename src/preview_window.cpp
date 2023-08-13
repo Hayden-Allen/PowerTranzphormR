@@ -1,5 +1,7 @@
+#include "preview_window.h"
 template<typename FB>
-preview_window<FB>::preview_window(const FB& framebuffer) :
+preview_window<FB>::preview_window(const mgl::context &mgl_context, const FB& framebuffer) :
+	m_mgl_context(mgl_context),
 	m_fb(framebuffer)
 {
 	title = "Preview";
@@ -8,6 +10,12 @@ preview_window<FB>::preview_window(const FB& framebuffer) :
 template<typename FB>
 preview_window<FB>::~preview_window()
 {}
+
+template<typename FB>
+void preview_window<FB>::set_enter_preview_callback(const std::function<void()>& callback)
+{
+	m_enter_preview_callback = callback;
+}
 
 template<typename FB>
 void preview_window<FB>::handle_frame()
@@ -20,4 +28,9 @@ void preview_window<FB>::handle_frame()
 	f32 ox = (win_w - fb_w * r) * 0.5f, oy = (win_h - fb_h * r) * 0.5f;
 	ImGui::SetCursorPos(ImVec2(ox + win_min.x, oy + win_min.y));
 	ImGui::Image(m_fb.get_imgui_color_id(), ImVec2(fb_w * r, fb_h * r), ImVec2(0, 1), ImVec2(1, 0));
+	if (ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
+	{
+		ImGui_ImplGlfw_MouseButtonCallback(m_mgl_context.window, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
+		m_enter_preview_callback();
+	}
 }

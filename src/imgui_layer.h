@@ -3,11 +3,11 @@
 #include "imgui_menu.h"
 #include "imgui_window.h"
 
-class imgui_context : public mgl::layer
+class imgui_layer : public mgl::layer
 {
 public:
-	imgui_context(const mgl::context& mgl_context);
-	virtual ~imgui_context();
+	imgui_layer(const mgl::context& mgl_context);
+	virtual ~imgui_layer();
 public:
 	virtual void on_frame(const f32 dt) override;
 	virtual void on_window_resize(const s32 width, const s32 height) override;
@@ -19,10 +19,11 @@ public:
 	void remove_window(imgui_window* window);
 	void set_menus(const std::vector<imgui_menu>& menus);
 private:
+	void draw_menus();
+	void draw_menu(const imgui_menu& menu);
+private:
 	const mgl::context& m_mgl_context;
 	std::vector<imgui_window*> m_windows;
 	std::vector<imgui_menu> m_menus;
-private:
-	void draw_menus();
-	void draw_menu(const imgui_menu& menu);
+	std::function<void()> m_exit_callback;
 };

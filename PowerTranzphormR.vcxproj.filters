@@ -48,13 +48,16 @@
     <ClCompile Include="lib\imgui\backends\imgui_impl_glfw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui_context.cpp">
+    <ClCompile Include="src\imgui_layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\carve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\preview_layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,7 +77,7 @@
     <ClInclude Include="src\glu_tess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui_context.h">
+    <ClInclude Include="src\imgui_layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\imgui_window.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\scene_graph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\preview_layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
