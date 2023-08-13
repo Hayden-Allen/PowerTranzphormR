@@ -254,8 +254,7 @@ void preview_layer::m_tesselate(mesh_t* in_scene, std::unordered_map<GLuint, std
 	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
 	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
 	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
-	for (mesh_t::face_iter i = in_scene->faceBegin(); i != in_scene->faceEnd();
-		 ++i)
+	for (mesh_t::face_iter i = in_scene->faceBegin(); i != in_scene->faceEnd(); ++i)
 	{
 		mesh_t::face_t* f = *i;
 		GLuint mtl_id = mtl_id_attr.getAttribute(f, 0);

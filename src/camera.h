@@ -32,10 +32,13 @@ public:
 		}
 		m_angle_y = clean_angle(m_angle_y);
 
-		// make lateral movement relative to camera's y-axis angle
-		// this means that wasd always move in the xz-plane and space/shift always move on the y-axis
-		vec<space::WORLD> wamount = amount.transform_copy(tmat_util::rotation_y<space::CAMERA, space::WORLD>(-m_angle_y));
-		m_pos += wamount * m_speed * dt;
+		// WASD move relative to camera
+		const vec<space::CAMERA> lat_amount(amount.x, 0, amount.z);
+		const vec<space::WORLD> rel_amount = lat_amount.transform_copy(m_view.invert_copy());
+		// space/shift always move along world y-axis
+		const vec<space::WORLD> abs_amount = vec<space::WORLD>(0, amount.y, 0);
+		// combine relative and absolute movement to get total vector
+		m_pos += (rel_amount + abs_amount) * m_speed * dt;
 		m_view = tmat_util::rotation_x<space::CAMERA>(m_angle_x) *
 				 tmat_util::rotation_y<space::CAMERA>(m_angle_y) *
 				 tmat_util::translation<space::WORLD, space::CAMERA>(m_pos);
