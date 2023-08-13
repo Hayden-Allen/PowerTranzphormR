@@ -44,7 +44,7 @@ preview_layer::~preview_layer()
 
 void preview_layer::on_frame(const f32 dt)
 {
-	const direction<space::CAMERA> move_dir(m_keys[3] - m_keys[1], 0, m_keys[2] - m_keys[0]);
+	const direction<space::CAMERA> move_dir(m_keys[3] - m_keys[1], m_keys[4] - m_keys[5], m_keys[2] - m_keys[0]);
 	m_cam.move(m_mgl_context.time.delta, move_dir * (m_keys[6] ? 2.f : 1.f), m_mx, m_my);
 	m_mx = 0.0f;
 	m_my = 0.0f;
@@ -210,10 +210,7 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, &na, &nb);
 	na.parent = nb.parent = m_sg;
 
-	n7.transform(csg, [](vertex_t::vector_t& v)
-				 {
-					 return carve::math::Matrix::SCALE(.5, 1, 1) * v;
-				 });
+	n7.transform(csg, carve::math::Matrix::SCALE(.5, 1, 1));
 
 	m_sg->operation = carve::csg::CSG::OP::UNION;
 	m_sg->recompute(csg);
