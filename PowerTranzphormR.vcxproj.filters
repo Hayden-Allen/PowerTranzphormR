@@ -93,6 +93,8 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\preview_layer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
