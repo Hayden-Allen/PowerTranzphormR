@@ -58,7 +58,6 @@ public:
 			return;
 		}
 
-		// printf("RECOMPUTE %p\n", mesh);
 		delete mesh;
 		// children do not need to be recomputed, because any change to this mesh does not affect them
 		mesh = scene.compute(left->mesh, right->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);

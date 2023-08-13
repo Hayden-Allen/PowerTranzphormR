@@ -17,7 +17,7 @@ public:
 	virtual void on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy) override;
 	virtual void on_scroll(const f32 x, const f32 y) override;
 	virtual void on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods) override;
-	void set_exit_preview_callback(const std::function<void()> &callback);
+	void set_exit_preview_callback(const std::function<void()>& callback);
 	const mgl::framebuffer_u8& get_framebuffer();
 private:
 	void m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, mesh_t** out_mesh, std::unordered_map<GLuint, material_t>& out_mtls);
@@ -26,7 +26,7 @@ private:
 private:
 	const mgl::context& m_mgl_context;
 	u32 m_fb_width = 0, m_fb_height = 0;
-	sgnode* m_sg = nullptr;
+	sgnode *m_sg = nullptr, *m_sphere_node = nullptr, *m_tor_node = nullptr;
 	mgl::shaders m_shaders;
 	const point<space::WORLD> m_cam_pos;
 	f32 m_ar = 0.0f;
@@ -40,4 +40,10 @@ private:
 	mgl::framebuffer_u8 m_fb;
 	bool m_keys[11] = { false };
 	std::function<void()> m_exit_preview_callback;
+	struct
+	{
+		carve::csg::CSG csg;
+		attr_tex_coord_t tex_coord_attr;
+		attr_material_t mtl_id_attr;
+	} m_ctx;
 };

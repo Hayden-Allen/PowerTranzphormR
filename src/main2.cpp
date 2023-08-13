@@ -84,19 +84,19 @@ int main(int argc, char** argv)
 	preview_layer pl(c, 1280, 720);
 	pl.set_enabled(false);
 	pl.set_exit_preview_callback([&]()
-								 {
-									 c.set_pointer_locked(false);
-									 pl.set_enabled(false);
-									 il.set_enabled(true);
-								 });
+		{
+			c.set_pointer_locked(false);
+			pl.set_enabled(false);
+			il.set_enabled(true);
+		});
 	c.add_layer(&pl);
 	preview_window preview(c, pl.get_framebuffer());
 	preview.set_enter_preview_callback([&]()
-									   {
-										   c.set_pointer_locked(true);
-										   il.set_enabled(false);
-										   pl.set_enabled(true);
-									   });
+		{
+			c.set_pointer_locked(true);
+			il.set_enabled(false);
+			pl.set_enabled(true);
+		});
 	il.add_window(&preview);
 
 	constexpr u32 NUM_FPS_SAMPLES = 128;
