@@ -32,7 +32,9 @@ public:
 		}
 		m_angle_y = clean_angle(m_angle_y);
 
-		vec<space::WORLD> wamount = amount.transform_copy(m_view.invert_copy());
+		// make lateral movement relative to camera's y-axis angle
+		// this means that wasd always move in the xz-plane and space/shift always move on the y-axis
+		vec<space::WORLD> wamount = amount.transform_copy(tmat_util::rotation_y<space::CAMERA, space::WORLD>(-m_angle_y));
 		m_pos += wamount * m_speed * dt;
 		m_view = tmat_util::rotation_x<space::CAMERA>(m_angle_x) *
 				 tmat_util::rotation_y<space::CAMERA>(m_angle_y) *

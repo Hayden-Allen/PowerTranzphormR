@@ -58,7 +58,6 @@ struct torus_options
 {
 	float center_radius = 1.f, tube_radius = .5f;
 	uint32_t num_center_steps = 8, num_tube_steps = 8;
-	// carve::math::Matrix transform = carve::math::Matrix::IDENT();
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct ellipsoid_options

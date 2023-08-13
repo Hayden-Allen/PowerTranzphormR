@@ -76,6 +76,7 @@ const std::vector<imgui_menu> construct_app_menus()
 
 int main(int argc, char** argv)
 {
+	LOG_LEVEL(warn);
 	mgl::context c(1280, 720, "PowerTranzphormR", true);
 	c.set_clear_color(0, 0, 1);
 	imgui_layer il(c);

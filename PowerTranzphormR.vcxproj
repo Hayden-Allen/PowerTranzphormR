@@ -131,7 +131,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -153,7 +153,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -176,7 +176,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -203,7 +203,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -226,7 +226,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -250,7 +250,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -365,6 +365,7 @@
     <ClInclude Include="src\imgui_layer.h" />
     <ClInclude Include="src\imgui_menu.h" />
     <ClInclude Include="src\imgui_window.h" />
+    <ClInclude Include="src\log.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\preview_layer.h" />
     <ClInclude Include="src\preview_window.h" />
