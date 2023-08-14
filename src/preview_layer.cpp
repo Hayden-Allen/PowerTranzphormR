@@ -6,7 +6,7 @@ using namespace hats;
 
 preview_layer::preview_layer(const mgl::context* const mgl_context, const camera& cam) :
 	m_mgl_context(mgl_context),
-	m_shaders(shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag")),
+	// m_shaders(shaders::from_files("src/glsl/csg.vert", "src/glsl/csg.frag")),
 	m_fb(mgl_context->get_width(), mgl_context->get_height()),
 	m_cam(cam)
 {
@@ -18,16 +18,36 @@ preview_layer::preview_layer(const mgl::context* const mgl_context, const camera
 		m_vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
 
+	shaders* basic = new shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	// shaders* heightmap = new shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
+	// shaders* ss[3] = { basic, basic, heightmap };
+	shaders* ss[2] = { basic, basic };
 	for (GLuint i = 1; i <= 2; ++i)
 	{
 		const std::string& fp = std::string("res/") + std::to_string(i) + ".png";
-		m_texs_for_mtl.emplace(i, std::move(load_texture_rgb_u8(fp.c_str())));
+		if (!m_texs_for_mtl.contains(i))
+			m_texs_for_mtl[i] = {};
+		m_texs_for_mtl[i].emplace_back("u_tex", load_texture_rgb_u8(fp.c_str()));
+		m_shaders_for_mtl.emplace(i, ss[i - 1]);
 	}
 }
 
 preview_layer::~preview_layer()
 {
 	delete m_sg;
+	for (const auto& pair : m_texs_for_mtl)
+		for (const auto& mt : pair.second)
+			delete mt.tex;
+	// materials can share the same instance of shaders
+	std::unordered_set<shaders*> deleted;
+	for (const auto& pair : m_shaders_for_mtl)
+	{
+		if (!deleted.contains(pair.second))
+		{
+			delete pair.second;
+			deleted.insert(pair.second);
+		}
+	}
 }
 
 
@@ -57,23 +77,32 @@ void preview_layer::on_frame(const f32 dt)
 	const auto& mouse_delta = get_mouse().delta;
 	m_cam.move(dt, move_dir * (get_key(GLFW_KEY_LEFT_SHIFT) ? .2f : 1.f), mouse_delta.x, mouse_delta.y);
 
-
 	const tmat<space::OBJECT, space::WORLD> obj;
 	const mat<space::OBJECT, space::CLIP>& mvp = m_cam.get_view_proj() * obj;
 
 	m_fb.bind();
+	// GGTODO does this need to be here?
 	glEnable(GL_DEPTH_TEST);
 	m_mgl_context->clear();
 	for (auto it = m_vaos_for_mtl.begin(); it != m_vaos_for_mtl.end(); ++it)
 	{
-		const texture2d_rgb_u8& tex = m_texs_for_mtl[it->first];
-		tex.bind(0);
 		const material_t mat = m_mtls[it->first];
-		m_shaders.bind();
-		m_shaders.uniform_1i("u_tex", 0);
-		m_shaders.uniform_3f("u_col", mat.r, mat.g, mat.b);
-		m_shaders.uniform_mat4("u_mvp", mvp.e);
-		m_mgl_context->draw(it->second, m_shaders);
+		const shaders* shaders = m_shaders_for_mtl[it->first];
+		shaders->bind();
+		shaders->uniform_3f("u_col", mat.r, mat.g, mat.b);
+		shaders->uniform_mat4("u_mvp", mvp.e);
+
+		const auto& mts = m_texs_for_mtl[it->first];
+		for (u32 i = 0; i < mts.size(); i++)
+		{
+			mts[i].tex->bind(i);
+			shaders->uniform_1i(mts[i].name.c_str(), i);
+		}
+		/*const texture2d_rgb_u8& tex = m_texs_for_mtl[it->first];
+		tex.bind(0);
+		m_shaders.uniform_1i("u_tex", 0);*/
+
+		m_mgl_context->draw(it->second, *shaders);
 	}
 	m_fb.unbind();
 }
@@ -92,6 +121,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 	out_mtls.insert(std::make_pair(1, mtl1));
 	material_t mtl2;
 	out_mtls.insert(std::make_pair(2, mtl2));
+	/*material_t mtl3;
+	out_mtls.insert(std::make_pair(3, mtl3));*/
 
 	mesh_t* cyl = textured_cylinder(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -150,9 +181,11 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		});
 	sgnode* n9 = new sgnode(nullptr, sphere);
 
-	const auto& hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
+	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
+	// m_texs_for_mtl[3].emplace_back("u_heightmap", hm_tex);
 	mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
 		{
+			.max_height = 10.f,
 			.transform = tmat_util::translation<space::OBJECT>(0, -2.f, 3.f),
 		});
 	sgnode* nb = new sgnode(nullptr, heightmap);

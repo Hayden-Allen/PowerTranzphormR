@@ -6,5 +6,4 @@ in vec2 v_tex;
 void main()
 {
 	o_col = vec4(u_col * texture(u_tex, v_tex).xyz, 1);
-	// o_col = vec4(1, 0, 0, 1);
 }

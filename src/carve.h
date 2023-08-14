@@ -77,4 +77,4 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cone_options& options = {});
 mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const torus_options& options = {});
 mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const ellipsoid_options& options = {});
-mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const mgl::retained_texture2d_rgb_u8& map, const heightmap_options& options = {});
+mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {});

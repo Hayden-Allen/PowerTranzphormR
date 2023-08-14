@@ -5,6 +5,21 @@
 #include "glu_tess.h"
 #include "scene_graph.h"
 
+struct material_texture
+{
+	std::string name;
+	mgl::texture2d_rgb_u8* tex;
+
+	material_texture(const std::string& n, mgl::texture2d_rgb_u8* const t) :
+		name(n),
+		tex(t)
+	{}
+	material_texture(const material_texture& o) noexcept :
+		name(o.name),
+		tex(o.tex)
+	{}
+};
+
 class preview_layer : public mgl::layer
 {
 public:
@@ -25,14 +40,16 @@ private:
 private:
 	sgnode *m_sg = nullptr, *m_sphere_node = nullptr, *m_tor_node = nullptr;
 	const mgl::context* m_mgl_context;
-	mgl::shaders m_shaders;
+	// mgl::shaders m_shaders;
 	mgl::framebuffer_u8 m_fb;
 	camera m_cam;
 	// TODO move
 	std::unordered_map<GLuint, material_t> m_mtls;
 	std::unordered_map<GLuint, std::vector<GLfloat>> m_vtxs_for_mtl;
 	std::unordered_map<GLuint, mgl::static_vertex_array> m_vaos_for_mtl;
-	std::unordered_map<GLuint, mgl::texture2d_rgb_u8> m_texs_for_mtl;
+	// std::unordered_map<GLuint, mgl::texture2d_rgb_u8> m_texs_for_mtl;
+	std::unordered_map<GLuint, std::vector<material_texture>> m_texs_for_mtl;
+	std::unordered_map<GLuint, mgl::shaders*> m_shaders_for_mtl;
 	struct
 	{
 		carve::csg::CSG csg;
