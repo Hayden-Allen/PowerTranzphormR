@@ -245,7 +245,7 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	vertices.reserve(nh * nv + 2);
 	// [1, nv-1] because poles are added separately
 	// work from bottom to top
-	for (u32 iy = 1; iy < nv - 1; iy++)
+	for (u32 iy = 1; iy < nv; iy++)
 	{
 		const f32 phi = iy * DPHI;
 		const f32 cp = cos(phi), sp = sin(phi);
