@@ -25,4 +25,5 @@ private:
 	void draw_menus();
 	void draw_menu(const imgui_menu& menu);
 	void init_menus();
+	void handle_menu_keys(const s32 key, const s32 mods);
 };
