@@ -19,6 +19,14 @@ preview_layer::~preview_layer()
 
 void preview_layer::on_frame(const f32 dt)
 {
+	const f32 tdx = 1.f * get_key(GLFW_KEY_RIGHT) - get_key(GLFW_KEY_LEFT);
+	const f32 tdy = 1.f * get_key(GLFW_KEY_UP) - get_key(GLFW_KEY_DOWN);
+	if (tdx != 0 || tdy != 0)
+	{
+		// TODO horrible
+		m_scene->get_sg_root()->children[2]->transform(m_scene->get_csg(), carve::math::Matrix::TRANS(tdx * dt, tdy * dt, 0));
+	}
+
 	const direction<space::CAMERA> move_dir(
 		get_key(GLFW_KEY_D) - get_key(GLFW_KEY_A),
 		get_key(GLFW_KEY_SPACE) - get_key(GLFW_KEY_LEFT_CONTROL),

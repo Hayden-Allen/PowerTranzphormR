@@ -55,6 +55,7 @@ public:
 	void set_sg_root(sgnode* n)
 	{
 		m_sg_root = n;
+		// need to build initial vaos when root node assigned
 		m_build_sg_vaos();
 	}
 private:
@@ -64,8 +65,8 @@ private:
 	attr_material_t m_mtl_id_attr;
 	std::unordered_map<u32, scene_material> m_mtls;
 	std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
-	sgnode* m_sg_root = nullptr;
 	std::vector<mesh_t*> m_hms;
+	sgnode* m_sg_root = nullptr;
 	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();
