@@ -24,6 +24,10 @@ public:
 		operation(op)
 	{
 		recompute(scene);
+		for (sgnode* const child : children)
+		{
+			child->parent = this;
+		}
 	}
 	MGL_DCM(sgnode);
 	virtual ~sgnode()
@@ -31,8 +35,33 @@ public:
 		for (sgnode* child : children)
 			delete child;
 		delete mesh;
+		mesh = nullptr;
 	}
 public:
+	void add_child(sgnode* node)
+	{
+		if (children.size() > 1)
+		{
+			delete mesh;
+			mesh = nullptr;
+		}
+		children.push_back(node);
+		set_dirty();
+	}
+	void remove_child(sgnode* node)
+	{
+		const auto& it = std::find(children.begin(), children.end(), node);
+		if (it == children.end())
+		{
+			assert(false);
+			return;
+		}
+		children.erase(it);
+		delete node;
+		delete mesh;
+		mesh = nullptr;
+		set_dirty();
+	}
 	bool is_root() const
 	{
 		return !parent;
@@ -43,41 +72,74 @@ public:
 	}
 	void transform(carve::csg::CSG& scene, const carve::math::Matrix& m)
 	{
-		transform_base(scene, m);
-		recompute(scene);
-	}
-	// recomputes the scene graph from this node up
-	void recompute(carve::csg::CSG& scene)
-	{
+		// when we hit the bottom, mark current node as dirty and work our way back up
 		if (is_leaf())
 		{
-			if (parent)
-				parent->recompute(scene);
-			return;
+			// HATODO seems to be a memory leak
+			// only transform leaf meshes because the changes will get propagated back up the tree by recompute anyway
+			mesh->transform([&](vertex_t::vector_t& v)
+				{
+					return m * v;
+				});
+			set_dirty();
 		}
-
-		delete mesh;
-		// children do not need to be recomputed, because any change to this mesh does not affect them
-		mesh = scene.compute(children[0]->mesh, children[1]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
-		for (s32 i = 2; i < children.size(); i++)
+		// not a leaf, don't transform directly; recursively transform children instead
+		else
 		{
-			mesh_t* old_mesh = mesh;
-			mesh = scene.compute(old_mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
-			delete old_mesh;
+			for (sgnode* child : children)
+				child->transform(scene, m);
 		}
-		// parent needs to be recomputed now that this node has changed
-		if (parent)
-			parent->recompute(scene);
+	}
+	// recomputes the scene graph from the top down
+	bool recompute(carve::csg::CSG& scene)
+	{
+		// printf("RECOMPUTE %p\n", this);
+		// if no children or hasn't been changed, stop
+		if (is_leaf() || !m_dirty)
+			return false;
+
+		m_dirty = false;
+		// if only one child, have nothing to recompute
+		if (children.size() == 1)
+		{
+			// recursively recompute child
+			children[0]->recompute(scene);
+			// printf("RECOMPUTE %p\n", children[0]);
+			mesh = children[0]->mesh;
+		}
+		// recompute all children recursively and merge them into one mesh
+		else
+		{
+			delete mesh;
+			children[0]->recompute(scene);
+			children[1]->recompute(scene);
+			// printf("RECOMPUTE %p\n", children[0]);
+			// printf("RECOMPUTE %p\n", children[1]);
+			mesh = scene.compute(children[0]->mesh, children[1]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+			for (s32 i = 2; i < children.size(); i++)
+			{
+				children[i]->recompute(scene);
+				// printf("RECOMPUTE %p\n", children[i]);
+				mesh_t* old_mesh = mesh;
+				mesh = scene.compute(old_mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				delete old_mesh;
+			}
+		}
+		return true;
+	}
+	bool is_dirty() const
+	{
+		return m_dirty;
 	}
 private:
-	void transform_base(carve::csg::CSG& scene, const carve::math::Matrix& m)
+	// recompute always needs to be called after creation
+	bool m_dirty = true;
+private:
+	void set_dirty()
 	{
-		for (sgnode* child : children)
-			child->transform_base(scene, m);
-		// HATODO seems to be a memory leak
-		mesh->transform([&](vertex_t::vector_t& v)
-			{
-				return m * v;
-			});
+		// printf("DIRTY %p\n", this);
+		m_dirty = true;
+		if (parent)
+			parent->set_dirty();
 	}
 };

@@ -61,13 +61,31 @@ void preview_layer::on_frame(const f32 dt)
 		const f32 dt = m_mgl_context->time.delta;
 		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(tdx * dt, tdy * dt, 0));
 		// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
+	}
+
+	if (m_sg->is_dirty())
+	{
+		// printf("A\n");
+		f32 last = (f32)glfwGetTime();
+		m_sg->recompute(m_ctx.csg);
+		f32 now = (f32)glfwGetTime();
+		// printf("KOMPUTE: %f\n", now - last);
+		last = now;
+
 		m_tesselate(m_sg->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
+		now = (f32)glfwGetTime();
+		// printf("TEZZELATE: %f\n", now - last);
+		last = now;
+
 		m_vaos_for_mtl.clear();
 		for (auto it = m_vtxs_for_mtl.begin(); it != m_vtxs_for_mtl.end(); ++it)
 		{
 			static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
 			m_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
+		now = (f32)glfwGetTime();
+		// printf("BUFFERZ: %f\n", now - last);
+		last = now;
 	}
 
 	const direction<space::CAMERA> move_dir(
@@ -98,9 +116,6 @@ void preview_layer::on_frame(const f32 dt)
 			mts[i].tex->bind(i);
 			shaders->uniform_1i(mts[i].name.c_str(), i);
 		}
-		/*const texture2d_rgb_u8& tex = m_texs_for_mtl[it->first];
-		tex.bind(0);
-		m_shaders.uniform_1i("u_tex", 0);*/
 
 		m_mgl_context->draw(it->second, *shaders);
 	}
@@ -143,7 +158,6 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 	sgnode* n1 = new sgnode(nullptr, box_b);
 
 	sgnode* n2 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n1, n0 });
-	n0->parent = n1->parent = n2;
 
 	mesh_t* cone = textured_cone(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -154,7 +168,6 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		});
 	sgnode* n3 = new sgnode(nullptr, cone);
 	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n2, n3 });
-	n2->parent = n3->parent = n4;
 
 	mesh_t* tor = textured_torus(tex_coord_attr, mtl_id_attr, 2,
 		{
@@ -165,7 +178,6 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		});
 	m_tor_node = new sgnode(nullptr, tor);
 	sgnode* n6 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n4, m_tor_node });
-	n4->parent = m_tor_node->parent = n6;
 
 	mesh_t* tor2 = textured_torus(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -182,15 +194,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 	sgnode* n9 = new sgnode(nullptr, sphere);
 
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
-	// m_texs_for_mtl[3].emplace_back("u_heightmap", hm_tex);
-	mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
-		{
-			.max_height = 10.f,
-			.transform = tmat_util::translation<space::OBJECT>(0, -2.f, 3.f),
-		});
-	sgnode* nb = new sgnode(nullptr, heightmap);
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n6, n7, n9, nb });
-	nb->parent = n6->parent = n7->parent = n9->parent = na;
+
+	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n6, n7, n9 });
 
 	mesh_t* sphere2 = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -198,10 +203,20 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
 		});
 	m_sphere_node = new sgnode(nullptr, sphere2);
+	std::vector<sgnode*> asdf = { na, m_sphere_node };
+	for (s32 i = 0; i < 10; i++)
+	{
+		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
+			{
+				.max_height = 10.f,
+				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
+			});
+		asdf.push_back(new sgnode(nullptr, heightmap));
+	}
+	// m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
+	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::UNION, asdf);
 
-	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
-	na->parent = m_sphere_node->parent = m_sg;
-
+	m_sg->recompute(csg);
 	*out_mesh = m_sg->mesh;
 }
 
@@ -256,8 +271,7 @@ void preview_layer::m_compute_csg(
 	mesh_t* in_scene = nullptr;
 	m_make_scene(m_ctx.csg, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr, &in_scene, out_mtls);
 	for (auto it = out_mtls.begin(); it != out_mtls.end(); ++it)
-		out_vtxs_for_mtl.insert(
-			std::make_pair(it->first, std::vector<GLfloat>()));
+		out_vtxs_for_mtl.insert(std::make_pair(it->first, std::vector<GLfloat>()));
 
 	m_tesselate(in_scene, out_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
 }

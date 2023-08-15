@@ -336,11 +336,11 @@ mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	// y-axis of texture maps to z-axis of plane
 	for (u32 iz = 0; iz < mh; iz++)
 	{
-		const f32 z = iz * z_step;
+		const f32 z = iz * z_step - options.depth / 2;
 		// x-axis of texture maps to x-axis of plane
 		for (u32 ix = 0; ix < mw; ix++)
 		{
-			const f32 x = ix * x_step;
+			const f32 x = ix * x_step - options.width / 2;
 			// use red channel to determine height
 			const u8 map_height = map->get_pixel_component(ix, mh - iz - 1, 0);
 			const f32 y = options.max_height * (1.f - 1.f * map_height / MAX_VALUE(map_height));
