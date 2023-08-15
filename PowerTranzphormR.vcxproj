@@ -357,6 +357,7 @@
     </ClCompile>
     <ClCompile Include="src\preview_layer.cpp" />
     <ClCompile Include="src\preview_window.cpp" />
+    <ClCompile Include="src\scene_ctx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
@@ -370,6 +371,7 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\preview_layer.h" />
     <ClInclude Include="src\preview_window.h" />
+    <ClInclude Include="src\scene_ctx.h" />
     <ClInclude Include="src\scene_graph.h" />
   </ItemGroup>
   <ItemGroup>

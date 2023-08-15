@@ -20,10 +20,6 @@ static tex_coord_t& operator+=(tex_coord_t& t1, const tex_coord_t& t2)
 	t1.v += t2.v;
 	return t1;
 }
-struct material_t
-{
-	GLfloat r = 1.0f, g = 1.0f, b = 1.0f;
-};
 
 typedef carve::mesh::MeshSet<3> mesh_t;
 typedef mesh_t::vertex_t vertex_t;

@@ -143,15 +143,3 @@ private:
 			parent->set_dirty();
 	}
 };
-
-class scene_graph
-{
-public:
-	sgnode* root;
-	std::vector<mesh_t*> heightmaps;
-public:
-	scene_graph(sgnode* r, std::vector<mesh_t*> h) :
-		root(r),
-		heightmaps(h)
-	{}
-};
