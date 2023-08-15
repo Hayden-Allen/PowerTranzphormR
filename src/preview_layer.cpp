@@ -51,7 +51,7 @@ preview_layer::~preview_layer()
 }
 
 
-
+static f32 dx = 0.f, dy = 0.f;
 void preview_layer::on_frame(const f32 dt)
 {
 	const f32 tdx = 1.f * get_key(GLFW_KEY_RIGHT) - get_key(GLFW_KEY_LEFT);
@@ -59,22 +59,30 @@ void preview_layer::on_frame(const f32 dt)
 	if (tdx != 0 || tdy != 0)
 	{
 		const f32 dt = m_mgl_context->time.delta;
+		dx += tdx * dt;
+		dy += tdy * dt;
 		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(tdx * dt, tdy * dt, 0));
 		// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
 	}
 
+	/*if (get_key(GLFW_KEY_ENTER) && (dx != 0 || dy != 0))
+	{
+		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(dx, dy, 0));
+		dx = dy = 0;
+	}*/
+
 	if (m_sg->is_dirty())
 	{
 		// printf("A\n");
-		f32 last = (f32)glfwGetTime();
+		f32 last = (f32)glfwGetTime() * 1000;
 		m_sg->recompute(m_ctx.csg);
-		f32 now = (f32)glfwGetTime();
-		// printf("KOMPUTE: %f\n", now - last);
+		f32 now = (f32)glfwGetTime() * 1000;
+		printf("KOMPUTE: %f\n", now - last);
 		last = now;
 
 		m_tesselate(m_sg->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
-		now = (f32)glfwGetTime();
-		// printf("TEZZELATE: %f\n", now - last);
+		now = (f32)glfwGetTime() * 1000;
+		printf("TEZZELATE: %f\n", now - last);
 		last = now;
 
 		m_vaos_for_mtl.clear();
@@ -83,8 +91,8 @@ void preview_layer::on_frame(const f32 dt)
 			static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
 			m_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
-		now = (f32)glfwGetTime();
-		// printf("BUFFERZ: %f\n", now - last);
+		now = (f32)glfwGetTime() * 1000;
+		printf("BUFFERZ: %f\n", now - last);
 		last = now;
 	}
 
@@ -209,6 +217,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
 			{
 				.max_height = 10.f,
+				.width_steps = 8,
+				.depth_steps = 8,
 				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
 			});
 		asdf.push_back(new sgnode(nullptr, heightmap));
