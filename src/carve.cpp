@@ -343,10 +343,7 @@ mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 		for (u32 ix = 0; ix < x_steps; ix++)
 		{
 			const f32 x = ix * x_step - options.width / 2;
-			// use red channel to determine height
-			const u8 map_height = map->get_pixel_component(ix, z_steps - iz - 1, 0);
-			const f32 y = options.max_height * (1.f - 1.f * map_height / MAX_VALUE(map_height));
-			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
+			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, 0, z).transform_copy(options.transform))));
 		}
 	}
 

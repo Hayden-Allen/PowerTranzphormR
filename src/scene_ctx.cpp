@@ -1,13 +1,15 @@
 #include "pch.h"
 #include "scene_ctx.h"
 
-scene_ctx::scene_ctx() {
+scene_ctx::scene_ctx()
+{
 	m_tex_coord_attr.installHooks(m_csg);
 	m_mtl_id_attr.installHooks(m_csg);
 	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::UNION, std::vector<sgnode*>());
 }
 
-scene_ctx::~scene_ctx() {
+scene_ctx::~scene_ctx()
+{
 	delete m_sg_root;
 }
 
@@ -18,7 +20,8 @@ u32 scene_ctx::add_heightmap(mesh_t* hm)
 	return (u32)(m_hms.size() - 1);
 }
 
-void scene_ctx::remove_heightmap(const u32 id) {
+void scene_ctx::remove_heightmap(const u32 id)
+{
 	m_hms.erase(m_hms.begin() + id);
 	m_hms_dirty = true;
 }
@@ -56,7 +59,8 @@ void scene_ctx::update()
 		}
 	}
 
-	if (m_hms_dirty) {
+	if (m_hms_dirty)
+	{
 		std::unordered_map<u32, std::vector<f32>> verts_for_mtl;
 		for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
 			verts_for_mtl.insert(std::make_pair(it->first, std::vector<GLfloat>()));
@@ -75,7 +79,7 @@ void scene_ctx::update()
 	}
 }
 
-void scene_ctx::draw(const mgl::context &glctx, const mat<space::OBJECT, space::CLIP>& mvp)
+void scene_ctx::draw(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp)
 {
 	m_draw_vaos(glctx, mvp, m_hm_vaos_for_mtl);
 	m_draw_vaos(glctx, mvp, m_sg_vaos_for_mtl);
@@ -127,6 +131,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const mat<space::OBJECT, 
 
 		for (u32 i = 0; i < mat.texs.size(); i++)
 		{
+			// if (it->first == 3) __debugbreak();
 			mat.texs[i].second->bind(i);
 			mat.shaders->uniform_1i(mat.texs[i].first.c_str(), i);
 		}

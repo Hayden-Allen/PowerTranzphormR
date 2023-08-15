@@ -10,6 +10,10 @@ struct scene_material
 	std::vector<std::pair<std::string, mgl::texture2d_rgb_u8*>> texs;
 	mgl::shaders* shaders;
 
+	scene_material() :
+		name(""),
+		shaders(nullptr)
+	{}
 	scene_material(const std::string& n, const std::vector<std::pair<std::string, mgl::texture2d_rgb_u8*>>& t, mgl::shaders* const s) :
 		name(n),
 		texs(t),
@@ -35,8 +39,25 @@ public:
 	void remove_material(const u32 id);
 	void update();
 	void draw(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp);
+	// TODO probably remove (change textured_* interface)
+	attr_tex_coord_t& get_tex_coord_attr()
+	{
+		return m_tex_coord_attr;
+	}
+	attr_material_t& get_mtl_attr()
+	{
+		return m_mtl_id_attr;
+	}
+	carve::csg::CSG& get_csg()
+	{
+		return m_csg;
+	}
+	void set_sg_root(sgnode* n)
+	{
+		m_sg_root = n;
+	}
 private:
-	inline static u32 s_next_mtl_id = 1;
+	static inline u32 s_next_mtl_id = 1;
 	carve::csg::CSG m_csg;
 	attr_tex_coord_t m_tex_coord_attr;
 	attr_material_t m_mtl_id_attr;

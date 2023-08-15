@@ -7,7 +7,7 @@ Standard: Latest
 
 # align
 AlignAfterOpenBracket: DontAlign
-AlignArrayOfStructures: Right
+AlignArrayOfStructures: None
 AlignConsecutiveMacros: Consecutive
 AlignConsecutiveBitFields: Consecutive
 AllowShortCaseLabelsOnASingleLine: true

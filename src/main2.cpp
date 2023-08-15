@@ -3,15 +3,23 @@
 #include "preview_layer.h"
 #include "preview_window.h"
 
-void make_scene(scene_ctx &out_scene) {
+void make_scene(scene_ctx* const out_scene)
+{
 	//
 	// FIXME
 	//
-	/*
-	sgmaterial mtl1;
-	materials.insert(std::make_pair(1, mtl1));
-	sgmaterial mtl2;
-	materials.insert(std::make_pair(2, mtl2));
+
+	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	auto t1 = load_texture_rgb_u8("res/1.png");
+	auto t2 = load_texture_rgb_u8("res/2.png");
+	scene_material mtl1("mtl1", { { "u_tex", t1 } }, s1);
+	out_scene->add_material(mtl1);
+	scene_material mtl2("mtl2", { { "u_tex", t2 } }, s1);
+	out_scene->add_material(mtl2);
+
+	auto& tex_coord_attr = out_scene->get_tex_coord_attr();
+	auto& mtl_id_attr = out_scene->get_mtl_attr();
+	auto& csg = out_scene->get_csg();
 
 	mesh_t* cyl = textured_cylinder(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -50,8 +58,8 @@ void make_scene(scene_ctx &out_scene) {
 			// .num_tube_steps = 64,
 			.transform = tmat_util::translation<space::OBJECT>(1.f, c::EPSILON, 0),
 		});
-	m_tor_node = new sgnode(nullptr, tor);
-	sgnode* n6 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n4, m_tor_node });
+	sgnode* tor_node = new sgnode(nullptr, tor);
+	sgnode* n6 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n4, tor_node });
 
 	mesh_t* tor2 = textured_torus(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -73,31 +81,28 @@ void make_scene(scene_ctx &out_scene) {
 		{
 			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
 		});
-	m_sphere_node = new sgnode(nullptr, sphere2);
+	sgnode* sphere_node = new sgnode(nullptr, sphere2);
 	// std::vector<sgnode*> asdf = { na, m_sphere_node };
-	sgnode* sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
-
+	sgnode* sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, sphere_node });
 	sg->recompute(csg);
 
+	out_scene->set_sg_root(sg);
 
-
+	mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
-	std::vector<mesh_t*> asdf;
+	scene_material mtl3("mtl3", { { "u_tex", t2 }, { "u_heightmap", hm_tex } }, s2);
+	out_scene->add_material(mtl3);
 	for (s32 i = 0; i < 10; i++)
 	{
-		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
+		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 3, hm_tex,
 			{
 				.max_height = 10.f,
 				.width_steps = 10,
 				.depth_steps = 10,
 				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
 			});
-		asdf.push_back(heightmap);
+		out_scene->add_heightmap(heightmap);
 	}
-
-	m_sg = new scene_graph(sg, asdf);
-	// *out_mesh = m_sg->mesh;
-	*/
 }
 
 int main(int argc, char** argv)
@@ -107,7 +112,7 @@ int main(int argc, char** argv)
 			.clear = { .b = 1.f } });
 
 	scene_ctx scene;
-	make_scene(scene);
+	make_scene(&scene);
 
 	imgui_layer il(&c);
 	c.add_layer(&il);

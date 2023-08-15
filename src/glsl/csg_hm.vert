@@ -7,8 +7,5 @@ out vec2 v_tex;
 void main()
 {
 	v_tex = i_tex;
-	vec3 pos = i_pos;
-	pos.y *= texture(u_heightmap, i_tex).r;
-	gl_Position = u_mvp * vec4(pos, 1);
-	// gl_Position = u_mvp * vec4(i_pos, 1);
+	gl_Position = u_mvp * vec4(i_pos.x, (1 - texture(u_heightmap, i_tex).r) * 10, i_pos.z, 1);
 }
