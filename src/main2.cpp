@@ -143,6 +143,8 @@ int main(int argc, char** argv)
 		sprintf_s(buf, "PowerTranzphormR (%u FPS)", (u32)std::round(c.avg_fps));
 		c.set_title(buf);
 
+		scene.update();
+
 		c.update_layers();
 		c.end_frame();
 	}

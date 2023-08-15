@@ -44,19 +44,7 @@ void scene_ctx::update()
 	if (m_sg_root->is_dirty())
 	{
 		m_sg_root->recompute(m_csg);
-
-		std::unordered_map<u32, std::vector<f32>> verts_for_mtl;
-		for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
-			verts_for_mtl.insert(std::make_pair(it->first, std::vector<GLfloat>()));
-
-		m_tesselate(m_sg_root->mesh, verts_for_mtl);
-
-		m_sg_vaos_for_mtl.clear();
-		for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
-		{
-			mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
-			m_sg_vaos_for_mtl.emplace(it->first, std::move(vao));
-		}
+		m_build_sg_vaos();
 	}
 
 	if (m_hms_dirty)
@@ -83,6 +71,24 @@ void scene_ctx::draw(const mgl::context& glctx, const mat<space::OBJECT, space::
 {
 	m_draw_vaos(glctx, mvp, m_hm_vaos_for_mtl);
 	m_draw_vaos(glctx, mvp, m_sg_vaos_for_mtl);
+}
+
+
+
+void scene_ctx::m_build_sg_vaos()
+{
+	std::unordered_map<u32, std::vector<f32>> verts_for_mtl;
+	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
+		verts_for_mtl.insert(std::make_pair(it->first, std::vector<GLfloat>()));
+
+	m_tesselate(m_sg_root->mesh, verts_for_mtl);
+
+	m_sg_vaos_for_mtl.clear();
+	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
+	{
+		mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
+		m_sg_vaos_for_mtl.emplace(it->first, std::move(vao));
+	}
 }
 
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<f32>>& out_verts_for_mtl)
@@ -131,7 +137,6 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const mat<space::OBJECT, 
 
 		for (u32 i = 0; i < mat.texs.size(); i++)
 		{
-			// if (it->first == 3) __debugbreak();
 			mat.texs[i].second->bind(i);
 			mat.shaders->uniform_1i(mat.texs[i].first.c_str(), i);
 		}

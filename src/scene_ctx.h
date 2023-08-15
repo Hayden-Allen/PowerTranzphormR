@@ -55,6 +55,7 @@ public:
 	void set_sg_root(sgnode* n)
 	{
 		m_sg_root = n;
+		m_build_sg_vaos();
 	}
 private:
 	static inline u32 s_next_mtl_id = 1;
@@ -67,6 +68,7 @@ private:
 	std::vector<mesh_t*> m_hms;
 	bool m_hms_dirty = false;
 private:
+	void m_build_sg_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<f32>>& out_verts_for_mtl);
 	void m_draw_vaos(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp, const std::unordered_map<u32, mgl::static_vertex_array>& vaos);
 };
