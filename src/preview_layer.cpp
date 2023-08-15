@@ -61,15 +61,15 @@ void preview_layer::on_frame(const f32 dt)
 		const f32 dt = m_mgl_context->time.delta;
 		dx += tdx * dt;
 		dy += tdy * dt;
-		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(tdx * dt, tdy * dt, 0));
+		// m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(tdx * dt, tdy * dt, 0));
 		// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
 	}
 
-	/*if (get_key(GLFW_KEY_ENTER) && (dx != 0 || dy != 0))
+	if (get_key(GLFW_KEY_ENTER) && (dx != 0 || dy != 0))
 	{
 		m_tor_node->transform(m_ctx.csg, carve::math::Matrix::TRANS(dx, dy, 0));
 		dx = dy = 0;
-	}*/
+	}
 
 	if (m_sg->is_dirty())
 	{
@@ -217,8 +217,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
 			{
 				.max_height = 10.f,
-				.width_steps = 10,
-				.depth_steps = 10,
+				.width_steps = 32,
+				.depth_steps = 32,
 				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
 			});
 		asdf.push_back(new sgnode(nullptr, heightmap));
