@@ -69,7 +69,7 @@ struct ellipsoid_options
 struct heightmap_options
 {
 	f32 width = 1.f, max_height = 1.f, depth = 1.f;
-	f32 width_steps = 0.f, depth_steps = 0.f;
+	u32 width_steps = 0, depth_steps = 0;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 

@@ -69,7 +69,7 @@ void preview_layer::on_frame(const f32 dt)
 		f32 last = (f32)glfwGetTime();
 		m_sg->root->recompute(m_ctx.csg);
 		f32 now = (f32)glfwGetTime();
-		printf("KOMPUTE: %f\n", now - last);
+		// printf("KOMPUTE: %f\n", now - last);
 		last = now;
 
 		// m_tesselate(m_sg->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
@@ -77,7 +77,7 @@ void preview_layer::on_frame(const f32 dt)
 		for (const auto& hm : m_sg->heightmaps)
 			m_tesselate(hm, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr, false);
 		now = (f32)glfwGetTime();
-		printf("TEZZELATE: %f\n", now - last);
+		// printf("TEZZELATE: %f\n", now - last);
 		last = now;
 
 		m_vaos_for_mtl.clear();
@@ -87,7 +87,7 @@ void preview_layer::on_frame(const f32 dt)
 			m_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
 		now = (f32)glfwGetTime();
-		printf("BUFFERZ: %f\n", now - last);
+		// printf("BUFFERZ: %f\n", now - last);
 		last = now;
 	}
 
@@ -217,6 +217,8 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
 			{
 				.max_height = 10.f,
+				.width_steps = 10,
+				.depth_steps = 10,
 				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
 			});
 		asdf.push_back(heightmap);
