@@ -8,8 +8,8 @@ typedef void(__stdcall* GLUTessCallback)();
 
 struct tess_vtx
 {
-	double x = 0.0, y = 0.0, z = 0.0;
-	float u = 0.0f, v = 0.0f;
+	f64 x = 0.0, y = 0.0, z = 0.0;
+	f32 u = 0.0f, v = 0.0f;
 	std::vector<GLfloat>* target = nullptr;
 };
 
