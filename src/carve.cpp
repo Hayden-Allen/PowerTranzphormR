@@ -328,8 +328,10 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options)
 {
 	const u32 mw = map->get_width(), mh = map->get_height();
-	const f32 x_step = options.width / (mw - 1);
-	const f32 z_step = options.depth / (mh - 1);
+	const f32 x_steps = options.width_steps == 0 ? mw - 1 : options.width_steps;
+	const f32 z_steps = options.depth_steps == 0 ? mh - 1 : options.depth_steps;
+	const f32 x_step = options.width / x_steps;
+	const f32 z_step = options.depth / z_steps;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(mw * mh);
 	// generate plane with one vertex for each pixel in `map`

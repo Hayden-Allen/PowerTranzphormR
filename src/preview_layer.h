@@ -36,9 +36,10 @@ private:
 	// TODO move
 	void m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, mesh_t** out_mesh, std::unordered_map<GLuint, material_t>& out_mtls);
 	void m_compute_csg(std::unordered_map<GLuint, material_t>& out_mtls, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl);
-	void m_tesselate(mesh_t* in_scene, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl, attr_tex_coord_t tex_coord_attr, attr_material_t mtl_id_attr);
+	void m_tesselate(mesh_t* in_scene, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl, attr_tex_coord_t tex_coord_attr, attr_material_t mtl_id_attr, const bool clear);
 private:
-	sgnode *m_sg = nullptr, *m_sphere_node = nullptr, *m_tor_node = nullptr;
+	sgnode *m_sphere_node = nullptr, *m_tor_node = nullptr;
+	scene_graph* m_sg = nullptr;
 	const mgl::context* m_mgl_context;
 	// mgl::shaders m_shaders;
 	mgl::framebuffer_u8 m_fb;

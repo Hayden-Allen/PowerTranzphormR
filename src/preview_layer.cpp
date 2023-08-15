@@ -63,18 +63,21 @@ void preview_layer::on_frame(const f32 dt)
 		// sphere_node->transform(ctx.csg, carve::math::Matrix::TRANS(tdx * c.time.delta, 0, 0));
 	}
 
-	if (m_sg->is_dirty())
+	if (m_sg->root->is_dirty())
 	{
 		// printf("A\n");
 		f32 last = (f32)glfwGetTime();
-		m_sg->recompute(m_ctx.csg);
+		m_sg->root->recompute(m_ctx.csg);
 		f32 now = (f32)glfwGetTime();
-		// printf("KOMPUTE: %f\n", now - last);
+		printf("KOMPUTE: %f\n", now - last);
 		last = now;
 
-		m_tesselate(m_sg->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
+		// m_tesselate(m_sg->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
+		m_tesselate(m_sg->root->mesh, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr, true);
+		for (const auto& hm : m_sg->heightmaps)
+			m_tesselate(hm, m_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr, false);
 		now = (f32)glfwGetTime();
-		// printf("TEZZELATE: %f\n", now - last);
+		printf("TEZZELATE: %f\n", now - last);
 		last = now;
 
 		m_vaos_for_mtl.clear();
@@ -84,7 +87,7 @@ void preview_layer::on_frame(const f32 dt)
 			m_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
 		now = (f32)glfwGetTime();
-		// printf("BUFFERZ: %f\n", now - last);
+		printf("BUFFERZ: %f\n", now - last);
 		last = now;
 	}
 
@@ -192,9 +195,6 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0),
 		});
 	sgnode* n9 = new sgnode(nullptr, sphere);
-
-	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
-
 	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n6, n7, n9 });
 
 	mesh_t* sphere2 = textured_ellipsoid(
@@ -203,7 +203,15 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
 		});
 	m_sphere_node = new sgnode(nullptr, sphere2);
-	std::vector<sgnode*> asdf = { na, m_sphere_node };
+	// std::vector<sgnode*> asdf = { na, m_sphere_node };
+	sgnode* sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
+
+	sg->recompute(csg);
+
+
+
+	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
+	std::vector<mesh_t*> asdf;
 	for (s32 i = 0; i < 10; i++)
 	{
 		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 2, hm_tex,
@@ -211,19 +219,18 @@ void preview_layer::m_make_scene(carve::csg::CSG& csg, attr_tex_coord_t& tex_coo
 				.max_height = 10.f,
 				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
 			});
-		asdf.push_back(new sgnode(nullptr, heightmap));
+		asdf.push_back(heightmap);
 	}
-	// m_sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, m_sphere_node });
-	m_sg = new sgnode(csg, nullptr, carve::csg::CSG::UNION, asdf);
 
-	m_sg->recompute(csg);
-	*out_mesh = m_sg->mesh;
+	m_sg = new scene_graph(sg, asdf);
+	// *out_mesh = m_sg->mesh;
 }
 
-void preview_layer::m_tesselate(mesh_t* in_scene, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl, attr_tex_coord_t tex_coord_attr, attr_material_t mtl_id_attr)
+void preview_layer::m_tesselate(mesh_t* in_scene, std::unordered_map<GLuint, std::vector<GLfloat>>& out_vtxs_for_mtl, attr_tex_coord_t tex_coord_attr, attr_material_t mtl_id_attr, const bool clear)
 {
-	for (auto& pair : out_vtxs_for_mtl)
-		pair.second.clear();
+	if (clear)
+		for (auto& pair : out_vtxs_for_mtl)
+			pair.second.clear();
 	GLUtesselator* tess = gluNewTess();
 	gluTessCallback(tess, GLU_TESS_BEGIN, (GLUTessCallback)tess_callback_begin);
 	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
@@ -273,5 +280,8 @@ void preview_layer::m_compute_csg(
 	for (auto it = out_mtls.begin(); it != out_mtls.end(); ++it)
 		out_vtxs_for_mtl.insert(std::make_pair(it->first, std::vector<GLfloat>()));
 
-	m_tesselate(in_scene, out_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
+	// m_tesselate(in_scene, out_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr);
+	m_tesselate(m_sg->root->mesh, out_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr, true);
+	for (const auto& hm : m_sg->heightmaps)
+		m_tesselate(hm, out_vtxs_for_mtl, m_ctx.tex_coord_attr, m_ctx.mtl_id_attr, false);
 }
