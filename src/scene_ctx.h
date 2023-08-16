@@ -68,6 +68,8 @@ public:
 	}
 private:
 	static inline u32 s_next_mtl_id = 1;
+	constexpr static u32 s_vert_size = 5;
+private:
 	carve::csg::CSG m_csg;
 	attr_tex_coord_t m_tex_coord_attr;
 	attr_material_t m_mtl_id_attr;
@@ -78,6 +80,6 @@ private:
 	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();
-	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<f32>>& out_verts_for_mtl);
+	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl);
 	void m_draw_vaos(const mgl::context& glctx, const uniform_mats& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos);
 };

@@ -87,7 +87,8 @@ void make_scene(scene_ctx* const out_scene)
 
 	mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
-	scene_material mtl3("mtl3", { { "u_tex", t2 }, { "u_heightmap", hm_tex } }, s2);
+	mgl::texture2d_rgb_u8* t3 = load_texture_rgb_u8("res/3.png");
+	scene_material mtl3("mtl3", { { "u_tex", t3 }, { "u_heightmap", hm_tex } }, s2);
 	out_scene->add_material(mtl3);
 	for (s32 i = 0; i < 10; i++)
 	{
