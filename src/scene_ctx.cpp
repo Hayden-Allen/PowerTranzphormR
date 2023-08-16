@@ -150,41 +150,36 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			}
 			indices.push_back(vert2index.at(key));
 		}
-		// compute norms
+		// compute weighted norms
 		std::unordered_map<u32, vec<space::OBJECT>> norms;
 		for (u32 i = 0; i < indices.size(); i += 3)
 		{
+			// indices of unique vertices of current triangle
 			const u32 ia = indices[i + 0];
 			const u32 ib = indices[i + 1];
 			const u32 ic = indices[i + 2];
-			// printf("A %u %u %u\n", ia, ib, ic);
+			// vertices of current triangle
 			const mesh_vertex& va = unique_verts[ia];
 			const mesh_vertex& vb = unique_verts[ib];
 			const mesh_vertex& vc = unique_verts[ic];
+			// vertex positions of current triangle
 			const vec<space::OBJECT> pa(va.x, va.y, va.z);
 			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
 			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
-			const vec<space::OBJECT>&ab = pa - pb, &ac = pa - pc;
+			// sides of current triangle
+			const vec<space::OBJECT>& ab = pa - pb;
+			const vec<space::OBJECT>& ac = pa - pc;
+			// face normal of current triangle
 			const vec<space::OBJECT> norm = ab.cross_copy(ac);
-			/*printf("A\n");
-			pa.print();
-			pb.print();
-			pc.print();
-			ab.print();
-			ac.print();
-			norm.print();*/
-
+			// add face normal to each vertex. Note that `norm` is not actually normalized, so this inherently weights each normal by the size of the face it is from
 			norms[ia] += norm;
 			norms[ib] += norm;
 			norms[ic] += norm;
 		}
-		// average norms
+		// average weighted norms
 		for (auto& pair : norms)
 		{
-			// printf("A\n");
-			// pair.second.print();
 			pair.second.normalize();
-			// pair.second.print();
 		}
 		// write norms
 		for (mesh_vertex& mv : input_verts)

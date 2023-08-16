@@ -6,13 +6,14 @@ uniform mat4 u_mvp, u_m, u_normal;
 uniform vec3 u_cam_pos;
 out vec2 v_tex;
 out float v_NdL;
-out vec3 v_N, v_pos;
+out vec3 v_N;
+out vec3 v_pos;
 void main()
 {
 	v_tex = i_tex;
 	gl_Position = u_mvp * vec4(i_pos, 1);
-
-	vec3 L = normalize(vec3(1, 1, 1));
+	
+	vec3 L = normalize(vec3(0, 1, 0));
 	// vec3 N = vec3(normalize(u_normal * vec4(i_norm, 0)));
 	vec3 N = normalize(i_norm);
 	v_NdL = max(0, dot(N, L));

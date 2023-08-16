@@ -92,7 +92,7 @@ struct mesh_vertex
 	std::string to_string() const
 	{
 		char buf[128] = { 0 };
-		sprintf_s(buf, "%.6f %.6f %.6f", x, y, z);
+		sprintf_s(buf, "%.4f %.4f %.4f", x, y, z);
 		return buf;
 	}
 	void print() const

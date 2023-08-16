@@ -65,7 +65,7 @@ void make_scene(scene_ctx* const out_scene)
 	mesh_t* sphere2 = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 1,
 		{
-			.transform = tmat_util::translation<space::OBJECT>(-1.5f + c::EPSILON, -1.f, 0),
+			.transform = tmat_util::translation<space::OBJECT>(-1.75f + c::EPSILON, -1.f, 0),
 		});
 	sgnode* sphere_node = new sgnode(nullptr, sphere2);
 	mesh_t* tor = textured_torus(tex_coord_attr, mtl_id_attr, 2,
@@ -73,7 +73,7 @@ void make_scene(scene_ctx* const out_scene)
 			.tube_radius = .5f,
 			// .num_center_steps = 64,
 			// .num_tube_steps = 64,
-			.transform = tmat_util::translation<space::OBJECT>(1.f, c::EPSILON, 0),
+			.transform = tmat_util::translation<space::OBJECT>(1.f - c::EPSILON, c::EPSILON, 0),
 		});
 	sgnode* tor_node = new sgnode(nullptr, tor);
 	sgnode* sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, sphere_node, tor_node });
