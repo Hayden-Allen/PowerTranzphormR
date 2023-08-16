@@ -35,13 +35,16 @@ void preview_layer::on_frame(const f32 dt)
 	m_cam.move(dt, move_dir * (get_key(GLFW_KEY_LEFT_SHIFT) ? .2f : 1.f), mouse_delta.x, mouse_delta.y);
 
 	const tmat<space::OBJECT, space::WORLD> obj;
-	const mat<space::OBJECT, space::CLIP>& mvp = m_cam.get_view_proj() * obj;
+	const tmat<space::OBJECT, space::CAMERA>& mv = m_cam.get_view() * obj;
+	const mat<space::OBJECT, space::CLIP>& mvp = m_cam.get_proj() * mv;
+	// HATODO slow
+	const tmat<space::OBJECT, space::WORLD> normal = obj.invert_copy().transpose_copy();
 
 	m_fb.bind();
 	glEnable(GL_DEPTH_TEST);
 	m_mgl_context->clear();
 	m_scene->update();
-	m_scene->draw(*m_mgl_context, mvp);
+	m_scene->draw(*m_mgl_context, { mvp, mv, obj, normal });
 	m_fb.unbind();
 }
 

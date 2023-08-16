@@ -68,10 +68,10 @@ void scene_ctx::update()
 	}
 }
 
-void scene_ctx::draw(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp)
+void scene_ctx::draw(const mgl::context& glctx, const uniform_mats& mats)
 {
-	m_draw_vaos(glctx, mvp, m_hm_vaos_for_mtl);
-	m_draw_vaos(glctx, mvp, m_sg_vaos_for_mtl);
+	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
+	m_draw_vaos(glctx, mats, m_sg_vaos_for_mtl);
 }
 
 
@@ -128,13 +128,16 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	gluDeleteTess(tess);
 }
 
-void scene_ctx::m_draw_vaos(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp, const std::unordered_map<u32, mgl::static_vertex_array>& vaos)
+void scene_ctx::m_draw_vaos(const mgl::context& glctx, const uniform_mats& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos)
 {
 	for (auto it = vaos.begin(); it != vaos.end(); ++it)
 	{
 		const scene_material& mat = m_mtls[it->first];
 		mat.shaders->bind();
-		mat.shaders->uniform_mat4("u_mvp", mvp.e);
+		mat.shaders->uniform_mat4("u_mvp", mats.mvp.e);
+		mat.shaders->uniform_mat4("u_mv", mats.mv.e);
+		mat.shaders->uniform_mat4("u_m", mats.model.e);
+		mat.shaders->uniform_mat4("u_normal", mats.normal.e);
 
 		for (u32 i = 0; i < mat.texs.size(); i++)
 		{

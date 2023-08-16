@@ -26,6 +26,14 @@ struct scene_material
 	{}
 };
 
+struct uniform_mats
+{
+	const mat<space::OBJECT, space::CLIP>& mvp;
+	const tmat<space::OBJECT, space::CAMERA>& mv;
+	const tmat<space::OBJECT, space::WORLD>& model;
+	const tmat<space::OBJECT, space::WORLD>& normal;
+};
+
 class scene_ctx
 {
 public:
@@ -38,7 +46,7 @@ public:
 	u32 add_material(const scene_material& mtl);
 	void remove_material(const u32 id);
 	void update();
-	void draw(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp);
+	void draw(const mgl::context& glctx, const uniform_mats& mats);
 	// TODO probably remove (change textured_* interface)
 	attr_tex_coord_t& get_tex_coord_attr()
 	{
@@ -71,5 +79,5 @@ private:
 private:
 	void m_build_sg_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<f32>>& out_verts_for_mtl);
-	void m_draw_vaos(const mgl::context& glctx, const mat<space::OBJECT, space::CLIP>& mvp, const std::unordered_map<u32, mgl::static_vertex_array>& vaos);
+	void m_draw_vaos(const mgl::context& glctx, const uniform_mats& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos);
 };
