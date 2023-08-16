@@ -79,15 +79,24 @@ static mgl::retained_texture2d_rgb_u8* load_retained_texture_rgb_u8(const std::s
 	stbi_image_free(tex_data);
 	return tex;
 }
-static std::string vert_to_string(const f32* const v)
-{
-	char s[21] = { 0 };
-	memcpy(s, (void*)v, 5 * sizeof(f32));
-	return s;
-}
 struct mesh_vertex
 {
 	f32 x = 0.f, y = 0.f, z = 0.f;
 	f32 u = 0.f, v = 0.f;
-	// f32 nx = 0.f, ny = 0.f, nz = 0.f;
+	f32 nx = 0.f, ny = 0.f, nz = 0.f;
+
+	bool operator==(const mesh_vertex& o) const
+	{
+		return x == o.x && y == o.y && z == o.z && u == o.u && v == o.v && nx == o.nx && ny == o.ny && nz == o.nz;
+	}
+	std::string to_string() const
+	{
+		char buf[128] = { 0 };
+		sprintf_s(buf, "%.6f %.6f %.6f", x, y, z);
+		return buf;
+	}
+	void print() const
+	{
+		printf("(%f %f %f) (%f %f) (%f %f %f)\n", x, y, z, u, v, nx, ny, nz);
+	}
 };

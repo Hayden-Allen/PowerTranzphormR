@@ -60,9 +60,8 @@ void scene_ctx::update()
 		m_hm_vaos_for_mtl.clear();
 		for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 		{
-			// mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
-			mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2 });
-			// mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2, 3 });
+			// mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2 });
+			mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2, 3 });
 			m_hm_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
 
@@ -70,7 +69,7 @@ void scene_ctx::update()
 	}
 }
 
-void scene_ctx::draw(const mgl::context& glctx, const uniform_mats& mats)
+void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
 	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
 	m_draw_vaos(glctx, mats, m_sg_vaos_for_mtl);
@@ -89,8 +88,8 @@ void scene_ctx::m_build_sg_vaos()
 	m_sg_vaos_for_mtl.clear();
 	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 	{
-		// mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2 });
-		mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2 });
+		// mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2 });
+		mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2, 3 });
 		// mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2, 3 });
 		m_sg_vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
@@ -108,7 +107,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		const mesh_t::face_t* f = *i;
 		u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
 
-		std::vector<tess_vtx> vtxs;
+		std::vector<tess_vtx> verts;
 		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 		{
 			auto t = m_tex_coord_attr.getAttribute(f, e.idx());
@@ -119,83 +118,86 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			v.u = t.u;
 			v.v = t.v;
 			v.target = &out_verts_for_mtl[mtl_id];
-			vtxs.emplace_back(v);
+			verts.emplace_back(v);
 		}
 
 		gluTessBeginPolygon(tess, nullptr);
 		gluTessBeginContour(tess);
-		for (const tess_vtx& v : vtxs)
+		for (const tess_vtx& v : verts)
 			gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
 		gluTessEndContour(tess);
 		gluTessEndPolygon(tess);
 	}
 	gluDeleteTess(tess);
 
-	// for (auto& pair : out_verts_for_mtl)
-	//{
-	//	std::vector<f32>& input_verts = pair.second;
-	//	// indexify
-	//	std::unordered_map<std::string, u32> vert2index;
-	//	std::vector<f32> vertices;
-	//	std::vector<u32> indices;
-	//	u32 index = 0;
-	//	for (u32 i = 0; i < input_verts.size(); i += VERT_SIZE)
-	//	{
-	//		printf("%u %zu\n", i, input_verts.size());
-	//		const std::string& key = vert_to_string(input_verts.data() + i);
-	//		if (!vert2index.contains(key))
-	//		{
-	//			vert2index.insert({ key, index });
-	//			index++;
-	//			for (u32 j = 0; j < VERT_SIZE; j++)
-	//				vertices.push_back(input_verts[i + j]);
-	//		}
-	//		indices.push_back(vert2index.at(key));
-	//	}
-	//	printf("A\n%zu | %zu | %zu\n", input_verts.size(), (input_verts.size() / 5), (input_verts.size() / 5) % 3);
-	//	printf("%zu | %zu\n", indices.size(), indices.size() % 3);
-	//	// comp norms
-	//	std::unordered_map<u32, vec<space::OBJECT>> norms;
-	//	for (u32 i = 0; i < indices.size(); i += 3)
-	//	{
-	//		// indices
-	//		const u32 a = indices[i + 0];
-	//		const u32 b = indices[i + 1];
-	//		const u32 c = indices[i + 2];
-	//		// index into vertices array
-	//		const u32 via = a * VERT_SIZE;
-	//		const u32 vib = b * VERT_SIZE;
-	//		const u32 vic = c * VERT_SIZE;
-	//		// assumes xyz is first 3 elements
-	//		const vec<space::OBJECT> va(vertices[via + 0], vertices[via + 1], vertices[via + 2]);
-	//		const vec<space::OBJECT> vb(vertices[vib + 0], vertices[vib + 1], vertices[vib + 2]);
-	//		const vec<space::OBJECT> vc(vertices[vic + 0], vertices[vic + 1], vertices[vic + 2]);
-	//		const vec<space::OBJECT> ab = va - vb, ac = va - vc;
-	//		// assumes ccw ordering (does glu force this or leave input winding?)
-	//		const vec<space::OBJECT> normal = ab.cross_copy(ac);
-	//		norms[a] += normal;
-	//		norms[b] += normal;
-	//		norms[c] += normal;
-	//	}
-	//	// average total normals
-	//	for (auto& pair : norms)
-	//		pair.second = pair.second.normalize_copy();
-	//	const std::vector<f32> input_copy = input_verts;
-	//	input_verts.clear();
-	//	for (u32 i = 0; i < input_copy.size(); i += VERT_SIZE)
-	//	{
-	//		for (u32 j = 0; j < VERT_SIZE; j++)
-	//			input_verts.push_back(input_copy[i + j]);
-	//		const std::string& key = vert_to_string(input_copy.data() + i);
-	//		const vec<space::OBJECT>& normal = norms.at(vert2index.at(key));
-	//		input_verts.push_back(normal.x);
-	//		input_verts.push_back(normal.y);
-	//		input_verts.push_back(normal.z);
-	//	}
-	// }
+	for (auto& pair : out_verts_for_mtl)
+	{
+		std::vector<mesh_vertex>& input_verts = pair.second;
+		// index
+		std::unordered_map<std::string, u32> vert2index;
+		std::vector<mesh_vertex> unique_verts;
+		std::vector<u32> indices;
+		u32 index_count = 0;
+		for (u32 i = 0; i < input_verts.size(); i++)
+		{
+			const mesh_vertex& mv = input_verts[i];
+			const std::string& key = mv.to_string();
+			if (!vert2index.contains(key))
+			{
+				vert2index.insert({ key, index_count });
+				index_count++;
+				unique_verts.push_back(mv);
+			}
+			indices.push_back(vert2index.at(key));
+		}
+		// compute norms
+		std::unordered_map<u32, vec<space::OBJECT>> norms;
+		for (u32 i = 0; i < indices.size(); i += 3)
+		{
+			const u32 ia = indices[i + 0];
+			const u32 ib = indices[i + 1];
+			const u32 ic = indices[i + 2];
+			// printf("A %u %u %u\n", ia, ib, ic);
+			const mesh_vertex& va = unique_verts[ia];
+			const mesh_vertex& vb = unique_verts[ib];
+			const mesh_vertex& vc = unique_verts[ic];
+			const vec<space::OBJECT> pa(va.x, va.y, va.z);
+			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
+			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
+			const vec<space::OBJECT>&ab = pa - pb, &ac = pa - pc;
+			const vec<space::OBJECT> norm = ab.cross_copy(ac);
+			/*printf("A\n");
+			pa.print();
+			pb.print();
+			pc.print();
+			ab.print();
+			ac.print();
+			norm.print();*/
+
+			norms[ia] += norm;
+			norms[ib] += norm;
+			norms[ic] += norm;
+		}
+		// average norms
+		for (auto& pair : norms)
+		{
+			// printf("A\n");
+			// pair.second.print();
+			pair.second.normalize();
+			// pair.second.print();
+		}
+		// write norms
+		for (mesh_vertex& mv : input_verts)
+		{
+			const auto& norm = norms[vert2index[mv.to_string()]];
+			mv.nx = norm.x;
+			mv.ny = norm.y;
+			mv.nz = norm.z;
+		}
+	}
 }
 
-void scene_ctx::m_draw_vaos(const mgl::context& glctx, const uniform_mats& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos)
+void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos)
 {
 	for (auto it = vaos.begin(); it != vaos.end(); ++it)
 	{
@@ -205,6 +207,8 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const uniform_mats& mats,
 		mat.shaders->uniform_mat4("u_mv", mats.mv.e);
 		mat.shaders->uniform_mat4("u_m", mats.model.e);
 		mat.shaders->uniform_mat4("u_normal", mats.normal.e);
+		mat.shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
+
 
 		for (u32 i = 0; i < mat.texs.size(); i++)
 		{

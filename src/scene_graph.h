@@ -23,11 +23,11 @@ public:
 		mesh(nullptr),
 		operation(op)
 	{
-		recompute(scene);
 		for (sgnode* const child : children)
 		{
 			child->parent = this;
 		}
+		recompute(scene);
 	}
 	MGL_DCM(sgnode);
 	virtual ~sgnode()

@@ -11,5 +11,5 @@ void main()
 	// float NdL = dot(N, L);
 	// o_col = vec4(NdL * texture(u_tex, v_tex).xyz, 1);
 	// o_col = vec4(texture(u_heightmap, v_tex).xyz, 1);
-	o_col = vec4(texture(u_tex, v_tex).xyz, 1);
+	o_col = vec4(v_NdL * texture(u_tex, v_tex).xyz, 1);
 }

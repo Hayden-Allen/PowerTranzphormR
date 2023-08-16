@@ -5,10 +5,6 @@
 
 void make_scene(scene_ctx* const out_scene)
 {
-	//
-	// FIXME
-	//
-
 	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
 	auto t1 = load_texture_rgb_u8("res/1.png");
 	auto t2 = load_texture_rgb_u8("res/2.png");
@@ -85,7 +81,7 @@ void make_scene(scene_ctx* const out_scene)
 
 	out_scene->set_sg_root(sg);
 
-	mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
+	/*mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
 	mgl::texture2d_rgb_u8* t3 = load_texture_rgb_u8("res/3.png");
 	scene_material mtl3("mtl3", { { "u_tex", t3 }, { "u_heightmap", hm_tex } }, s2);
@@ -97,10 +93,10 @@ void make_scene(scene_ctx* const out_scene)
 				.max_height = 10.f,
 				.width_steps = 10,
 				.depth_steps = 10,
-				.transform = tmat_util::translation<space::OBJECT>(i, -.25f, 0.f),
+				.transform = tmat_util::translation<space::OBJECT>(i, -2, 2),
 			});
 		out_scene->add_heightmap(heightmap);
-	}
+	}*/
 }
 
 int main(int argc, char** argv)

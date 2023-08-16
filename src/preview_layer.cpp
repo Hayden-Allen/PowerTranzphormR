@@ -44,7 +44,7 @@ void preview_layer::on_frame(const f32 dt)
 	glEnable(GL_DEPTH_TEST);
 	m_mgl_context->clear();
 	m_scene->update();
-	m_scene->draw(*m_mgl_context, { mvp, mv, obj, normal });
+	m_scene->draw(*m_mgl_context, { mvp, mv, obj, normal, m_cam.get_pos() });
 	m_fb.unbind();
 }
 
