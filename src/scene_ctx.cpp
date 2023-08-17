@@ -132,14 +132,15 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 
 	for (auto& pair : out_verts_for_mtl)
 	{
-		const std::vector<mesh_vertex>& input_verts = pair.second;
+		std::vector<mesh_vertex>& input_verts = pair.second;
 		// index
-		std::unordered_map<std::string, u32> vert2index;
-		// std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
+		// std::unordered_map<std::string, u32> vert2index;
+		std::vector<u32> input_vert2index;
+		std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
 		std::vector<mesh_vertex> unique_verts;
 		std::vector<u32> indices;
 		u32 index_count = 0;
-		for (u32 i = 0; i < input_verts.size(); i++)
+		/*for (u32 i = 0; i < input_verts.size(); i++)
 		{
 			const mesh_vertex& mv = input_verts[i];
 			const std::string& key = mv.to_string();
@@ -149,9 +150,12 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				index_count++;
 				unique_verts.push_back(mv);
 			}
-			indices.push_back(vert2index.at(key));
-		}
-		/*
+			const u32 index = vert2index.at(key);
+			indices.push_back(index);
+			input_vert2index.push_back(index);
+		}*/
+
+		// /*
 		assert(input_verts.size() % 3 == 0);
 		for (u32 i = 0; i < input_verts.size(); i += 3)
 		{
@@ -198,6 +202,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 							{
 								faces.second.push_back(norm);
 								indices.push_back(faces.first);
+								input_vert2index.push_back(faces.first);
 								found = true;
 								break;
 							}
@@ -216,12 +221,14 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 						{ { index_count, { norm } } },
 					});
 					indices.push_back(index_count);
+					input_vert2index.push_back(index_count);
 					index_count++;
 					unique_verts.push_back(mv);
 				}
 			}
 		}
-		*/
+		// */
+
 		// compute weighted norms
 		std::unordered_map<u32, vec<space::OBJECT>> norms;
 		for (u32 i = 0; i < indices.size(); i += 3)
@@ -253,16 +260,28 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		{
 			pair.second.normalize();
 		}
-		// write norms
-		pair.second.clear();
-		for (const u32 i : indices)
+		//// write norms
+		// pair.second.clear();
+		// for (const u32 i : indices)
+		//{
+		//	vec<space::OBJECT>& norm = norms[i];
+		//	// norm.print();
+		//	unique_verts[i].nx = norm.x;
+		//	unique_verts[i].ny = norm.y;
+		//	unique_verts[i].nz = norm.z;
+		//	pair.second.push_back(unique_verts[i]);
+		// }
+
+		// HATODO remove now unused from input_verts?
+		//  write norms
+		for (u32 i = 0; i < input_verts.size(); i++)
 		{
-			vec<space::OBJECT>& norm = norms[i];
-			// norm.print();
-			unique_verts[i].nx = norm.x;
-			unique_verts[i].ny = norm.y;
-			unique_verts[i].nz = norm.z;
-			pair.second.push_back(unique_verts[i]);
+			// const auto& norm = norms[vert2index[mv.to_string()]];
+			mesh_vertex& mv = input_verts[i];
+			const auto& norm = norms[input_vert2index[i]];
+			mv.nx = norm.x;
+			mv.ny = norm.y;
+			mv.nz = norm.z;
 		}
 	}
 }
