@@ -132,9 +132,10 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 
 	for (auto& pair : out_verts_for_mtl)
 	{
-		std::vector<mesh_vertex>& input_verts = pair.second;
+		const std::vector<mesh_vertex>& input_verts = pair.second;
 		// index
 		std::unordered_map<std::string, u32> vert2index;
+		// std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
 		std::vector<mesh_vertex> unique_verts;
 		std::vector<u32> indices;
 		u32 index_count = 0;
@@ -150,6 +151,77 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			}
 			indices.push_back(vert2index.at(key));
 		}
+		/*
+		assert(input_verts.size() % 3 == 0);
+		for (u32 i = 0; i < input_verts.size(); i += 3)
+		{
+			// printf("%u\n", i);
+			const mesh_vertex& va = input_verts[i + 0];
+			const mesh_vertex& vb = input_verts[i + 1];
+			const mesh_vertex& vc = input_verts[i + 2];
+			// vertex positions of current triangle
+			const vec<space::OBJECT> pa(va.x, va.y, va.z);
+			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
+			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
+			// sides of current triangle
+			const vec<space::OBJECT>& ab = pa - pb;
+			const vec<space::OBJECT>& ac = pa - pc;
+			// face normal of current triangle
+			const direction<space::OBJECT> norm(ab.cross_copy(ac));
+
+			// go through the verts in current face
+			for (u32 j = 0; j < 3; j++)
+			{
+				// printf("j %u\n", j);
+				const mesh_vertex& mv = input_verts[i + j];
+				const std::string& key = mv.to_string();
+				const auto& it = vert2index.find(key);
+				// this vertex has been seen before, try to match it to existing instance
+				bool found = false;
+				if (it != vert2index.end())
+				{
+					// check existing instances of this vertex
+					for (auto& faces : it->second)
+					{
+						// printf("%zu\n", faces.second.size());
+						// check all faces that each instance is part of
+						for (u32 k = 0; k < faces.second.size(); k++)
+						{
+							// printf("k %u\n", k);
+							const auto& face_norm = faces.second.at(k);
+							const f32 angle = norm.angle_to(face_norm);
+							// current vertex can not be added to this instance
+							if (angle >= s_snap_angle)
+								break;
+							// made it to the end of the list, current vertex is part of this instance
+							if (k == faces.second.size() - 1)
+							{
+								faces.second.push_back(norm);
+								indices.push_back(faces.first);
+								found = true;
+								break;
+							}
+						}
+						// current vertex inserted, stop
+						if (found)
+							break;
+					}
+				}
+				// either this vertex hasn't been seen before or it doesn't match any existing instances, so make a new one
+				if (!found)
+				{
+					// printf("NEW\n");
+					vert2index.insert({
+						key,
+						{ { index_count, { norm } } },
+					});
+					indices.push_back(index_count);
+					index_count++;
+					unique_verts.push_back(mv);
+				}
+			}
+		}
+		*/
 		// compute weighted norms
 		std::unordered_map<u32, vec<space::OBJECT>> norms;
 		for (u32 i = 0; i < indices.size(); i += 3)
@@ -182,12 +254,15 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			pair.second.normalize();
 		}
 		// write norms
-		for (mesh_vertex& mv : input_verts)
+		pair.second.clear();
+		for (const u32 i : indices)
 		{
-			const auto& norm = norms[vert2index[mv.to_string()]];
-			mv.nx = norm.x;
-			mv.ny = norm.y;
-			mv.nz = norm.z;
+			vec<space::OBJECT>& norm = norms[i];
+			// norm.print();
+			unique_verts[i].nx = norm.x;
+			unique_verts[i].ny = norm.y;
+			unique_verts[i].nz = norm.z;
+			pair.second.push_back(unique_verts[i]);
 		}
 	}
 }

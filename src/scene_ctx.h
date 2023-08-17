@@ -70,6 +70,7 @@ public:
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_vert_size = 8;
+	constexpr static f32 s_snap_angle = c::PI / 2;
 private:
 	carve::csg::CSG m_csg;
 	attr_tex_coord_t m_tex_coord_attr;
