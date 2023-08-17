@@ -42,10 +42,11 @@ void make_scene(scene_ctx* const out_scene)
 		{
 			.radius = .5f,
 			.height = 1.f,
+			.num_steps = 8,
 			.transform = tmat_util::translation<space::OBJECT>(0.f, 1.5f, 0),
 		});
-	sgnode* n3 = new sgnode(nullptr, cone);
-	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n2, n3 });
+	sgnode* cone_node = new sgnode(nullptr, cone);
+	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n2, cone_node });
 
 	mesh_t* tor2 = textured_torus(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -60,7 +61,16 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0),
 		});
 	sgnode* n9 = new sgnode(nullptr, sphere);
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n4, n7, n9 });
+	mesh_t* cyl2 = textured_cylinder(
+		tex_coord_attr, mtl_id_attr, 1,
+		{
+			.top_radius = .5f,
+			.bottom_radius = .5f,
+			.num_steps = 8,
+			.transform = tmat_util::translation<space::OBJECT>(-1.5f, 1.5f, 0),
+		});
+	sgnode* cyl2_node = new sgnode(nullptr, cyl2);
+	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n4, n7, n9, cyl2_node });
 
 	mesh_t* sphere2 = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -76,6 +86,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(1.f - c::EPSILON, c::EPSILON, 0),
 		});
 	sgnode* tor_node = new sgnode(nullptr, tor);
+
 	sgnode* sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, sphere_node, tor_node });
 	sg->recompute(csg);
 

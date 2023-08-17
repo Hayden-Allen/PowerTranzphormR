@@ -21,7 +21,7 @@ void main()
 	vec4 diff = NdL * texture(u_tex, v_tex);
 	o_col = clamp(diff + spec, vec4(vec3(0), 1), vec4(1));
 	// o_col = texture(u_tex, v_tex);
-	// o_col = vec4(v_N, 1);
+	// o_col = vec4(abs(v_N), 1);
 	
 	// vec3 t = dFdx(world_pos);
 	// vec3 bt = dFdy(world_pos);

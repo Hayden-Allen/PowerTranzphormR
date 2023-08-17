@@ -159,7 +159,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		assert(input_verts.size() % 3 == 0);
 		for (u32 i = 0; i < input_verts.size(); i += 3)
 		{
-			// printf("%u\n", i);
 			const mesh_vertex& va = input_verts[i + 0];
 			const mesh_vertex& vb = input_verts[i + 1];
 			const mesh_vertex& vc = input_verts[i + 2];
@@ -176,8 +175,8 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			// go through the verts in current face
 			for (u32 j = 0; j < 3; j++)
 			{
-				// printf("j %u\n", j);
 				const mesh_vertex& mv = input_verts[i + j];
+				// printf("AAAA %s\n", mv.to_string().c_str());
 				const std::string& key = mv.to_string();
 				const auto& it = vert2index.find(key);
 				// this vertex has been seen before, try to match it to existing instance
@@ -185,25 +184,30 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				if (it != vert2index.end())
 				{
 					// check existing instances of this vertex
-					for (auto& faces : it->second)
+					for (auto& instance : it->second)
 					{
-						// printf("%zu\n", faces.second.size());
+						// printf("CHECK %u\n", instance.first);
 						// check all faces that each instance is part of
-						for (u32 k = 0; k < faces.second.size(); k++)
+						for (u32 k = 0; k < instance.second.size(); k++)
 						{
-							// printf("k %u\n", k);
-							const auto& face_norm = faces.second.at(k);
+							const auto& face_norm = instance.second.at(k);
 							const f32 angle = norm.angle_to(face_norm);
-							// current vertex can not be added to this instance
-							if (angle >= s_snap_angle)
-								break;
-							// made it to the end of the list, current vertex is part of this instance
-							if (k == faces.second.size() - 1)
+							// current vertex cannot be added to this instance
+							if (fabs(angle) >= s_snap_angle)
 							{
-								faces.second.push_back(norm);
-								indices.push_back(faces.first);
-								input_vert2index.push_back(faces.first);
+								// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
+								break;
+							}
+							// made it to the end of the list, current vertex is part of this instance
+							if (k == instance.second.size() - 1)
+							{
+								vert2index.at(key).at(instance.first).push_back(norm);
+								instance.second.push_back(norm);
+								indices.push_back(instance.first);
+								input_vert2index.push_back(instance.first);
+								// printf("%s => %u\n", mv.to_string().c_str(), instance.first);
 								found = true;
+								// need to break here because we're adding to instance.second, so this loop will go forever
 								break;
 							}
 						}
@@ -215,13 +219,23 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				// either this vertex hasn't been seen before or it doesn't match any existing instances, so make a new one
 				if (!found)
 				{
-					// printf("NEW\n");
-					vert2index.insert({
-						key,
-						{ { index_count, { norm } } },
-					});
+					// totally new vertex, need to create map
+					if (!vert2index.contains(key))
+					{
+						vert2index.insert({
+							key,
+							{ { index_count, { norm } } },
+						});
+					}
+					// at least one instance of this vertex already exists, just add to the map
+					else
+					{
+						vert2index.at(key).insert({ index_count, { norm } });
+					}
 					indices.push_back(index_count);
 					input_vert2index.push_back(index_count);
+					/*if (it != vert2index.end())
+						printf("%s => %u\n", mv.to_string().c_str(), index_count);*/
 					index_count++;
 					unique_verts.push_back(mv);
 				}
@@ -260,23 +274,11 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		{
 			pair.second.normalize();
 		}
-		//// write norms
-		// pair.second.clear();
-		// for (const u32 i : indices)
-		//{
-		//	vec<space::OBJECT>& norm = norms[i];
-		//	// norm.print();
-		//	unique_verts[i].nx = norm.x;
-		//	unique_verts[i].ny = norm.y;
-		//	unique_verts[i].nz = norm.z;
-		//	pair.second.push_back(unique_verts[i]);
-		// }
 
 		// HATODO remove now unused from input_verts?
-		//  write norms
+		// write norms
 		for (u32 i = 0; i < input_verts.size(); i++)
 		{
-			// const auto& norm = norms[vert2index[mv.to_string()]];
 			mesh_vertex& mv = input_verts[i];
 			const auto& norm = norms[input_vert2index[i]];
 			mv.nx = norm.x;
