@@ -8,11 +8,15 @@ uniform vec3 u_cam_pos;
 
 out vec2 v_tex;
 out vec3 v_N, v_pos;
+out float v_NdL;
 
 void main()
 {
 	gl_Position = u_mvp * vec4(i_pos, 1);
 	
+	vec3 L = normalize(vec3(1, 1, 1));
+	v_NdL = max(0, dot(i_norm, L));
+
 	v_tex = i_tex;
 	v_N = i_norm;
 	v_pos = i_pos;

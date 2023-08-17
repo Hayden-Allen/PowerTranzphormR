@@ -61,7 +61,7 @@ public:
 	{
 		return m_csg;
 	}
-	void set_sg_root(sgnode* n)
+	void set_sg_root(sgnode* const n)
 	{
 		m_sg_root = n;
 		// need to build initial vaos when root node assigned
@@ -70,7 +70,10 @@ public:
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_vert_size = 8;
-	constexpr static f32 s_snap_angle = c::PI / 2;
+	// constexpr static f32 s_snap_angle = c::PI / 2;
+	// constexpr static f32 s_snap_angle = c::PI / 3;
+	// constexpr static f32 s_snap_angle = c::PI / 4;
+	constexpr static f32 s_snap_angle = 7 * c::PI / 24;
 private:
 	carve::csg::CSG m_csg;
 	attr_tex_coord_t m_tex_coord_attr;

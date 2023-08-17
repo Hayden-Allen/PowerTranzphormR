@@ -7,6 +7,7 @@ uniform mat4 u_m;
 
 in vec2 v_tex;
 in vec3 v_pos, v_N;
+in float v_NdL;
 
 void main()
 {
@@ -15,14 +16,15 @@ void main()
 	vec3 L = normalize(vec3(1, 1, 1));
 	vec3 R = normalize(reflect(L, v_N));
 	float RdV = pow(max(0, dot(V, R)), 16);
-	float NdL = max(0, dot(v_N, L));
 
 	vec4 spec = vec4(RdV * vec3(1), 1);
-	vec4 diff = NdL * texture(u_tex, v_tex);
+	vec4 diff = min(1, v_NdL + .2) * texture(u_tex, v_tex);
+	// vec4 spec = vec4(0);
+	// vec4 diff = vec4(vec3(min(1, v_NdL + .2)), 1);
 	o_col = clamp(diff + spec, vec4(vec3(0), 1), vec4(1));
+
 	// o_col = texture(u_tex, v_tex);
 	// o_col = vec4(abs(v_N), 1);
-	
 	// vec3 t = dFdx(world_pos);
 	// vec3 bt = dFdy(world_pos);
 	// vec3 normal = normalize(cross(t, bt));

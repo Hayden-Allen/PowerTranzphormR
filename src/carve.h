@@ -53,7 +53,7 @@ struct cone_options
 struct torus_options
 {
 	f32 center_radius = 1.f, tube_radius = .5f;
-	u32 num_center_steps = 8, num_tube_steps = 8;
+	u32 num_center_steps = 12, num_tube_steps = 12;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct ellipsoid_options
