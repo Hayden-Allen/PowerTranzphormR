@@ -96,7 +96,10 @@ public:
 		// printf("RECOMPUTE %p\n", this);
 		// if no children or hasn't been changed, stop
 		if (is_leaf() || !m_dirty)
+		{
+			m_dirty = false;
 			return false;
+		}
 
 		m_dirty = false;
 		// if only one child, have nothing to recompute
