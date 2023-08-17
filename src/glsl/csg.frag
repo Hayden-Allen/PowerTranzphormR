@@ -17,11 +17,11 @@ void main()
 	
 	vec3 diff = v_NdL * texture(u_tex, v_tex).xyz;
 	vec3 spec = vec3(RdV);
-	// o_col = vec4(clamp(diff + spec, vec3(0), vec3(1)), 1);
+	o_col = vec4(clamp(diff + spec, vec3(0), vec3(1)), 1);
 	// o_col = vec4(abs(v_NdL * v_N), 1);
 	
-	vec3 t = dFdx(world_pos);
-	vec3 bt = dFdy(world_pos);
-	vec3 normal = normalize(cross(t, bt));
-	o_col = vec4(abs(normal), 1);
+	// vec3 t = dFdx(world_pos);
+	// vec3 bt = dFdy(world_pos);
+	// vec3 normal = normalize(cross(t, bt));
+	// o_col = vec4(abs(normal), 1);
 }
