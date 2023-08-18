@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "scene_ctx.h"
+#include <pmp/surface_mesh.h>
+#include <pmp/algorithms/normals.h>
 
 scene_ctx::scene_ctx()
 {
@@ -130,162 +132,73 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	}
 	gluDeleteTess(tess);
 
+	pmp::SurfaceMesh normals_mesh;
 	for (auto& pair : out_verts_for_mtl)
 	{
 		std::vector<mesh_vertex>& input_verts = pair.second;
-		// index
-		// std::unordered_map<std::string, u32> vert2index;
-		std::vector<u32> input_vert2index;
-		std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
-		std::vector<mesh_vertex> unique_verts;
-		std::vector<u32> indices;
-		u32 index_count = 0;
-		/*for (u32 i = 0; i < input_verts.size(); i++)
+		for (size_t i = 0; i < input_verts.size(); i += 3)
 		{
-			const mesh_vertex& mv = input_verts[i];
-			const std::string& key = mv.to_string();
-			if (!vert2index.contains(key))
-			{
-				vert2index.insert({ key, index_count });
-				index_count++;
-				unique_verts.push_back(mv);
-			}
-			const u32 index = vert2index.at(key);
-			indices.push_back(index);
-			input_vert2index.push_back(index);
-		}*/
-
-		// /*
-		assert(input_verts.size() % 3 == 0);
-		for (u32 i = 0; i < input_verts.size(); i += 3)
-		{
-			const mesh_vertex& va = input_verts[i + 0];
-			const mesh_vertex& vb = input_verts[i + 1];
-			const mesh_vertex& vc = input_verts[i + 2];
-			// vertex positions of current triangle
-			const vec<space::OBJECT> pa(va.x, va.y, va.z);
-			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
-			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
-			// sides of current triangle
-			const vec<space::OBJECT>& ab = pa - pb;
-			const vec<space::OBJECT>& ac = pa - pc;
-			// face normal of current triangle
-			const direction<space::OBJECT> norm(ab.cross_copy(ac));
-
-			// go through the verts in current face
-			for (u32 j = 0; j < 3; j++)
-			{
-				const mesh_vertex& mv = input_verts[i + j];
-				// printf("AAAA %s\n", mv.to_string().c_str());
-				const std::string& key = mv.to_string();
-				const auto& it = vert2index.find(key);
-				// this vertex has been seen before, try to match it to existing instance
-				bool found = false;
-				if (it != vert2index.end())
-				{
-					// check existing instances of this vertex
-					for (auto& instance : it->second)
-					{
-						// printf("CHECK %u\n", instance.first);
-						// check all faces that each instance is part of
-						for (u32 k = 0; k < instance.second.size(); k++)
-						{
-							const auto& face_norm = instance.second.at(k);
-							const f32 angle = norm.angle_to(face_norm);
-							// current vertex cannot be added to this instance
-							if (fabs(angle) >= s_snap_angle)
-							{
-								// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
-								break;
-							}
-							// made it to the end of the list, current vertex is part of this instance
-							if (k == instance.second.size() - 1)
-							{
-								vert2index.at(key).at(instance.first).push_back(norm);
-								instance.second.push_back(norm);
-								indices.push_back(instance.first);
-								input_vert2index.push_back(instance.first);
-								// printf("%s => %u\n", mv.to_string().c_str(), instance.first);
-								found = true;
-								// need to break here because we're adding to instance.second, so this loop will go forever
-								break;
-							}
-						}
-						// current vertex inserted, stop
-						if (found)
-							break;
-					}
-				}
-				// either this vertex hasn't been seen before or it doesn't match any existing instances, so make a new one
-				if (!found)
-				{
-					// totally new vertex, need to create map
-					if (!vert2index.contains(key))
-					{
-						vert2index.insert({
-							key,
-							{ { index_count, { norm } } },
-						});
-					}
-					// at least one instance of this vertex already exists, just add to the map
-					else
-					{
-						vert2index.at(key).insert({ index_count, { norm } });
-					}
-					indices.push_back(index_count);
-					input_vert2index.push_back(index_count);
-					/*if (it != vert2index.end())
-						printf("%s => %u\n", mv.to_string().c_str(), index_count);*/
-					index_count++;
-					unique_verts.push_back(mv);
-				}
-			}
-		}
-		// */
-
-		// compute weighted norms
-		std::unordered_map<u32, vec<space::OBJECT>> norms;
-		for (u32 i = 0; i < indices.size(); i += 3)
-		{
-			// indices of unique vertices of current triangle
-			const u32 ia = indices[i + 0];
-			const u32 ib = indices[i + 1];
-			const u32 ic = indices[i + 2];
-			// vertices of current triangle
-			const mesh_vertex& va = unique_verts[ia];
-			const mesh_vertex& vb = unique_verts[ib];
-			const mesh_vertex& vc = unique_verts[ic];
-			// vertex positions of current triangle
-			const vec<space::OBJECT> pa(va.x, va.y, va.z);
-			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
-			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
-			// sides of current triangle
-			const vec<space::OBJECT>& ab = pa - pb;
-			const vec<space::OBJECT>& ac = pa - pc;
-			// face normal of current triangle
-			const vec<space::OBJECT> norm = ab.cross_copy(ac);
-			// add face normal to each vertex. Note that `norm` is not actually normalized, so this inherently weights each normal by the size of the face it is from
-			norms[ia] += norm;
-			norms[ib] += norm;
-			norms[ic] += norm;
-		}
-		// average weighted norms
-		for (auto& pair : norms)
-		{
-			pair.second.normalize();
-		}
-
-		// HATODO remove now unused from input_verts?
-		// write norms
-		for (u32 i = 0; i < input_verts.size(); i++)
-		{
-			mesh_vertex& mv = input_verts[i];
-			const auto& norm = norms[input_vert2index[i]];
-			mv.nx = norm.x;
-			mv.ny = norm.y;
-			mv.nz = norm.z;
+			const auto& iv0 = input_verts[i];
+			const auto& iv1 = input_verts[i + 1];
+			const auto& iv2 = input_verts[i + 2];
+			const auto v0 = normals_mesh.add_vertex(pmp::Point(iv0.x, iv0.y, iv0.z));
+			const auto v1 = normals_mesh.add_vertex(pmp::Point(iv1.x, iv1.y, iv1.z));
+			const auto v2 = normals_mesh.add_vertex(pmp::Point(iv2.x, iv2.y, iv2.z));
+			normals_mesh.add_triangle(v0, v1, v2);
 		}
 	}
+	pmp::vertex_normals(normals_mesh);
+	for (const auto v : normals_mesh.vertices()) {
+		const auto n = normals_mesh.get_vertex_property<pmp::Normal>("v:normal");
+		std::cout << v << " -> " << *n.data() << "\n";
+	}
+
+	/*
+	std::unordered_map<std::string, vec<space::OBJECT>> normals;
+	for (const auto& pair : out_verts_for_mtl)
+	{
+		const auto& input_verts = pair.second;
+		for (size_t i = 0; i < input_verts.size(); i += 3)
+		{
+			const auto& iv0 = input_verts[i];
+			const auto& iv1 = input_verts[i + 1];
+			const auto& iv2 = input_verts[i + 2];
+			const vec<space::OBJECT> p0(iv0.x, iv0.y, iv0.z);
+			const vec<space::OBJECT> p1(iv1.x, iv1.y, iv1.z);
+			const vec<space::OBJECT> p2(iv2.x, iv2.y, iv2.z);
+			const vec<space::OBJECT> p01 = p0 - p1, p02 = p0 - p2;
+			const vec<space::OBJECT> norm = p01.cross_copy(p02);
+			normals[iv0.to_string()] += norm;
+			normals[iv1.to_string()] += norm;
+			normals[iv2.to_string()] += norm;
+		}
+	}
+	for (auto& pair : normals) {
+		pair.second.normalize();
+	}
+	for (auto& pair : out_verts_for_mtl)
+	{
+		auto& input_verts = pair.second;
+		for (size_t i = 0; i < input_verts.size(); i += 3)
+		{
+			auto& iv0 = input_verts[i];
+			auto& iv1 = input_verts[i + 1];
+			auto& iv2 = input_verts[i + 2];
+			const auto& in0 = normals[iv0.to_string()];
+			const auto& in1 = normals[iv1.to_string()];
+			const auto& in2 = normals[iv2.to_string()];
+			iv0.nx = in0.x;
+			iv0.ny = in0.y;
+			iv0.nz = in0.z;
+			iv1.nx = in1.x;
+			iv1.ny = in1.y;
+			iv1.nz = in1.z;
+			iv2.nx = in2.x;
+			iv2.ny = in2.y;
+			iv2.nz = in2.z;
+		}
+	}
+	*/
 }
 
 void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos)

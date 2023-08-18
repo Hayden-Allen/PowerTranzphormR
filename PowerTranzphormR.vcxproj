@@ -199,11 +199,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX23_DENORM_DEPRECATION_WARNING;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\Eigen\include\;lib\pmp\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -212,8 +212,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib\GLFW\;lib\carve\lib\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>carve_d.lib;carve_misc_d.lib;carve_fileformats_d.lib;glu32.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\GLFW\;lib\pmp\lib\debug\;lib\carve\lib\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pmp.lib;carve_d.lib;carve_misc_d.lib;carve_fileformats_d.lib;glu32.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>MSVCRT;</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -222,11 +222,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX23_DENORM_DEPRECATION_WARNING;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\Eigen\include\;lib\pmp\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -235,8 +235,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib\GLFW\;lib\carve\lib\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>carve_d.lib;carve_misc_d.lib;carve_fileformats_d.lib;glu32.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\GLFW\;lib\pmp\lib\debug\;lib\carve\lib\debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pmp.lib;carve_d.lib;carve_misc_d.lib;carve_fileformats_d.lib;glu32.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>MSVCRT;</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -246,11 +246,11 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_CXX23_DENORM_DEPRECATION_WARNING;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\Eigen\include\;lib\pmp\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -263,8 +263,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib\GLFW\;lib\carve\lib\release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>carve.lib;carve_misc.lib;carve_fileformats.lib;glu32.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\GLFW\;lib\pmp\lib\release\;lib\carve\lib\release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pmp.lib;carve.lib;carve_misc.lib;carve_fileformats.lib;glu32.lib;glfw3.lib;opengl32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
