@@ -130,61 +130,128 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	}
 	gluDeleteTess(tess);
 
-	for (auto& pair : out_verts_for_mtl)
+	// std::vector<u32> indices;
+	// std::vector<mesh_vertex> unique_verts;
+	// std::unordered_map<std::string, u32> vert2index;
+	// for (auto& pair : out_verts_for_mtl)
+	//{
+	//	std::vector<mesh_vertex>& input_verts = pair.second;
+	//	// index
+	//	u32 index_count = 0;
+	//	for (u32 i = 0; i < input_verts.size(); i++)
+	//	{
+	//		const mesh_vertex& mv = input_verts[i];
+	//		const std::string& key = mv.to_string();
+	//		if (!vert2index.contains(key))
+	//		{
+	//			vert2index.insert({ key, index_count });
+	//			index_count++;
+	//			unique_verts.push_back(mv);
+	//		}
+	//		indices.push_back(vert2index.at(key));
+	//	}
+	// }
+	//// compute weighted norms
+	// std::unordered_map<u32, vec<space::OBJECT>> norms;
+	// for (u32 i = 0; i < indices.size(); i += 3)
+	//{
+	//	// indices of unique vertices of current triangle
+	//	const u32 ia = indices[i + 0];
+	//	const u32 ib = indices[i + 1];
+	//	const u32 ic = indices[i + 2];
+	//	// vertices of current triangle
+	//	const mesh_vertex& va = unique_verts[ia];
+	//	const mesh_vertex& vb = unique_verts[ib];
+	//	const mesh_vertex& vc = unique_verts[ic];
+	//	// vertex positions of current triangle
+	//	const vec<space::OBJECT> pa(va.x, va.y, va.z);
+	//	const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
+	//	const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
+	//	// sides of current triangle
+	//	const vec<space::OBJECT>& ab = pa - pb;
+	//	const vec<space::OBJECT>& ac = pa - pc;
+	//	// face normal of current triangle
+	//	const vec<space::OBJECT> norm = ab.cross_copy(ac);
+	//	// add face normal to each vertex. Note that `norm` is not actually normalized, so this inherently weights each normal by the size of the face it is from
+	//	norms[ia] += norm;
+	//	norms[ib] += norm;
+	//	norms[ic] += norm;
+	// }
+	//// average weighted norms
+	// for (auto& pair : norms)
+	//{
+	//	pair.second.normalize();
+	// }
+	//// write norms
+	// for (auto& pair : out_verts_for_mtl)
+	//{
+	//	for (mesh_vertex& mv : pair.second)
+	//	{
+	//		const auto& norm = norms[vert2index[mv.to_string()]];
+	//		mv.nx = norm.x;
+	//		mv.ny = norm.y;
+	//		mv.nz = norm.z;
+	//	}
+	// }
+
+	std::vector<mesh_vertex> unique_verts;
+	std::vector<u32> indices;
+	std::unordered_map<std::string, u32> vert2index;
+	u32 next_index = 0;
+	// split vertex array to indexed unique verts
+	for (const auto& pair : out_verts_for_mtl)
 	{
-		std::vector<mesh_vertex>& input_verts = pair.second;
-		// index
-		std::unordered_map<std::string, u32> vert2index;
-		std::vector<mesh_vertex> unique_verts;
-		std::vector<u32> indices;
-		u32 index_count = 0;
-		for (u32 i = 0; i < input_verts.size(); i++)
+		const auto& input_verts = pair.second;
+		for (const mesh_vertex& mv : input_verts)
 		{
-			const mesh_vertex& mv = input_verts[i];
 			const std::string& key = mv.to_string();
 			if (!vert2index.contains(key))
 			{
-				vert2index.insert({ key, index_count });
-				index_count++;
+				vert2index.insert({ {
+					key,
+					next_index,
+				} });
+				next_index++;
 				unique_verts.push_back(mv);
 			}
 			indices.push_back(vert2index.at(key));
 		}
-		// compute weighted norms
-		std::unordered_map<u32, vec<space::OBJECT>> norms;
-		for (u32 i = 0; i < indices.size(); i += 3)
+	}
+	// compute weighted norms for each vertex
+	std::unordered_map<u32, vec<space::OBJECT>> index2norm;
+	for (u32 i = 0; i < indices.size(); i += 3)
+	{
+		// indices of current face
+		const u32 ia = indices[i + 0];
+		const u32 ib = indices[i + 1];
+		const u32 ic = indices[i + 2];
+		// vertices of current face
+		const mesh_vertex& va = unique_verts[ia];
+		const mesh_vertex& vb = unique_verts[ib];
+		const mesh_vertex& vc = unique_verts[ic];
+		// positions of current face
+		const vec<space::OBJECT> pa(va.x, va.y, va.z);
+		const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
+		const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
+		// sides of current face
+		const vec<space::OBJECT> ab = pa - pb;
+		const vec<space::OBJECT> ac = pa - pc;
+		// normal of current face
+		const vec<space::OBJECT>& norm = ab.cross_copy(ac);
+
+		index2norm[ia] += norm;
+		index2norm[ib] += norm;
+		index2norm[ic] += norm;
+	}
+	// average vertex norms
+	for (auto& norm : index2norm)
+		norm.second.normalize();
+	// write norms
+	for (auto& pair : out_verts_for_mtl)
+	{
+		for (mesh_vertex& mv : pair.second)
 		{
-			// indices of unique vertices of current triangle
-			const u32 ia = indices[i + 0];
-			const u32 ib = indices[i + 1];
-			const u32 ic = indices[i + 2];
-			// vertices of current triangle
-			const mesh_vertex& va = unique_verts[ia];
-			const mesh_vertex& vb = unique_verts[ib];
-			const mesh_vertex& vc = unique_verts[ic];
-			// vertex positions of current triangle
-			const vec<space::OBJECT> pa(va.x, va.y, va.z);
-			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
-			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
-			// sides of current triangle
-			const vec<space::OBJECT>& ab = pa - pb;
-			const vec<space::OBJECT>& ac = pa - pc;
-			// face normal of current triangle
-			const vec<space::OBJECT> norm = ab.cross_copy(ac);
-			// add face normal to each vertex. Note that `norm` is not actually normalized, so this inherently weights each normal by the size of the face it is from
-			norms[ia] += norm;
-			norms[ib] += norm;
-			norms[ic] += norm;
-		}
-		// average weighted norms
-		for (auto& pair : norms)
-		{
-			pair.second.normalize();
-		}
-		// write norms
-		for (mesh_vertex& mv : input_verts)
-		{
-			const auto& norm = norms[vert2index[mv.to_string()]];
+			const auto& norm = index2norm[vert2index[mv.to_string()]];
 			mv.nx = norm.x;
 			mv.ny = norm.y;
 			mv.nz = norm.z;

@@ -11,7 +11,7 @@ void main()
 {
 	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
 	vec3 V = normalize(world_pos - u_cam_pos);
-	vec3 L = normalize(vec3(0, 1, 0));
+	vec3 L = normalize(vec3(1, 1, 1));
 	vec3 R = normalize(reflect(L, v_N));
 	float RdV = pow(max(0, dot(V, R)), 16);
 	
