@@ -20,10 +20,6 @@ static tex_coord_t& operator+=(tex_coord_t& t1, const tex_coord_t& t2)
 	t1.v += t2.v;
 	return t1;
 }
-struct material_t
-{
-	GLfloat r = 1.0f, g = 1.0f, b = 1.0f;
-};
 
 typedef carve::mesh::MeshSet<3> mesh_t;
 typedef mesh_t::vertex_t vertex_t;
@@ -57,7 +53,7 @@ struct cone_options
 struct torus_options
 {
 	f32 center_radius = 1.f, tube_radius = .5f;
-	u32 num_center_steps = 8, num_tube_steps = 8;
+	u32 num_center_steps = 12, num_tube_steps = 12;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 struct ellipsoid_options
@@ -69,6 +65,7 @@ struct ellipsoid_options
 struct heightmap_options
 {
 	f32 width = 1.f, max_height = 1.f, depth = 1.f;
+	u32 width_steps = 0, depth_steps = 0;
 	tmat<space::OBJECT, space::OBJECT> transform = tmat<space::OBJECT, space::OBJECT>();
 };
 

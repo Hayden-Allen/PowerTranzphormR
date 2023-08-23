@@ -5,6 +5,7 @@
 #	define LOG_INFO(...)  ::log::get_log()->info(__VA_ARGS__)
 #	define LOG_WARN(...)  ::log::get_log()->warn(__VA_ARGS__)
 #	define LOG_ERROR(...) ::log::get_log()->error(__VA_ARGS__)
+#	define LOG_FATAL(...) ::log::get_log()->critical(__VA_ARGS__)
 #	define ASSERT(x, ...)          \
 		if (!(x))                   \
 		{                           \
