@@ -362,6 +362,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
+    <ClInclude Include="src\action_stack.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />

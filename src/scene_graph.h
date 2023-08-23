@@ -83,7 +83,8 @@ public:
 	{
 		return !children.size();
 	}
-	void transform(carve::csg::CSG& scene, const carve::math::Matrix& m)
+	// void transform(carve::csg::CSG& scene, const carve::math::Matrix& m)
+	void transform(carve::csg::CSG& scene, const tmat<space::OBJECT, space::OBJECT>& m)
 	{
 		// when we hit the bottom, mark current node as dirty and work our way back up
 		if (is_leaf())
@@ -92,7 +93,7 @@ public:
 			// only transform leaf meshes because the changes will get propagated back up the tree by recompute anyway
 			mesh->transform([&](vertex_t::vector_t& v)
 				{
-					return m * v;
+					return hats2carve(point<space::OBJECT>(v.x, v.y, v.z).transform(m));
 				});
 			set_dirty();
 		}
