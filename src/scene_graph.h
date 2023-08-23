@@ -9,15 +9,22 @@ public:
 	std::vector<sgnode*> children;
 	mesh_t* mesh;
 	carve::csg::CSG::OP operation;
+	const std::string id;
+	std::string name;
+	bool selected = false;
 public:
 	// leaf node
 	sgnode(sgnode* p, mesh_t* m) :
+		id("sgn" + std::to_string(m_next_id++)),
+		name(""),
 		parent(p),
 		mesh(m),
 		operation(carve::csg::CSG::OP::ALL)
 	{}
 	// non-leaf node
 	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const std::vector<sgnode*> c) :
+		id("sgn" + std::to_string(m_next_id++)),
+		name(""),
 		parent(p),
 		children(c),
 		mesh(nullptr),
@@ -38,6 +45,10 @@ public:
 		mesh = nullptr;
 	}
 public:
+	void set_operation(carve::csg::CSG::OP op) {
+		operation = op;
+		m_dirty = true;
+	}
 	void add_child(sgnode* node)
 	{
 		if (children.size() > 1)
@@ -134,6 +145,8 @@ public:
 	{
 		return m_dirty;
 	}
+private:
+	inline static u32 m_next_id = 1;
 private:
 	// recompute always needs to be called after creation
 	bool m_dirty = true;

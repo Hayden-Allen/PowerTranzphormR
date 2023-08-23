@@ -27,6 +27,7 @@ void make_scene(scene_ctx* const out_scene)
 						 tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f),
 		});
 	sgnode* n0 = new sgnode(nullptr, cyl);
+	n0->name = "Cylinder";
 
 	mesh_t* box_b = textured_cuboid(
 		tex_coord_attr, mtl_id_attr, 2,
@@ -35,6 +36,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(0, -1.f, 0),
 		});
 	sgnode* n1 = new sgnode(nullptr, box_b);
+	n1->name = "Box";
 
 	sgnode* n2 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n1, n0 });
 
@@ -47,6 +49,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(0.f, 1.5f, 0),
 		});
 	sgnode* cone_node = new sgnode(nullptr, cone);
+	cone_node->name = "Cone";
 	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n2, cone_node });
 
 	mesh_t* tor2 = textured_torus(
@@ -55,6 +58,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(3.f, 0, 0),
 		});
 	sgnode* n7 = new sgnode(nullptr, tor2);
+	n7->name = "Torus";
 
 	mesh_t* sphere = textured_ellipsoid(
 		tex_coord_attr, mtl_id_attr, 2,
@@ -62,6 +66,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(-3.f, 0, 0),
 		});
 	sgnode* n9 = new sgnode(nullptr, sphere);
+	n9->name = "Sphere";
 	mesh_t* cyl2 = textured_cylinder(
 		tex_coord_attr, mtl_id_attr, 1,
 		{
@@ -71,6 +76,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(-1.5f, 1.5f, 0),
 		});
 	sgnode* cyl2_node = new sgnode(nullptr, cyl2);
+	cyl2_node->name = "Cylinder";
 	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n4, n7, n9, cyl2_node });
 
 	mesh_t* sphere2 = textured_ellipsoid(
@@ -79,6 +85,7 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(-1.75f + c::EPSILON, -1.f, 0),
 		});
 	sgnode* sphere_node = new sgnode(nullptr, sphere2);
+	sphere_node->name = "Sphere";
 	mesh_t* tor = textured_torus(tex_coord_attr, mtl_id_attr, 2,
 		{
 			.tube_radius = .5f,
@@ -87,11 +94,13 @@ void make_scene(scene_ctx* const out_scene)
 			.transform = tmat_util::translation<space::OBJECT>(1.f - c::EPSILON, c::EPSILON, 0),
 		});
 	sgnode* tor_node = new sgnode(nullptr, tor);
+	tor_node->name = "Torus";
 
-	sgnode* sg = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { na, sphere_node, tor_node });
-	sg->recompute(csg);
-
-	out_scene->set_sg_root(sg);
+	sgnode* sg = out_scene->get_sg_root();
+	sg->set_operation(carve::csg::CSG::A_MINUS_B);
+	sg->add_child(na);
+	sg->add_child(sphere_node);
+	sg->add_child(tor_node);
 
 	/*mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
@@ -141,7 +150,7 @@ int main(int argc, char** argv)
 	preview_window preview(c, &pl);
 	il.add_window(&preview);
 
-	scene_graph_window sg_window;
+	scene_graph_window sg_window(&scene);
 	il.add_window(&sg_window);
 
 	while (c.is_running())

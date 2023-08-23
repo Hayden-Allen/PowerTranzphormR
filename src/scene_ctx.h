@@ -61,12 +61,6 @@ public:
 	{
 		return m_csg;
 	}
-	void set_sg_root(sgnode* const n)
-	{
-		m_sg_root = n;
-		// need to build initial vaos when root node assigned
-		m_build_sg_vaos();
-	}
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_vert_size = 8;
