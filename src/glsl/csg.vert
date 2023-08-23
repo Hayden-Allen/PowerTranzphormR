@@ -14,7 +14,9 @@ void main()
 {
 	gl_Position = u_mvp * vec4(i_pos, 1);
 	
-	vec3 L = normalize(vec3(1, 1, 1));
+	// vec3 L = normalize(u_cam_pos);
+	vec3 world_pos = vec3(u_m * vec4(i_pos, 1));
+	vec3 L = normalize(u_cam_pos - world_pos);
 	v_NdL = max(0, dot(i_norm, L));
 
 	v_tex = i_tex;

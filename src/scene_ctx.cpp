@@ -133,29 +133,11 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	for (auto& pair : out_verts_for_mtl)
 	{
 		std::vector<mesh_vertex>& input_verts = pair.second;
-		// index
-		// std::unordered_map<std::string, u32> vert2index;
 		std::vector<u32> input_vert2index;
 		std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
 		std::vector<mesh_vertex> unique_verts;
 		std::vector<u32> indices;
 		u32 index_count = 0;
-		/*for (u32 i = 0; i < input_verts.size(); i++)
-		{
-			const mesh_vertex& mv = input_verts[i];
-			const std::string& key = mv.to_string();
-			if (!vert2index.contains(key))
-			{
-				vert2index.insert({ key, index_count });
-				index_count++;
-				unique_verts.push_back(mv);
-			}
-			const u32 index = vert2index.at(key);
-			indices.push_back(index);
-			input_vert2index.push_back(index);
-		}*/
-
-		// /*
 		assert(input_verts.size() % 3 == 0);
 		for (u32 i = 0; i < input_verts.size(); i += 3)
 		{
@@ -176,7 +158,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			for (u32 j = 0; j < 3; j++)
 			{
 				const mesh_vertex& mv = input_verts[i + j];
-				// printf("AAAA %s\n", mv.to_string().c_str());
 				const std::string& key = mv.to_string();
 				const auto& it = vert2index.find(key);
 				// this vertex has been seen before, try to match it to existing instance
@@ -192,20 +173,30 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 						{
 							const auto& face_norm = instance.second.at(k);
 							const f32 angle = norm.angle_to(face_norm);
-							// current vertex cannot be added to this instance
-							if (fabs(angle) >= s_snap_angle)
-							{
-								// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
-								break;
-							}
-							// made it to the end of the list, current vertex is part of this instance
-							if (k == instance.second.size() - 1)
+							// current vertex cannot be added to this instance (ALL)
+							// if (fabs(angle) >= s_snap_angle)
+							//{
+							//	// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
+							//	break;
+							//}
+							//// made it to the end of the list, current vertex is part of this instance
+							// if (k == instance.second.size() - 1)
+							//{
+							//	vert2index.at(key).at(instance.first).push_back(norm);
+							//	instance.second.push_back(norm);
+							//	indices.push_back(instance.first);
+							//	input_vert2index.push_back(instance.first);
+							//	found = true;
+							//	// need to break here because we're adding to instance.second, so this loop will go forever
+							//	break;
+							// }
+							// current vertex can be added to this instance (ANY)
+							if (fabs(angle) < s_snap_angle)
 							{
 								vert2index.at(key).at(instance.first).push_back(norm);
 								instance.second.push_back(norm);
 								indices.push_back(instance.first);
 								input_vert2index.push_back(instance.first);
-								// printf("%s => %u\n", mv.to_string().c_str(), instance.first);
 								found = true;
 								// need to break here because we're adding to instance.second, so this loop will go forever
 								break;
@@ -234,14 +225,11 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 					}
 					indices.push_back(index_count);
 					input_vert2index.push_back(index_count);
-					/*if (it != vert2index.end())
-						printf("%s => %u\n", mv.to_string().c_str(), index_count);*/
 					index_count++;
 					unique_verts.push_back(mv);
 				}
 			}
 		}
-		// */
 
 		// compute weighted norms
 		std::unordered_map<u32, vec<space::OBJECT>> norms;
