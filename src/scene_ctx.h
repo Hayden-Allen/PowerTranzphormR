@@ -1,7 +1,7 @@
 #pragma once
 
-#include "carve.h"
-#include "glu_tess.h"
+#include "geom/carve.h"
+#include "geom/glu_tess.h"
 #include "scene_graph.h"
 
 struct scene_material

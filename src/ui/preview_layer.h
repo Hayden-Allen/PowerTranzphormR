@@ -1,6 +1,4 @@
 #pragma once
-
-#include "camera.h"
 #include "scene_ctx.h"
 
 class preview_layer : public mgl::layer
@@ -19,5 +17,5 @@ private:
 	const mgl::context* m_mgl_context;
 	scene_ctx* m_scene;
 	mgl::framebuffer_u8 m_fb;
-	camera m_cam;
+	mgl::camera m_cam;
 };

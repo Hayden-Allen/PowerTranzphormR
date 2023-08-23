@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "carve.h"
+#include "geom/carve.h"
 
 struct sgnode
 {
@@ -45,11 +45,12 @@ public:
 		mesh = nullptr;
 	}
 public:
-	void set_operation(carve::csg::CSG::OP op) {
+	void set_operation(const carve::csg::CSG::OP op)
+	{
 		operation = op;
 		m_dirty = true;
 	}
-	void add_child(sgnode* node)
+	void add_child(sgnode* const node)
 	{
 		if (children.size() > 1)
 		{
@@ -57,9 +58,10 @@ public:
 			mesh = nullptr;
 		}
 		children.push_back(node);
+		node->parent = this;
 		set_dirty();
 	}
-	void remove_child(sgnode* node)
+	void remove_child(sgnode* const node)
 	{
 		const auto& it = std::find(children.begin(), children.end(), node);
 		if (it == children.end())
@@ -146,7 +148,7 @@ public:
 		return m_dirty;
 	}
 private:
-	inline static u32 m_next_id = 1;
+	static inline u32 m_next_id = 1;
 private:
 	// recompute always needs to be called after creation
 	bool m_dirty = true;

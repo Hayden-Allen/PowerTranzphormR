@@ -1,8 +1,8 @@
 #include "pch.h"
-#include "imgui_layer.h"
-#include "preview_layer.h"
-#include "preview_window.h"
-#include "scene_graph_window.h"
+#include "ui/imgui_layer.h"
+#include "ui/preview_layer.h"
+#include "ui/preview_window.h"
+#include "ui/scene_graph_window.h"
 
 void make_scene(scene_ctx* const out_scene)
 {
