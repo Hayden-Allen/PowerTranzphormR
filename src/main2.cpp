@@ -2,6 +2,7 @@
 #include "imgui_layer.h"
 #include "preview_layer.h"
 #include "preview_window.h"
+#include "scene_graph_window.h"
 
 void make_scene(scene_ctx* const out_scene)
 {
@@ -139,6 +140,9 @@ int main(int argc, char** argv)
 
 	preview_window preview(c, &pl);
 	il.add_window(&preview);
+
+	scene_graph_window sg_window;
+	il.add_window(&sg_window);
 
 	while (c.is_running())
 	{

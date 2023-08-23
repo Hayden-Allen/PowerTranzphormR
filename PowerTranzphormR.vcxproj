@@ -358,6 +358,7 @@
     <ClCompile Include="src\preview_layer.cpp" />
     <ClCompile Include="src\preview_window.cpp" />
     <ClCompile Include="src\scene_ctx.cpp" />
+    <ClCompile Include="src\scene_graph_window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
@@ -373,6 +374,7 @@
     <ClInclude Include="src\preview_window.h" />
     <ClInclude Include="src\scene_ctx.h" />
     <ClInclude Include="src\scene_graph.h" />
+    <ClInclude Include="src\scene_graph_window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
