@@ -128,6 +128,7 @@ public:
 	{
 		new_action(new destroy_action(target, parent));
 	}
+	// undo last action made and move it to the redo stack
 	void undo()
 	{
 		if (m_past.size())
@@ -138,6 +139,7 @@ public:
 			m_future.push_back(a);
 		}
 	}
+	// redo last action undone and move it to the undo stack
 	void redo()
 	{
 		if (m_future.size())
@@ -150,9 +152,12 @@ public:
 	}
 private:
 	scene_ctx* m_ctx;
+	// ctrl-z (undo)
 	std::vector<action*> m_past;
+	// ctrl-y (redo)
 	std::vector<action*> m_future;
 private:
+	// create and apply a new action
 	void new_action(action* const a)
 	{
 		a->apply(m_ctx);

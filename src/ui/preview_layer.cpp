@@ -24,9 +24,8 @@ void preview_layer::on_frame(const f32 dt)
 	const f32 tdy = 1.f * get_key(GLFW_KEY_UP) - get_key(GLFW_KEY_DOWN);
 	if (tdx != 0 || tdy != 0)
 	{
-		// TODO horrible
-		// m_scene->get_sg_root()->children[2]->transform(m_scene->get_csg(), tmat_util::translation<space::OBJECT>(tdx * dt, tdy * dt, 0));
 		const auto& mat = tmat_util::translation<space::OBJECT>(tdx * dt, tdy * dt, 0);
+		// TODO horrible
 		m_actions.transform(m_scene->get_sg_root()->children[2], mat);
 	}
 
@@ -43,11 +42,12 @@ void preview_layer::on_frame(const f32 dt)
 	// HATODO slow
 	const tmat<space::OBJECT, space::WORLD> normal = obj.invert_copy().transpose_copy();
 
+	// draw world into m_fb
 	m_fb.bind();
-	glEnable(GL_DEPTH_TEST);
 	m_mgl_context->clear();
 	m_scene->update();
-	m_scene->draw(*m_mgl_context, { mvp, mv, obj, normal, m_cam.get_pos() });
+	const scene_ctx_uniforms& uniforms = { mvp, mv, obj, normal, m_cam.get_pos() };
+	m_scene->draw(*m_mgl_context, uniforms);
 	m_fb.unbind();
 }
 

@@ -103,6 +103,7 @@ void imgui_layer::on_frame(const f32 dt)
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
 	}
+	glEnable(GL_DEPTH_TEST);
 }
 
 void imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
@@ -194,7 +195,7 @@ void imgui_layer::init_menus()
 		[]()
 		{
 			std::cout << "MENU: NEW\n";
-			},
+		},
 		"Ctrl+N",
 		GLFW_KEY_N,
 		GLFW_MOD_CONTROL,
@@ -204,7 +205,7 @@ void imgui_layer::init_menus()
 		[]()
 		{
 			std::cout << "MENU: OPEN\n";
-			},
+		},
 		"Ctrl+O",
 		GLFW_KEY_O,
 		GLFW_MOD_CONTROL,
@@ -214,7 +215,7 @@ void imgui_layer::init_menus()
 		[]()
 		{
 			std::cout << "MENU: SAVE\n";
-			},
+		},
 		"Ctrl+S",
 		GLFW_KEY_S,
 		GLFW_MOD_CONTROL,
@@ -224,7 +225,7 @@ void imgui_layer::init_menus()
 		[]()
 		{
 			std::cout << "MENU: SAVE AS\n";
-			},
+		},
 		"Ctrl+Shift+S",
 		GLFW_KEY_S,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
@@ -239,7 +240,7 @@ void imgui_layer::init_menus()
 		[]()
 		{
 			std::cout << "MENU: UNDO\n";
-			},
+		},
 		"Ctrl+Z",
 		GLFW_KEY_Z,
 		GLFW_MOD_CONTROL,
@@ -249,7 +250,7 @@ void imgui_layer::init_menus()
 		[]()
 		{
 			std::cout << "MENU: REDO\n";
-			},
+		},
 		"Ctrl+Y",
 		GLFW_KEY_Y,
 		GLFW_MOD_CONTROL,
