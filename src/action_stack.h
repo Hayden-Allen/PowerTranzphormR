@@ -28,11 +28,11 @@ public:
 public:
 	void apply(scene_ctx* const ctx) override
 	{
-		target->transform(ctx->get_csg(), mat);
+		target->transform(mat);
 	}
 	void undo(scene_ctx* const ctx) override
 	{
-		target->transform(ctx->get_csg(), mat.invert_copy());
+		target->transform(mat.invert_copy());
 	}
 };
 struct reparent_action : public action

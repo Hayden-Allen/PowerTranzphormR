@@ -87,8 +87,16 @@ public:
 	{
 		return !children.size();
 	}
-	// void transform(carve::csg::CSG& scene, const carve::math::Matrix& m)
-	void transform(carve::csg::CSG& scene, const tmat<space::OBJECT, space::OBJECT>& m)
+	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
+	{
+		// undo existing transform
+		transform(mat.invert_copy().cast_copy<space::OBJECT, space::OBJECT>());
+		// reset transform
+		mat = tmat<space::OBJECT, space::WORLD>();
+		// apply new transform
+		transform(new_mat.cast_copy<space::OBJECT, space::OBJECT>());
+	}
+	void transform(const tmat<space::OBJECT, space::OBJECT>& m)
 	{
 		mat *= m;
 		// when we hit the bottom, mark current node as dirty and work our way back up
@@ -106,7 +114,7 @@ public:
 		else
 		{
 			for (sgnode* child : children)
-				child->transform(scene, m);
+				child->transform(m);
 		}
 	}
 	// recomputes the scene graph from the top down

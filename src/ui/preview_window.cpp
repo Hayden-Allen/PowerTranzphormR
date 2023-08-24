@@ -20,8 +20,10 @@ void preview_window::handle_frame()
 	const f32 xr = win_w / fb_w, yr = win_h / fb_h;
 	const f32 r = std::min(xr, yr);
 	const f32 ox = (win_w - fb_w * r) * 0.5f, oy = (win_h - fb_h * r) * 0.5f;
-	ImGui::SetCursorPos(ImVec2(ox + win_min.x, oy + win_min.y));
-	ImGui::Image(fb.get_imgui_color_id(), ImVec2(fb_w * r, fb_h * r), ImVec2(0, 1), ImVec2(1, 0));
+	const ImVec2 img_pos(ox + win_min.x, oy + win_min.y);
+	ImGui::SetCursorPos(img_pos);
+	const ImVec2 img_dim(fb_w * r, fb_h * r);
+	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
 
 	ImGuizmo::SetOrthographic(false);
@@ -29,13 +31,12 @@ void preview_window::handle_frame()
 	const auto& win_pos = ImGui::GetWindowPos();
 	ImGuizmo::SetRect(win_pos.x, win_pos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 	pmat<space::CAMERA, space::CLIP> proj = m_layer->get_proj();
-	proj.j[1] *= -1;
-	proj.k[3] *= -1;
-	tmat<space::OBJECT, space::WORLD> obj = m_layer->get_scene()->get_sg_root()->children[2]->mat;
+	sgnode* target = m_layer->get_scene()->get_sg_root()->children[2];
+	tmat<space::OBJECT, space::WORLD> obj = target->mat;
 	ImGuizmo::Manipulate(m_layer->get_view().e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, obj.e);
 	if (ImGuizmo::IsUsing())
 	{
-		printf("A\n");
+		target->set_transform(obj);
 	}
 	if (!ImGuizmo::IsUsing() && ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
 	{
