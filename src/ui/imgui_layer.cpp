@@ -1,10 +1,8 @@
 #include "pch.h"
 #include "imgui_layer.h"
 
-imgui_layer::imgui_layer(const mgl::context* const mgl_context, scene_ctx* const scene) :
-	m_mgl_context(mgl_context),
-	m_scene(scene),
-	m_actions(m_scene)
+imgui_layer::imgui_layer(app_ctx* const a_ctx) :
+	m_app_ctx(a_ctx)
 {
 	init_menus();
 
@@ -23,7 +21,7 @@ imgui_layer::imgui_layer(const mgl::context* const mgl_context, scene_ctx* const
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 	io.Fonts->AddFontFromFileTTF("res/fonts/Jost-Regular.ttf", 20);
-	ImGui_ImplGlfw_InitForOpenGL(m_mgl_context->window, false);
+	ImGui_ImplGlfw_InitForOpenGL(m_app_ctx->mgl_ctx.window, false);
 	ImGui_ImplOpenGL3_Init("#version 430 core");
 
 	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/ImGui/ImGuiLayer.cpp
@@ -96,8 +94,8 @@ void imgui_layer::on_frame(const f32 dt)
 	ImGui::Render();
 
 	glDisable(GL_DEPTH_TEST);
-	m_mgl_context->clear();
-	m_mgl_context->reset_viewport();
+	m_app_ctx->mgl_ctx.clear();
+	m_app_ctx->mgl_ctx.reset_viewport();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
@@ -111,22 +109,23 @@ void imgui_layer::on_frame(const f32 dt)
 
 void imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
 {
-	ImGui_ImplGlfw_MouseButtonCallback(m_mgl_context->window, button, action, mods);
+	ImGui_ImplGlfw_MouseButtonCallback(m_app_ctx->mgl_ctx.window, button, action, mods);
 }
 
 void imgui_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
 {
-	ImGui_ImplGlfw_CursorPosCallback(m_mgl_context->window, x, y);
+	ImGui_ImplGlfw_CursorPosCallback(m_app_ctx->mgl_ctx.window, x, y);
 }
 
 void imgui_layer::on_scroll(const f32 x, const f32 y)
 {
-	ImGui_ImplGlfw_ScrollCallback(m_mgl_context->window, x, y);
+	ImGui_ImplGlfw_ScrollCallback(m_app_ctx->mgl_ctx.window, x, y);
 }
 
 void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
-	ImGui_ImplGlfw_KeyCallback(m_mgl_context->window, key, scancode, action, mods);
+	ImGui_ImplGlfw_KeyCallback(m_app_ctx->mgl_ctx.window, key, scancode, action, mods);
+
 	if (action == GLFW_PRESS)
 	{
 		handle_menu_keys(key, mods);
@@ -135,9 +134,21 @@ void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, co
 		if (mods & GLFW_MOD_CONTROL)
 		{
 			if (key == GLFW_KEY_Z)
-				undo();
+				m_app_ctx->undo();
 			if (key == GLFW_KEY_Y)
-				redo();
+				m_app_ctx->redo();
+		}
+		else
+		{
+			if (key == GLFW_KEY_DELETE)
+			{
+				sgnode* const selected = m_app_ctx->scene.get_selected_node();
+				if (selected && selected->parent)
+				{
+					m_app_ctx->destroy_action(selected);
+					m_app_ctx->scene.set_selected_node(nullptr);
+				}
+			}
 		}
 	}
 }

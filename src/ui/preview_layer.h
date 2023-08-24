@@ -1,32 +1,15 @@
 #pragma once
-#include "scene_ctx.h"
-#include "action_stack.h"
 #include "imgui_layer.h"
+#include "app_ctx.h"
 
 class preview_layer : public mgl::layer
 {
 public:
-	preview_layer(const mgl::context* const mgl_context, scene_ctx* const scene, imgui_layer* const il);
+	preview_layer(app_ctx* const a_ctx);
 	virtual ~preview_layer();
 public:
 	virtual void on_frame(const f32 dt) override;
 	virtual void on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods) override;
-	const mgl::framebuffer_u8& get_framebuffer() const
-	{
-		return m_fb;
-	}
-	const mgl::camera& get_camera() const
-	{
-		return m_cam;
-	}
-	scene_ctx* get_scene()
-	{
-		return m_scene;
-	}
 private:
-	const mgl::context* m_mgl_context;
-	scene_ctx* m_scene;
-	imgui_layer* m_imgui_layer;
-	mgl::framebuffer_u8 m_fb;
-	mgl::camera m_cam;
+	app_ctx* const m_app_ctx = nullptr;
 };

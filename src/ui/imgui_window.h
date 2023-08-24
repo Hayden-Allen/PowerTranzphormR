@@ -1,9 +1,12 @@
 #pragma once
 
+#include "app_ctx.h"
+
 class imgui_window
 {
 public:
-	imgui_window(const std::string& title) :
+	imgui_window(app_ctx* const a_ctx, const std::string& title) :
+		m_app_ctx(a_ctx),
 		m_title(title)
 	{}
 	virtual ~imgui_window() {}
@@ -13,6 +16,8 @@ public:
 	{
 		return m_title;
 	}
+protected:
+	app_ctx* const m_app_ctx = nullptr;
 private:
 	std::string m_title;
 };

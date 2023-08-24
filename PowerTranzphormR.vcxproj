@@ -373,6 +373,7 @@
     <ClInclude Include="src\action_stack.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
+    <ClInclude Include="src\ui\app_ctx.h" />
     <ClInclude Include="src\scene_graph.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />
     <ClInclude Include="src\ui\imgui_menu.h" />

@@ -3,6 +3,7 @@
 #include "ui/preview_layer.h"
 #include "ui/preview_window.h"
 #include "ui/scene_graph_window.h"
+#include "ui/app_ctx.h"
 
 sgnode* textured_cuboid_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options = {})
 {
@@ -134,47 +135,45 @@ void make_scene(scene_ctx* const out_scene)
 
 int main(int argc, char** argv)
 {
-	mgl::context c(1280, 720, "PowerTranzphormR",
-		{ .vsync = true,
-			.clear = { .b = 1.f } });
+	app_ctx a_ctx;
+	make_scene(&a_ctx.scene);
 
-	scene_ctx scene;
-	make_scene(&scene);
+	imgui_layer il(&a_ctx);
+	a_ctx.mgl_ctx.add_layer(&il);
 
-	imgui_layer il(&c, &scene);
-	c.add_layer(&il);
-
-	const f32 ar = c.get_aspect_ratio();
-	preview_layer pl(&c, &scene, &il);
+	preview_layer pl(&a_ctx);
 	pl.disable();
 	pl.set_disable_callback([&]()
 		{
-			c.unlock_cursor();
+			a_ctx.mgl_ctx.unlock_cursor();
 			il.enable();
 		});
 	pl.set_enable_callback([&]()
 		{
-			c.lock_cursor();
+			a_ctx.mgl_ctx.lock_cursor();
 			il.disable();
 		});
-	c.add_layer(&pl);
+	a_ctx.mgl_ctx.add_layer(&pl);
 
-	preview_window preview(c, &pl, &il);
+	preview_window preview(&a_ctx);
+	preview.set_enable_callback([&]() {
+		pl.enable();
+	});
 	il.add_window(&preview);
 
-	scene_graph_window sg_window(&scene, &il);
+	scene_graph_window sg_window(&a_ctx);
 	il.add_window(&sg_window);
 
-	while (c.is_running())
+	while (a_ctx.mgl_ctx.is_running())
 	{
-		c.begin_frame();
+		a_ctx.mgl_ctx.begin_frame();
 
 		char buf[64] = { 0 };
-		sprintf_s(buf, "PowerTranzphormR (%u FPS)", (u32)std::round(c.avg_fps));
-		c.set_title(buf);
+		sprintf_s(buf, "PowerTranzphormR (%u FPS)", (u32)std::round(a_ctx.mgl_ctx.avg_fps));
+		a_ctx.mgl_ctx.set_title(buf);
 
-		c.update_layers();
-		c.end_frame();
+		a_ctx.mgl_ctx.update_layers();
+		a_ctx.mgl_ctx.end_frame();
 	}
 
 	return 0;

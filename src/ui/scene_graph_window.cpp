@@ -1,26 +1,13 @@
 #include "pch.h"
 #include "scene_graph_window.h"
 
-scene_graph_window::scene_graph_window(scene_ctx* const scene, imgui_layer* const il) :
-	imgui_window("Scene Graph"),
-	m_scene(scene),
-	m_imgui_layer(il)
+scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
+	imgui_window(a_ctx, "Scene Graph")
 {}
 
 void scene_graph_window::handle_frame()
 {
-	// TODO not in on_key?
-	if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_Delete))
-	{
-		sgnode* const selected = m_scene->get_selected_node();
-		if (selected && selected->parent)
-		{
-			// selected->parent->remove_child(selected);
-			m_imgui_layer->destroy_action(selected);
-			m_scene->set_selected_node(nullptr);
-		}
-	}
-	sgnode* const root = m_scene->get_sg_root();
+	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 }
 
@@ -40,7 +27,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 		}
 	}
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 2.f));
-	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | (node == m_scene->get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	ImGui::PopStyleVar();
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
@@ -60,7 +47,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 		//
 		// TODO
 		//
-		m_scene->set_selected_node(node);
+		m_app_ctx->scene.set_selected_node(node);
 	}
 	if (ImGui::BeginDragDropTarget())
 	{
