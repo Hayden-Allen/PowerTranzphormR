@@ -43,10 +43,13 @@ public:
 	MGL_DCM(sgnode);
 	virtual ~sgnode()
 	{
+		if (has_own_mesh())
+		{
+			delete mesh;
+		}
+		mesh = nullptr;
 		for (sgnode* child : children)
 			delete child;
-		delete mesh;
-		mesh = nullptr;
 	}
 public:
 	void set_operation(const carve::csg::CSG::OP op)
@@ -56,11 +59,11 @@ public:
 	}
 	void add_child(sgnode* const node)
 	{
-		if (children.size() > 1)
+		if (has_own_mesh())
 		{
 			delete mesh;
-			mesh = nullptr;
 		}
+		mesh = nullptr;
 		children.push_back(node);
 		node->parent = this;
 		set_dirty();
@@ -74,9 +77,12 @@ public:
 			return;
 		}
 		children.erase(it);
-		delete node;
-		delete mesh;
+		if (has_own_mesh())
+		{
+			delete mesh;
+		}
 		mesh = nullptr;
+		delete node;
 		set_dirty();
 	}
 	bool is_root() const
@@ -86,6 +92,10 @@ public:
 	bool is_leaf() const
 	{
 		return !children.size();
+	}
+	bool is_mesh() const
+	{
+		return operation == carve::csg::CSG::OP::ALL;
 	}
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 	{
@@ -125,6 +135,11 @@ public:
 		}
 
 		m_dirty = false;
+		if (has_own_mesh())
+		{
+			delete mesh;
+		}
+		mesh = nullptr;
 		// if only one child, have nothing to recompute
 		if (children.size() == 1)
 		{
@@ -136,19 +151,23 @@ public:
 		// recompute all children recursively and merge them into one mesh
 		else
 		{
-			delete mesh;
-			children[0]->recompute(scene);
-			children[1]->recompute(scene);
-			// printf("RECOMPUTE %p\n", children[0]);
-			// printf("RECOMPUTE %p\n", children[1]);
-			mesh = scene.compute(children[0]->mesh, children[1]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
-			for (s32 i = 2; i < children.size(); i++)
+			bool skip_delete_old_mesh = true;
+			for (s32 i = 0; i < children.size(); ++i)
 			{
 				children[i]->recompute(scene);
-				// printf("RECOMPUTE %p\n", children[i]);
-				mesh_t* old_mesh = mesh;
-				mesh = scene.compute(old_mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
-				delete old_mesh;
+				if (!mesh && children[i]->mesh)
+				{
+					mesh = children[i]->mesh;
+				}
+				else
+				{
+					mesh_t* old_mesh = mesh;
+					mesh = scene.compute(old_mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+					if (!skip_delete_old_mesh) {
+						delete old_mesh;
+					}
+					skip_delete_old_mesh = false;
+				}
 			}
 		}
 		return true;
@@ -156,6 +175,10 @@ public:
 	bool is_dirty() const
 	{
 		return m_dirty;
+	}
+	bool has_own_mesh() const
+	{
+		return !(children.size() == 1 && mesh == children[0]->mesh);
 	}
 private:
 	static inline u32 m_next_id = 1;

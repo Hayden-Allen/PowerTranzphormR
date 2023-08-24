@@ -26,7 +26,7 @@ void preview_window::handle_frame()
 	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
 	// if something in the scene graph is selected, show a transform gizmo for it
-	sgnode* target = m_layer->get_selected_node();
+	sgnode* target = m_layer->get_scene()->get_selected_node();
 	if (target)
 	{
 		ImGuizmo::SetOrthographic(false);

@@ -8,8 +8,7 @@ preview_layer::preview_layer(const mgl::context* const mgl_context, scene_ctx* s
 	m_mgl_context(mgl_context),
 	m_scene(scene),
 	m_fb(mgl_context->get_width(), mgl_context->get_height()),
-	m_actions(m_scene),
-	m_selected(nullptr)
+	m_actions(m_scene)
 {
 	f32 ar = (f32)m_fb.get_width() / (f32)m_fb.get_height();
 	m_cam = camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);

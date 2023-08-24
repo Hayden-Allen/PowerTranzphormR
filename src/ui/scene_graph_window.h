@@ -8,13 +8,12 @@ class scene_graph_window : public imgui_window
 {
 	using Rect = std::pair<ImVec2, ImVec2>;
 public:
-	scene_graph_window(scene_ctx* const scene, preview_layer* const pl);
+	scene_graph_window(scene_ctx* const scene);
 	virtual ~scene_graph_window() {}
 public:
 	virtual void handle_frame() override;
 private:
 	scene_ctx* m_scene;
-	preview_layer* m_preview_layer;
 private:
 	static std::string operation_to_string(carve::csg::CSG::OP op);
 private:

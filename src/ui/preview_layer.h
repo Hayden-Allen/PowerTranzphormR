@@ -22,19 +22,10 @@ public:
 	{
 		return m_scene;
 	}
-	void set_selected_node(sgnode* const node)
-	{
-		m_selected = node;
-	}
-	sgnode* get_selected_node()
-	{
-		return m_selected;
-	}
 private:
 	const mgl::context* m_mgl_context;
 	scene_ctx* m_scene;
 	mgl::framebuffer_u8 m_fb;
 	mgl::camera m_cam;
 	action_stack m_actions;
-	sgnode* m_selected;
 };

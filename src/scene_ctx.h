@@ -42,6 +42,8 @@ public:
 	~scene_ctx();
 public:
 	sgnode* get_sg_root() { return m_sg_root; }
+	sgnode* get_selected_node() { return m_selected_node; }
+	void set_selected_node(sgnode* node) { m_selected_node = node; }
 	u32 add_heightmap(mesh_t* hm);
 	void remove_heightmap(const u32 id);
 	u32 add_material(const scene_material& mtl);
@@ -76,6 +78,7 @@ private:
 	std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
 	std::vector<mesh_t*> m_hms;
 	sgnode* m_sg_root = nullptr;
+	sgnode* m_selected_node = nullptr;
 	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();

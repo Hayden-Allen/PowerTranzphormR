@@ -2,15 +2,22 @@
 #include "scene_graph_window.h"
 #include "preview_layer.h"
 
-scene_graph_window::scene_graph_window(scene_ctx* const scene, preview_layer* const pl) :
-	m_scene(scene),
-	m_preview_layer(pl)
+scene_graph_window::scene_graph_window(scene_ctx* const scene) :
+	m_scene(scene)
 {
 	title = "Scene Graph";
 }
 
 void scene_graph_window::handle_frame()
 {
+	if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_Delete))
+	{
+		sgnode* const selected = m_scene->get_selected_node();
+		if (selected && selected->parent) {
+			selected->parent->remove_child(selected);
+			m_scene->set_selected_node(nullptr);
+		}
+	}
 	sgnode* const root = m_scene->get_sg_root();
 	handle_node(root);
 }
@@ -19,7 +26,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 {
 	// draw current node
 	std::string display_name = node->name;
-	if (!node->is_leaf())
+	if (!node->is_mesh())
 	{
 		if (display_name.empty())
 		{
@@ -31,7 +38,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 		}
 	}
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 2.f));
-	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | (node->selected ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | (node == m_scene->get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	ImGui::PopStyleVar();
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
@@ -51,7 +58,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 		//
 		// TODO
 		//
-		m_preview_layer->set_selected_node(node);
+		m_scene->set_selected_node(node);
 	}
 	if (ImGui::BeginDragDropTarget())
 	{

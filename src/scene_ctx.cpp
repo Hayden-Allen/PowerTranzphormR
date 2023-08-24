@@ -103,31 +103,33 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
 	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
 	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
-	for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
-	{
-		const mesh_t::face_t* f = *i;
-		u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
-
-		std::vector<tess_vtx> verts;
-		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+	if (mesh) {
+		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 		{
-			auto t = m_tex_coord_attr.getAttribute(f, e.idx());
-			tess_vtx v;
-			v.x = e->vert->v.x;
-			v.y = e->vert->v.y;
-			v.z = e->vert->v.z;
-			v.u = t.u;
-			v.v = t.v;
-			v.target = &out_verts_for_mtl[mtl_id];
-			verts.emplace_back(v);
-		}
+			const mesh_t::face_t* f = *i;
+			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
 
-		gluTessBeginPolygon(tess, nullptr);
-		gluTessBeginContour(tess);
-		for (const tess_vtx& v : verts)
-			gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
-		gluTessEndContour(tess);
-		gluTessEndPolygon(tess);
+			std::vector<tess_vtx> verts;
+			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+			{
+				auto t = m_tex_coord_attr.getAttribute(f, e.idx());
+				tess_vtx v;
+				v.x = e->vert->v.x;
+				v.y = e->vert->v.y;
+				v.z = e->vert->v.z;
+				v.u = t.u;
+				v.v = t.v;
+				v.target = &out_verts_for_mtl[mtl_id];
+				verts.emplace_back(v);
+			}
+
+			gluTessBeginPolygon(tess, nullptr);
+			gluTessBeginContour(tess);
+			for (const tess_vtx& v : verts)
+				gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
+			gluTessEndContour(tess);
+			gluTessEndPolygon(tess);
+		}
 	}
 	gluDeleteTess(tess);
 
