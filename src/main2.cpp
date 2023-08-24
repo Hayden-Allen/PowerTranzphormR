@@ -141,11 +141,11 @@ int main(int argc, char** argv)
 	scene_ctx scene;
 	make_scene(&scene);
 
-	imgui_layer il(&c);
+	imgui_layer il(&c, &scene);
 	c.add_layer(&il);
 
 	const f32 ar = c.get_aspect_ratio();
-	preview_layer pl(&c, &scene);
+	preview_layer pl(&c, &scene, &il);
 	pl.disable();
 	pl.set_disable_callback([&]()
 		{
@@ -159,10 +159,10 @@ int main(int argc, char** argv)
 		});
 	c.add_layer(&pl);
 
-	preview_window preview(c, &pl);
+	preview_window preview(c, &pl, &il);
 	il.add_window(&preview);
 
-	scene_graph_window sg_window(&scene);
+	scene_graph_window sg_window(&scene, &il);
 	il.add_window(&sg_window);
 
 	while (c.is_running())

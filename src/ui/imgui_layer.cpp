@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "imgui_layer.h"
 
-imgui_layer::imgui_layer(const mgl::context* const mgl_context) :
-	m_mgl_context(mgl_context)
+imgui_layer::imgui_layer(const mgl::context* const mgl_context, scene_ctx* const scene) :
+	m_mgl_context(mgl_context),
+	m_scene(scene),
+	m_actions(m_scene)
 {
 	init_menus();
 
@@ -81,7 +83,7 @@ void imgui_layer::on_frame(const f32 dt)
 
 		for (imgui_window* window : m_windows)
 		{
-			if (ImGui::Begin(window->title.c_str()))
+			if (ImGui::Begin(window->get_title().c_str()))
 			{
 				window->handle_frame();
 			}
@@ -128,6 +130,15 @@ void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, co
 	if (action == GLFW_PRESS)
 	{
 		handle_menu_keys(key, mods);
+
+		// HATODO add as menu item
+		if (mods & GLFW_MOD_CONTROL)
+		{
+			if (key == GLFW_KEY_Z)
+				undo();
+			if (key == GLFW_KEY_Y)
+				redo();
+		}
 	}
 }
 

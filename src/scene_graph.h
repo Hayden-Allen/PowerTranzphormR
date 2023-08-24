@@ -50,21 +50,30 @@ public:
 			delete child;
 	}
 public:
-	void add_child(sgnode* const node)
+	void add_child(sgnode* const node, s64 index = -1)
 	{
-		children.push_back(node);
+		if (index == -1)
+		{
+			children.push_back(node);
+		}
+		else
+		{
+			children.insert(children.begin() + index, node);
+		}
 		node->parent = this;
 		set_dirty();
 	}
-	void remove_child(sgnode* const node)
+	s64 remove_child(sgnode* const node)
 	{
 		const auto& it = std::find(children.begin(), children.end(), node);
 		assert(it != children.end());
 		children.erase(it);
-		delete node;
+		// delete node;
 		// not sure why this is necessary
 		mesh = nullptr;
 		set_dirty();
+
+		return it - children.begin();
 	}
 	bool is_root() const
 	{

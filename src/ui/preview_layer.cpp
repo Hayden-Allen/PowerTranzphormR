@@ -4,11 +4,11 @@
 using namespace mgl;
 using namespace hats;
 
-preview_layer::preview_layer(const mgl::context* const mgl_context, scene_ctx* scene) :
+preview_layer::preview_layer(const mgl::context* const mgl_context, scene_ctx* const scene, imgui_layer* const il) :
 	m_mgl_context(mgl_context),
 	m_scene(scene),
-	m_fb(mgl_context->get_width(), mgl_context->get_height()),
-	m_actions(m_scene)
+	m_imgui_layer(il),
+	m_fb(mgl_context->get_width(), mgl_context->get_height())
 {
 	f32 ar = (f32)m_fb.get_width() / (f32)m_fb.get_height();
 	m_cam = camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
@@ -46,11 +46,12 @@ void preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, 
 {
 	if (key == GLFW_KEY_ESCAPE)
 		disable();
+
 	if (mods & GLFW_MOD_CONTROL)
 	{
 		if (key == GLFW_KEY_Z)
-			m_actions.undo();
+			m_imgui_layer->undo();
 		if (key == GLFW_KEY_Y)
-			m_actions.redo();
+			m_imgui_layer->redo();
 	}
 }

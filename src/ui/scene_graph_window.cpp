@@ -1,20 +1,22 @@
 #include "pch.h"
 #include "scene_graph_window.h"
-#include "preview_layer.h"
 
-scene_graph_window::scene_graph_window(scene_ctx* const scene) :
-	m_scene(scene)
-{
-	title = "Scene Graph";
-}
+scene_graph_window::scene_graph_window(scene_ctx* const scene, imgui_layer* const il) :
+	imgui_window("Scene Graph"),
+	m_scene(scene),
+	m_imgui_layer(il)
+{}
 
 void scene_graph_window::handle_frame()
 {
+	// TODO not in on_key?
 	if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_Delete))
 	{
 		sgnode* const selected = m_scene->get_selected_node();
-		if (selected && selected->parent) {
-			selected->parent->remove_child(selected);
+		if (selected && selected->parent)
+		{
+			// selected->parent->remove_child(selected);
+			m_imgui_layer->destroy_action(selected);
 			m_scene->set_selected_node(nullptr);
 		}
 	}

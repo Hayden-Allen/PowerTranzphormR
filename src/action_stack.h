@@ -19,20 +19,22 @@ public:
 struct transform_action : public action
 {
 public:
-	tmat<space::OBJECT, space::OBJECT> mat;
+	tmat<space::OBJECT, space::WORLD> initial;
+	tmat<space::OBJECT, space::WORLD> mat;
 public:
-	transform_action(sgnode* const t, const tmat<space::OBJECT, space::OBJECT>& m) :
+	transform_action(sgnode* const t, const tmat<space::OBJECT, space::WORLD>& old_mat, const tmat<space::OBJECT, space::WORLD>& new_mat) :
 		action(t),
-		mat(m)
+		initial(old_mat),
+		mat(new_mat)
 	{}
 public:
 	void apply(scene_ctx* const ctx) override
 	{
-		target->transform(mat);
+		target->set_transform(mat);
 	}
 	void undo(scene_ctx* const ctx) override
 	{
-		target->transform(mat.invert_copy());
+		target->set_transform(initial);
 	}
 };
 struct reparent_action : public action
@@ -80,19 +82,20 @@ struct destroy_action : public action
 {
 public:
 	sgnode* parent;
+	s64 index;
 public:
-	destroy_action(sgnode* const t, sgnode* const p) :
+	destroy_action(sgnode* const t) :
 		action(t),
-		parent(p)
+		parent(t->parent)
 	{}
 public:
 	void apply(scene_ctx* const ctx) override
 	{
-		parent->remove_child(target);
+		index = parent->remove_child(target);
 	}
 	void undo(scene_ctx* const ctx) override
 	{
-		parent->add_child(target);
+		parent->add_child(target, index);
 	}
 };
 
@@ -112,9 +115,9 @@ public:
 			delete a;
 	}
 public:
-	void transform(sgnode* const target, const tmat<space::OBJECT, space::OBJECT>& m, const bool apply)
+	void transform(sgnode* const t, const tmat<space::OBJECT, space::WORLD>& old_mat, const tmat<space::OBJECT, space::WORLD>& new_mat)
 	{
-		new_action(new transform_action(target, m), apply);
+		new_action(new transform_action(t, old_mat, new_mat), true);
 	}
 	void reparent(sgnode* const target, sgnode* const old_parent, sgnode* const new_parent)
 	{
@@ -124,9 +127,9 @@ public:
 	{
 		new_action(new create_action(target, parent), true);
 	}
-	void destroy(sgnode* const target, sgnode* const parent)
+	void destroy(sgnode* const target)
 	{
-		new_action(new destroy_action(target, parent), true);
+		new_action(new destroy_action(target), true);
 	}
 	// undo last action made and move it to the redo stack
 	void undo()
