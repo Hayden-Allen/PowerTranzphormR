@@ -14,17 +14,21 @@ public:
 	{
 		return m_fb;
 	}
-	const tmat<space::WORLD, space::CAMERA>& get_view() const
+	const mgl::camera& get_camera() const
 	{
-		return m_cam.get_view();
-	}
-	const pmat<space::CAMERA, space::CLIP>& get_proj() const
-	{
-		return m_cam.get_proj();
+		return m_cam;
 	}
 	scene_ctx* get_scene()
 	{
 		return m_scene;
+	}
+	void set_selected_node(sgnode* const node)
+	{
+		m_selected = node;
+	}
+	sgnode* get_selected_node()
+	{
+		return m_selected;
 	}
 private:
 	const mgl::context* m_mgl_context;
@@ -32,4 +36,5 @@ private:
 	mgl::framebuffer_u8 m_fb;
 	mgl::camera m_cam;
 	action_stack m_actions;
+	sgnode* m_selected;
 };

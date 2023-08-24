@@ -1,19 +1,21 @@
 #include "pch.h"
 #include "scene_graph_window.h"
+#include "preview_layer.h"
 
-scene_graph_window::scene_graph_window(scene_ctx* scene)
+scene_graph_window::scene_graph_window(scene_ctx* const scene, preview_layer* const pl) :
+	m_scene(scene),
+	m_preview_layer(pl)
 {
 	title = "Scene Graph";
-	m_scene = scene;
 }
 
 void scene_graph_window::handle_frame()
 {
-	const sgnode* const root = m_scene->get_sg_root();
+	sgnode* const root = m_scene->get_sg_root();
 	handle_node(root);
 }
 
-scene_graph_window::Rect scene_graph_window::handle_node(const sgnode* const node) const
+scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) const
 {
 	// draw current node
 	std::string display_name = node->name;
@@ -29,7 +31,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(const sgnode* const nod
 		}
 	}
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 2.f));
-	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | (node->selected ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | (node->selected ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	ImGui::PopStyleVar();
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
@@ -49,6 +51,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(const sgnode* const nod
 		//
 		// TODO
 		//
+		m_preview_layer->set_selected_node(node);
 	}
 	if (ImGui::BeginDragDropTarget())
 	{

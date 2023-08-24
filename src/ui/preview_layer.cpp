@@ -8,7 +8,8 @@ preview_layer::preview_layer(const mgl::context* const mgl_context, scene_ctx* s
 	m_mgl_context(mgl_context),
 	m_scene(scene),
 	m_fb(mgl_context->get_width(), mgl_context->get_height()),
-	m_actions(m_scene)
+	m_actions(m_scene),
+	m_selected(nullptr)
 {
 	f32 ar = (f32)m_fb.get_width() / (f32)m_fb.get_height();
 	m_cam = camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
@@ -20,15 +21,6 @@ preview_layer::~preview_layer()
 
 void preview_layer::on_frame(const f32 dt)
 {
-	const f32 tdx = 1.f * get_key(GLFW_KEY_RIGHT) - get_key(GLFW_KEY_LEFT);
-	const f32 tdy = 1.f * get_key(GLFW_KEY_UP) - get_key(GLFW_KEY_DOWN);
-	if (tdx != 0 || tdy != 0)
-	{
-		const auto& mat = tmat_util::translation<space::OBJECT>(tdx * dt, tdy * dt, 0);
-		// TODO horrible
-		m_actions.transform(m_scene->get_sg_root()->children[2], mat, true);
-	}
-
 	const direction<space::CAMERA> move_dir(
 		get_key(GLFW_KEY_D) - get_key(GLFW_KEY_A),
 		get_key(GLFW_KEY_SPACE) - get_key(GLFW_KEY_LEFT_SHIFT),

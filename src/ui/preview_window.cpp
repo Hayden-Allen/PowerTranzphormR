@@ -25,18 +25,26 @@ void preview_window::handle_frame()
 	const ImVec2 img_dim(fb_w * r, fb_h * r);
 	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
-
-	ImGuizmo::SetOrthographic(false);
-	ImGuizmo::SetDrawlist();
-	const auto& win_pos = ImGui::GetWindowPos();
-	ImGuizmo::SetRect(win_pos.x, win_pos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-	pmat<space::CAMERA, space::CLIP> proj = m_layer->get_proj();
-	sgnode* target = m_layer->get_scene()->get_sg_root()->children[2];
-	tmat<space::OBJECT, space::WORLD> obj = target->mat;
-	ImGuizmo::Manipulate(m_layer->get_view().e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, obj.e);
-	if (ImGuizmo::IsUsing())
+	// if something in the scene graph is selected, show a transform gizmo for it
+	sgnode* target = m_layer->get_selected_node();
+	if (target)
 	{
-		target->set_transform(obj);
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		// TODO make this the size of the framebuffer?
+		const auto& win_pos = ImGui::GetWindowPos();
+		ImGuizmo::SetRect(win_pos.x, win_pos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+		// make a copy of node's transform so that the gizmo can modify it
+		tmat<space::OBJECT, space::WORLD> obj = target->mat;
+		const tmat<space::WORLD, space::CAMERA>& view = m_layer->get_camera().get_view();
+		const pmat<space::CAMERA, space::CLIP>& proj = m_layer->get_camera().get_proj();
+		ImGuizmo::Manipulate(view.e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, obj.e);
+		if (ImGuizmo::IsUsing())
+		{
+			// propagate gizmo's changes to node
+			target->set_transform(obj);
+		}
 	}
 	if (!ImGuizmo::IsUsing() && ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
 	{

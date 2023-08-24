@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 	preview_window preview(c, &pl);
 	il.add_window(&preview);
 
-	scene_graph_window sg_window(&scene);
+	scene_graph_window sg_window(&scene, &pl);
 	il.add_window(&sg_window);
 
 	while (c.is_running())
