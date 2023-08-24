@@ -143,7 +143,25 @@ public:
 	}
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 	{
-		transform(mat.invert_copy() * new_mat);
+		// It seems that new_mat * inverse(mat) causes transformations to be applied in local space, while mat * new_mat makes them global.
+		// Why is that? Is this correct or is there an issue with the gizmo and really this should be inverse(mat) * new_mat??
+		const auto& xform_mat = (new_mat * mat.invert_copy()).cast_copy<space::OBJECT, space::OBJECT>();
+		mat = new_mat;
+		if (is_leaf() && mesh)
+		{
+			// FIXME: Scaling to zero makes it impossible to scale back up to any other value
+			// We need to enforce a minimum scale of some epsilon value
+			mesh->transform([&](vertex_t::vector_t& v)
+				{
+					return hats2carve(point<space::OBJECT>(v.x, v.y, v.z).transform(xform_mat));
+				});
+			set_dirty();
+		}
+		else
+		{
+			for (sgnode* const child : children)
+				child->set_transform(mat);
+		}
 	}
 	void set_operation(const carve::csg::CSG::OP op)
 	{

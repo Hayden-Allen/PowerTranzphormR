@@ -26,17 +26,24 @@ void preview_window::handle_frame()
 	sgnode* target = m_app_ctx->scene.get_selected_node();
 	if (target)
 	{
+		const auto& win_pos = ImGui::GetWindowPos();
+		auto clip_min = win_pos;
+		clip_min.x += img_pos.x;
+		clip_min.y += img_pos.y;
+		auto clip_max = clip_min;
+		clip_max.x += img_dim.x;
+		clip_max.y += img_dim.y;
+		ImGui::PushClipRect(clip_min, clip_max, false);
+
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
-		// TODO make this the size of the framebuffer?
-		const auto& win_pos = ImGui::GetWindowPos();
-		ImGuizmo::SetRect(win_pos.x, win_pos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+		ImGuizmo::SetRect(clip_min.x, clip_min.y, img_dim.x, img_dim.y);
 
 		// make a copy of node's transform so that the gizmo can modify it
 		tmat<space::OBJECT, space::WORLD> current_mat = target->mat;
 		const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
 		const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
-		ImGuizmo::Manipulate(view.e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::WORLD, current_mat.e);
+		ImGuizmo::Manipulate(view.e, proj.e, ImGuizmo::OPERATION::ROTATE, ImGuizmo::LOCAL, current_mat.e);
 
 		// whether or not ImGuizmo was being used last frame
 		static bool was_using = false;
@@ -63,6 +70,8 @@ void preview_window::handle_frame()
 				m_app_ctx->transform_action(target, initial_mat, current_mat);
 			}
 		}
+
+		ImGui::PopClipRect();
 	}
 	if (!ImGuizmo::IsUsing() && ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
 	{

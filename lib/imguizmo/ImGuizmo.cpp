@@ -1826,6 +1826,9 @@ namespace ImGuizmo
 			type = MT_SCALE_XYZ;
 		}
 
+      // Applied some changes from PR: https://github.com/CedricGuillemet/ImGuizmo/pull/170
+      const vec_t screenCoord = makeVect(io.MousePos - ImVec2(gContext.mX, gContext.mY));
+
 		// compute
 		for (unsigned int i = 0; i < 3 && type == MT_NONE; i++)
 		{
@@ -1833,6 +1836,7 @@ namespace ImGuizmo
 			{
 				continue;
 			}
+
 			vec_t dirPlaneX, dirPlaneY, dirAxis;
 			bool belowAxisLimit, belowPlaneLimit;
 			ComputeTripodAxisAndVisibility(i, dirAxis, dirPlaneX, dirPlaneY, belowAxisLimit, belowPlaneLimit);
@@ -1840,18 +1844,11 @@ namespace ImGuizmo
 			dirPlaneX.TransformVector(gContext.mModel);
 			dirPlaneY.TransformVector(gContext.mModel);
 
-			const float len = IntersectRayPlane(gContext.mRayOrigin, gContext.mRayVector, BuildPlan(gContext.mModel.v.position, dirAxis));
-			vec_t posOnPlan = gContext.mRayOrigin + gContext.mRayVector * len;
+			const ImVec2 axisStartOnScreen = worldToPos(gContext.mModel.v.position + dirAxis * gContext.mScreenFactor * 0.1f, gContext.mViewProjection) - ImVec2(gContext.mX, gContext.mY);
+			const ImVec2 axisEndOnScreen = worldToPos(gContext.mModel.v.position + dirAxis * gContext.mScreenFactor, gContext.mViewProjection) - ImVec2(gContext.mX, gContext.mY);
 
-			const float startOffset = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i)) ? 1.0f : 0.1f;
-			const float endOffset = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i)) ? 1.4f : 1.0f;
-			const ImVec2 posOnPlanScreen = worldToPos(posOnPlan, gContext.mViewProjection);
-			const ImVec2 axisStartOnScreen = worldToPos(gContext.mModel.v.position + dirAxis * gContext.mScreenFactor * startOffset, gContext.mViewProjection);
-			const ImVec2 axisEndOnScreen = worldToPos(gContext.mModel.v.position + dirAxis * gContext.mScreenFactor * endOffset, gContext.mViewProjection);
-
-			vec_t closestPointOnAxis = PointOnSegment(makeVect(posOnPlanScreen), makeVect(axisStartOnScreen), makeVect(axisEndOnScreen));
-
-			if ((closestPointOnAxis - makeVect(posOnPlanScreen)).Length() < 12.f) // pixel size
+			vec_t closestPointOnAxis = PointOnSegment(screenCoord, makeVect(axisStartOnScreen), makeVect(axisEndOnScreen));
+			if ((closestPointOnAxis - screenCoord).Length() < 12.f) // pixel size
 			{
 				type = MT_SCALE_X + i;
 			}
