@@ -14,6 +14,18 @@ public:
 	{
 		return m_fb;
 	}
+	const tmat<space::WORLD, space::CAMERA>& get_view() const
+	{
+		return m_cam.get_view();
+	}
+	const pmat<space::CAMERA, space::CLIP>& get_proj() const
+	{
+		return m_cam.get_proj();
+	}
+	scene_ctx* get_scene()
+	{
+		return m_scene;
+	}
 private:
 	const mgl::context* m_mgl_context;
 	scene_ctx* m_scene;

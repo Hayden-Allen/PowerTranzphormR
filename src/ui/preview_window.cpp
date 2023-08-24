@@ -23,7 +23,21 @@ void preview_window::handle_frame()
 	ImGui::SetCursorPos(ImVec2(ox + win_min.x, oy + win_min.y));
 	ImGui::Image(fb.get_imgui_color_id(), ImVec2(fb_w * r, fb_h * r), ImVec2(0, 1), ImVec2(1, 0));
 
-	if (ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
+
+	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::SetDrawlist();
+	const auto& win_pos = ImGui::GetWindowPos();
+	ImGuizmo::SetRect(win_pos.x, win_pos.y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+	pmat<space::CAMERA, space::CLIP> proj = m_layer->get_proj();
+	proj.j[1] *= -1;
+	proj.k[3] *= -1;
+	tmat<space::OBJECT, space::WORLD> obj = m_layer->get_scene()->get_sg_root()->children[2]->mat;
+	ImGuizmo::Manipulate(m_layer->get_view().e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, obj.e);
+	if (ImGuizmo::IsUsing())
+	{
+		printf("A\n");
+	}
+	if (!ImGuizmo::IsUsing() && ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		ImGui_ImplGlfw_MouseButtonCallback(m_mgl_context.window, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
 		m_layer->enable();

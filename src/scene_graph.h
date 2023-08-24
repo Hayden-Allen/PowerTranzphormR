@@ -12,14 +12,18 @@ public:
 	const std::string id;
 	std::string name;
 	bool selected = false;
+	// HATODO this should be tmat<OBJECT, PARENT>;
+	// <OBJECT, WORLD> needs to be computed by traversing down from the root
+	tmat<space::OBJECT, space::WORLD> mat;
 public:
 	// leaf node
-	sgnode(sgnode* p, mesh_t* m) :
+	sgnode(sgnode* p, mesh_t* m, const tmat<space::OBJECT, space::WORLD>& t) :
 		id("sgn" + std::to_string(m_next_id++)),
 		name(""),
 		parent(p),
 		mesh(m),
-		operation(carve::csg::CSG::OP::ALL)
+		operation(carve::csg::CSG::OP::ALL),
+		mat(t)
 	{}
 	// non-leaf node
 	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const std::vector<sgnode*> c) :
@@ -86,6 +90,7 @@ public:
 	// void transform(carve::csg::CSG& scene, const carve::math::Matrix& m)
 	void transform(carve::csg::CSG& scene, const tmat<space::OBJECT, space::OBJECT>& m)
 	{
+		mat *= m;
 		// when we hit the bottom, mark current node as dirty and work our way back up
 		if (is_leaf())
 		{

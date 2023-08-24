@@ -112,21 +112,21 @@ public:
 			delete a;
 	}
 public:
-	void transform(sgnode* const target, const tmat<space::OBJECT, space::OBJECT>& m)
+	void transform(sgnode* const target, const tmat<space::OBJECT, space::OBJECT>& m, const bool apply)
 	{
-		new_action(new transform_action(target, m));
+		new_action(new transform_action(target, m), apply);
 	}
 	void reparent(sgnode* const target, sgnode* const old_parent, sgnode* const new_parent)
 	{
-		new_action(new reparent_action(target, old_parent, new_parent));
+		new_action(new reparent_action(target, old_parent, new_parent), true);
 	}
 	void create(sgnode* const target, sgnode* const parent)
 	{
-		new_action(new create_action(target, parent));
+		new_action(new create_action(target, parent), true);
 	}
 	void destroy(sgnode* const target, sgnode* const parent)
 	{
-		new_action(new destroy_action(target, parent));
+		new_action(new destroy_action(target, parent), true);
 	}
 	// undo last action made and move it to the redo stack
 	void undo()
@@ -158,9 +158,10 @@ private:
 	std::vector<action*> m_future;
 private:
 	// create and apply a new action
-	void new_action(action* const a)
+	void new_action(action* const a, const bool apply)
 	{
-		a->apply(m_ctx);
+		if (apply)
+			a->apply(m_ctx);
 		m_past.push_back(a);
 		// new action has been made, previous future no longer exists
 		for (action* f : m_future)

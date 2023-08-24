@@ -26,7 +26,7 @@ void preview_layer::on_frame(const f32 dt)
 	{
 		const auto& mat = tmat_util::translation<space::OBJECT>(tdx * dt, tdy * dt, 0);
 		// TODO horrible
-		m_actions.transform(m_scene->get_sg_root()->children[2], mat);
+		m_actions.transform(m_scene->get_sg_root()->children[2], mat, true);
 	}
 
 	const direction<space::CAMERA> move_dir(
