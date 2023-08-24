@@ -140,6 +140,12 @@ void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, co
 		}
 		else
 		{
+			if (key == GLFW_KEY_T)
+				m_app_ctx->gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
+			if (key == GLFW_KEY_R)
+				m_app_ctx->gizmo_op = ImGuizmo::OPERATION::ROTATE;
+			if (key == GLFW_KEY_S)
+				m_app_ctx->gizmo_op = ImGuizmo::OPERATION::SCALE;
 			if (key == GLFW_KEY_DELETE)
 			{
 				sgnode* const selected = m_app_ctx->scene.get_selected_node();

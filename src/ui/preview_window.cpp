@@ -43,7 +43,7 @@ void preview_window::handle_frame()
 		tmat<space::OBJECT, space::WORLD> current_mat = target->mat;
 		const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
 		const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
-		ImGuizmo::Manipulate(view.e, proj.e, ImGuizmo::OPERATION::ROTATE, ImGuizmo::LOCAL, current_mat.e);
+		ImGuizmo::Manipulate(view.e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
 
 		// whether or not ImGuizmo was being used last frame
 		static bool was_using = false;

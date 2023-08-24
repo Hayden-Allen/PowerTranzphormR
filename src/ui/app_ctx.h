@@ -10,6 +10,7 @@ struct app_ctx {
 	mgl::context mgl_ctx;
 	mgl::framebuffer_u8 preview_fb;
 	mgl::camera preview_cam;
+	ImGuizmo::OPERATION gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
 	app_ctx() :
 		actions(&scene),
 		mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .b = 1.f } }),

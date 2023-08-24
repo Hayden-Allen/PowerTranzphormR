@@ -42,11 +42,5 @@ void preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, 
 	if (key == GLFW_KEY_ESCAPE)
 		disable();
 
-	if (mods & GLFW_MOD_CONTROL)
-	{
-		if (key == GLFW_KEY_Z)
-			m_app_ctx->undo();
-		if (key == GLFW_KEY_Y)
-			m_app_ctx->redo();
-	}
+	// TODO: Figure out how best to make keyboard shortcuts consistent with imgui_layer
 }
