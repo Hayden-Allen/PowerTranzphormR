@@ -39,7 +39,7 @@ void preview_window::handle_frame()
 		tmat<space::OBJECT, space::WORLD> obj = target->mat;
 		const tmat<space::WORLD, space::CAMERA>& view = m_layer->get_camera().get_view();
 		const pmat<space::CAMERA, space::CLIP>& proj = m_layer->get_camera().get_proj();
-		ImGuizmo::Manipulate(view.e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::LOCAL, obj.e);
+		ImGuizmo::Manipulate(view.e, proj.e, ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::WORLD, obj.e);
 		if (ImGuizmo::IsUsing())
 		{
 			// propagate gizmo's changes to node

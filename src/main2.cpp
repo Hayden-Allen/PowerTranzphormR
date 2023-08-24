@@ -49,8 +49,7 @@ void make_scene(scene_ctx* const out_scene)
 		{
 			.top_radius = .5f,
 			.bottom_radius = .5f,
-			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(0, .5f, 0) *
-						 tmat_util::scale<space::OBJECT>(1.5f, 1.f, 1.5f),
+			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(0, .5f, 0) * tmat_util::scale<space::OBJECT>(1.5f, 1.01f, 1.5f),
 		});
 	n0->name = "Cylinder";
 

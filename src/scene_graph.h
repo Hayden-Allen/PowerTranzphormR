@@ -89,12 +89,8 @@ public:
 	}
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 	{
-		// undo existing transform
-		transform(mat.invert_copy().cast_copy<space::OBJECT, space::OBJECT>());
-		// reset transform
-		mat = tmat<space::OBJECT, space::WORLD>();
-		// apply new transform
-		transform(new_mat.cast_copy<space::OBJECT, space::OBJECT>());
+		transform(mat.invert_copy() * new_mat);
+		mat = new_mat;
 	}
 	void transform(const tmat<space::OBJECT, space::OBJECT>& m)
 	{
