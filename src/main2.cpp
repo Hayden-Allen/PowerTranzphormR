@@ -7,27 +7,27 @@
 sgnode* textured_cuboid_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options = {})
 {
 	mesh_t* m = textured_cuboid(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, options.transform);
+	return new sgnode(nullptr, m, "Box", options.transform);
 }
 sgnode* textured_cylinder_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cylinder_options& options = {})
 {
 	mesh_t* m = textured_cylinder(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, options.transform);
+	return new sgnode(nullptr, m, "Cylinder", options.transform);
 }
 sgnode* textured_cone_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cone_options& options = {})
 {
 	mesh_t* m = textured_cone(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, options.transform);
+	return new sgnode(nullptr, m, "Cone", options.transform);
 }
 sgnode* textured_torus_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const torus_options& options = {})
 {
 	mesh_t* m = textured_torus(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, options.transform);
+	return new sgnode(nullptr, m, "Torus", options.transform);
 }
 sgnode* textured_ellipsoid_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const ellipsoid_options& options = {})
 {
 	mesh_t* m = textured_ellipsoid(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, options.transform);
+	return new sgnode(nullptr, m, "Ellipsoid", options.transform);
 }
 
 void make_scene(scene_ctx* const out_scene)
@@ -51,7 +51,6 @@ void make_scene(scene_ctx* const out_scene)
 			.bottom_radius = .5f,
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(0, .5f, 0) * tmat_util::scale<space::OBJECT>(1.5f, 1.01f, 1.5f),
 		});
-	n0->name = "Cylinder";
 
 	sgnode* n1 = textured_cuboid_node(
 		tex_coord_attr, mtl_id_attr, 2,
@@ -59,7 +58,6 @@ void make_scene(scene_ctx* const out_scene)
 			.width = 3.f,
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(0, -1.f, 0),
 		});
-	n1->name = "Box";
 
 	sgnode* n2 = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n1, n0 });
 
@@ -71,7 +69,6 @@ void make_scene(scene_ctx* const out_scene)
 			.num_steps = 8,
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(0.f, 1.5f, 0),
 		});
-	cone_node->name = "Cone";
 	sgnode* n4 = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n2, cone_node });
 
 	sgnode* n7 = textured_torus_node(
@@ -79,14 +76,12 @@ void make_scene(scene_ctx* const out_scene)
 		{
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(3.f, 0, 0),
 		});
-	n7->name = "Torus";
 
 	sgnode* n9 = textured_ellipsoid_node(
 		tex_coord_attr, mtl_id_attr, 2,
 		{
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(-3.f, 0, 0),
 		});
-	n9->name = "Sphere";
 
 	sgnode* cyl2_node = textured_cylinder_node(
 		tex_coord_attr, mtl_id_attr, 1,
@@ -96,7 +91,6 @@ void make_scene(scene_ctx* const out_scene)
 			.num_steps = 8,
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(-1.5f, 1.5f, 0),
 		});
-	cyl2_node->name = "Cylinder";
 	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::UNION, { n4, n7, n9, cyl2_node });
 
 	sgnode* sphere_node = textured_ellipsoid_node(
@@ -104,7 +98,6 @@ void make_scene(scene_ctx* const out_scene)
 		{
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(-1.75f + c::EPSILON, -1.f, 0),
 		});
-	sphere_node->name = "Sphere";
 
 	sgnode* tor_node = textured_torus_node(
 		tex_coord_attr, mtl_id_attr, 2,
@@ -114,7 +107,6 @@ void make_scene(scene_ctx* const out_scene)
 			// .num_tube_steps = 64,
 			.transform = tmat_util::translation<space::OBJECT, space::WORLD>(1.f - c::EPSILON, c::EPSILON, 0),
 		});
-	tor_node->name = "Torus";
 
 	sgnode* sg = out_scene->get_sg_root();
 	sg->set_operation(carve::csg::CSG::A_MINUS_B);

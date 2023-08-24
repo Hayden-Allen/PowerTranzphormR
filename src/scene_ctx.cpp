@@ -43,7 +43,7 @@ void scene_ctx::remove_material(const u32 id)
 
 void scene_ctx::update()
 {
-	if (m_sg_root->is_dirty())
+	if (m_sg_root->dirty)
 	{
 		m_sg_root->recompute(m_csg);
 		m_build_sg_vaos();
@@ -61,7 +61,6 @@ void scene_ctx::update()
 		m_hm_vaos_for_mtl.clear();
 		for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 		{
-			// mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2 });
 			mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2, 3 });
 			m_hm_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
@@ -82,16 +81,16 @@ void scene_ctx::m_build_sg_vaos()
 {
 	std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
 	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
+	{
 		verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
+	}
 
 	m_tesselate(m_sg_root->mesh, verts_for_mtl);
 
 	m_sg_vaos_for_mtl.clear();
 	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 	{
-		// mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2 });
 		mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2, 3 });
-		// mgl::static_vertex_array vao(it->second.data(), (u32)it->second.size(), { 3, 2, 3 });
 		m_sg_vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
 }
@@ -103,11 +102,13 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
 	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
 	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
-	if (mesh) {
+	if (mesh)
+	{
 		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 		{
 			const mesh_t::face_t* f = *i;
 			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
+			assert(mtl_id != 0);
 
 			std::vector<tess_vtx> verts;
 			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
@@ -119,7 +120,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				v.z = e->vert->v.z;
 				v.u = t.u;
 				v.v = t.v;
-				v.target = &out_verts_for_mtl[mtl_id];
+				v.target = &out_verts_for_mtl.at(mtl_id);
 				verts.emplace_back(v);
 			}
 
