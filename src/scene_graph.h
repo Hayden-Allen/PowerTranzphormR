@@ -7,16 +7,16 @@ class sgnode
 public:
 	sgnode* parent;
 	std::vector<sgnode*> children;
+	std::vector<point<space::OBJECT>> src_verts;
 	mesh_t* mesh;
 	carve::csg::CSG::OP operation;
 	std::string id, name;
 	bool selected, dirty;
-	// HATODO should be OBJECT=>PARENT, where PARENT==WORLD @ root
-	tmat<space::OBJECT, space::WORLD> mat;
+	tmat<space::OBJECT, space::PARENT> mat;
 private:
 	static inline u32 s_next_id = 0;
 public:
-	sgnode(sgnode* p, mesh_t* m, const std::string& n, const tmat<space::OBJECT, space::WORLD>& t) :
+	sgnode(sgnode* p, mesh_t* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t) :
 		parent(p),
 		mesh(m),
 		operation(carve::csg::CSG::OP::ALL),
@@ -25,8 +25,13 @@ public:
 		selected(false),
 		dirty(false),
 		mat(t)
-	{}
-	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const std::vector<sgnode*>& c) :
+	{
+		for (const auto& v : mesh->vertex_storage) {
+			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
+		}
+		set_dirty();
+	}
+	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const std::vector<sgnode*>& c, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
 		children(c),
 		mesh(nullptr),
@@ -34,11 +39,12 @@ public:
 		id("sgn" + std::to_string(s_next_id++)),
 		name(""),
 		selected(false),
-		dirty(false)
+		dirty(false),
+		mat(t)
 	{
 		for (sgnode* const child : children)
 			child->parent = this;
-		recompute(scene);
+		set_dirty();
 	}
 	MGL_DCM(sgnode);
 	virtual ~sgnode()
@@ -90,6 +96,10 @@ public:
 	void recompute(carve::csg::CSG& scene)
 	{
 		dirty = false;
+		if (is_leaf() && mesh)
+		{
+			transform_verts();
+		}
 		if (is_leaf())
 		{
 			return;
@@ -127,44 +137,12 @@ public:
 	void transform(const tmat<space::OBJECT, space::OBJECT>& m)
 	{
 		mat *= m;
-		if (is_leaf() && mesh)
-		{
-			mesh->transform([&](vertex_t::vector_t& v)
-				{
-					return hats2carve(point<space::OBJECT>(v.x, v.y, v.z).transform(m));
-				});
-			set_dirty();
-		}
-		else
-		{
-			for (sgnode* const child : children)
-				child->transform(m);
-		}
+		set_dirty();
 	}
-	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
+	void set_transform(const tmat<space::OBJECT, space::PARENT>& new_mat)
 	{
-		const auto& inv_mat = mat.invert_copy().cast_copy<space::OBJECT, space::OBJECT>();
 		mat = new_mat;
-		const auto& casted_mat = mat.cast_copy<space::OBJECT, space::OBJECT>();
-		if (is_leaf() && mesh)
-		{
-			// FIXME: Scaling to zero makes it impossible to scale back up to any other value
-			// We need to enforce a minimum scale of some epsilon value
-			mesh->transform([&](vertex_t::vector_t& v)
-				{
-					return hats2carve(point<space::OBJECT>(v.x, v.y, v.z).transform(inv_mat));
-				});
-			mesh->transform([&](vertex_t::vector_t& v)
-				{
-					return hats2carve(point<space::OBJECT>(v.x, v.y, v.z).transform(casted_mat));
-				});
-			set_dirty();
-		}
-		else
-		{
-			for (sgnode* const child : children)
-				child->set_transform(mat);
-		}
+		set_dirty();
 	}
 	void set_operation(const carve::csg::CSG::OP op)
 	{
@@ -178,6 +156,28 @@ public:
 				return false;
 		return true;
 	}
+	tmat<space::OBJECT, space::WORLD> accumulate_mats()
+	{
+		if (parent)
+		{
+			return parent->accumulate_mats().cast_copy<space::PARENT, space::WORLD>() * mat;
+		}
+		else
+		{
+			return mat.cast_copy<space::OBJECT, space::WORLD>();
+		}
+	}
+	tmat<space::OBJECT, space::WORLD> accumulate_parent_mats()
+	{
+		if (parent)
+		{
+			return parent->accumulate_mats();
+		}
+		else
+		{
+			return tmat<space::OBJECT, space::WORLD>();
+		}
+	}
 private:
 	void set_dirty()
 	{
@@ -185,4 +185,16 @@ private:
 		if (parent)
 			parent->set_dirty();
 	}
+	void transform_verts()
+	{
+		size_t i = 0;
+		const auto& m = accumulate_mats();
+		mesh->transform([&](vertex_t::vector_t& v)
+			{
+				const auto& out = hats2carve(src_verts[i].transform_copy(m));
+				++i;
+				return out;
+			});
+	}
+
 };

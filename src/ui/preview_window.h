@@ -12,4 +12,7 @@ public:
 	void set_enable_callback(const std::function<void()> &callback);
 private:
 	std::function<void()> m_enable_callback;
+private:
+	bool was_using_imguizmo = false;
+	tmat<space::OBJECT, space::PARENT> imguizmo_undo_mat;
 };

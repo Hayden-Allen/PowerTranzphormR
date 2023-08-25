@@ -24,7 +24,7 @@ void preview_window::handle_frame()
 
 	// if something in the scene graph is selected, and the cursor is not locked, then show a transform gizmo for it
 	sgnode* target = m_app_ctx->scene.get_selected_node();
-	if (target && !m_app_ctx->mgl_ctx.is_cursor_locked())
+	if (target && target != m_app_ctx->scene.get_sg_root() && !m_app_ctx->mgl_ctx.is_cursor_locked())
 	{
 		const auto& win_pos = ImGui::GetWindowPos();
 		auto clip_min = win_pos;
@@ -40,34 +40,32 @@ void preview_window::handle_frame()
 		ImGuizmo::SetRect(clip_min.x, clip_min.y, img_dim.x, img_dim.y);
 
 		// make a copy of node's transform so that the gizmo can modify it
-		tmat<space::OBJECT, space::WORLD> current_mat = target->mat;
+		tmat<space::OBJECT, space::PARENT> current_mat = target->mat;
 		const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
 		const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
-		ImGuizmo::Manipulate(view.e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
+		ImGuizmo::Manipulate((view * target->accumulate_parent_mats()).e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
 
 		// whether or not ImGuizmo was being used last frame
-		static bool was_using = false;
-		static tmat<space::OBJECT, space::WORLD> initial_mat;
 		// if using ImGuizmo this frame
 		if (ImGuizmo::IsUsing())
 		{
 			// if this is the first frame it's being used, save initial transform
-			if (!was_using)
+			if (!was_using_imguizmo)
 			{
-				initial_mat = target->mat;
+				imguizmo_undo_mat = target->mat;
 			}
-			was_using = true;
+			was_using_imguizmo = true;
 			// propagate gizmo's changes to node
 			target->set_transform(current_mat);
 		}
 		// ImGuizmo not being used this frame, but was last frame
-		else if (was_using)
+		else if (was_using_imguizmo)
 		{
-			was_using = false;
+			was_using_imguizmo = false;
 			// push result of ImGuizmo onto action stack
 			if (target)
 			{
-				m_app_ctx->transform_action(target, initial_mat, current_mat);
+				m_app_ctx->transform_action(target, imguizmo_undo_mat, target->mat);
 			}
 		}
 

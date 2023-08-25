@@ -20,9 +20,9 @@ struct app_ctx {
 	{
 		f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
 		preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
-		m_init_menus();
+		init_menus();
 	}
-	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::WORLD>& old_mat, const tmat<space::OBJECT, space::WORLD>& new_mat)
+	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
 	{
 		actions.transform(t, old_mat, new_mat);
 	}
@@ -47,7 +47,7 @@ struct app_ctx {
 		actions.redo();
 	}
 private:
-	void m_init_menus()
+	void init_menus()
 	{
 		shortcut_menu file_menu;
 		file_menu.name = "File";

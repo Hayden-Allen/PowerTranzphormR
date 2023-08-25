@@ -36,37 +36,37 @@ static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
 struct cuboid_options
 {
 	f32 width = 2.f, height = 2.f, depth = 2.f;
-	tmat<space::OBJECT, space::WORLD> transform;
+	tmat<space::OBJECT, space::PARENT> transform;
 };
 struct cylinder_options
 {
 	f32 top_radius = 1.f, bottom_radius = 1.f, height = 2.f;
 	u32 num_steps = 16;
-	tmat<space::OBJECT, space::WORLD> transform;
+	tmat<space::OBJECT, space::PARENT> transform;
 };
 struct cone_options
 {
 	f32 radius = 2.f, height = 2.f;
 	u32 num_steps = 16;
-	tmat<space::OBJECT, space::WORLD> transform;
+	tmat<space::OBJECT, space::PARENT> transform;
 };
 struct torus_options
 {
 	f32 center_radius = 1.f, tube_radius = .5f;
 	u32 num_center_steps = 12, num_tube_steps = 12;
-	tmat<space::OBJECT, space::WORLD> transform;
+	tmat<space::OBJECT, space::PARENT> transform;
 };
 struct ellipsoid_options
 {
 	f32 radius_x = 1.f, radius_y = 1.f, radius_z = 1.f;
 	u32 num_horizontal_steps = 12, num_vertical_steps = 6;
-	tmat<space::OBJECT, space::WORLD> transform;
+	tmat<space::OBJECT, space::PARENT> transform;
 };
 struct heightmap_options
 {
 	f32 width = 1.f, max_height = 1.f, depth = 1.f;
 	u32 width_steps = 0, depth_steps = 0;
-	tmat<space::OBJECT, space::WORLD> transform;
+	tmat<space::OBJECT, space::PARENT> transform;
 };
 
 mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options = {});

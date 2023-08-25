@@ -19,10 +19,10 @@ public:
 struct transform_action : public action
 {
 public:
-	tmat<space::OBJECT, space::WORLD> initial;
-	tmat<space::OBJECT, space::WORLD> mat;
+	tmat<space::OBJECT, space::PARENT> initial;
+	tmat<space::OBJECT, space::PARENT> mat;
 public:
-	transform_action(sgnode* const t, const tmat<space::OBJECT, space::WORLD>& old_mat, const tmat<space::OBJECT, space::WORLD>& new_mat) :
+	transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat) :
 		action(t),
 		initial(old_mat),
 		mat(new_mat)
@@ -115,7 +115,7 @@ public:
 			delete a;
 	}
 public:
-	void transform(sgnode* const t, const tmat<space::OBJECT, space::WORLD>& old_mat, const tmat<space::OBJECT, space::WORLD>& new_mat)
+	void transform(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
 	{
 		new_action(new transform_action(t, old_mat, new_mat), true);
 	}
