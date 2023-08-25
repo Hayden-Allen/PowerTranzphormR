@@ -41,6 +41,4 @@ void preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, 
 {
 	if (key == GLFW_KEY_ESCAPE)
 		disable();
-
-	// TODO: Figure out how best to make keyboard shortcuts consistent with imgui_layer
 }

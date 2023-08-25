@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "ui/shortcut_menus_layer.h"
 #include "ui/imgui_layer.h"
 #include "ui/preview_layer.h"
 #include "ui/preview_window.h"
@@ -137,6 +138,9 @@ int main(int argc, char** argv)
 {
 	app_ctx a_ctx;
 	make_scene(&a_ctx.scene);
+
+	shortcut_menus_layer sl(&a_ctx);
+	a_ctx.mgl_ctx.add_layer(&sl);
 
 	imgui_layer il(&a_ctx);
 	a_ctx.mgl_ctx.add_layer(&il);

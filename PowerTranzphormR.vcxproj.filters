@@ -72,6 +72,9 @@
     <ClCompile Include="src\ui\scene_graph_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui\shortcut_menus_layer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\pch.h">
@@ -101,7 +104,7 @@
     <ClInclude Include="src\ui\imgui_layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ui\imgui_menu.h">
+    <ClInclude Include="src\ui\shortcut_menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\imgui_window.h">
@@ -117,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\app_ctx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\shortcut_menus_layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

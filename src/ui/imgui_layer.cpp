@@ -4,8 +4,6 @@
 imgui_layer::imgui_layer(app_ctx* const a_ctx) :
 	m_app_ctx(a_ctx)
 {
-	init_menus();
-
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -125,12 +123,6 @@ void imgui_layer::on_scroll(const f32 x, const f32 y)
 void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	ImGui_ImplGlfw_KeyCallback(m_app_ctx->mgl_ctx.window, key, scancode, action, mods);
-	// This should ideally be WantCaptureKeyboard, but that seems to be true pretty much all the time
-	// The goal here is that at least we can prevent Delete/Backspace in text fields from triggering menu items
-	if (!ImGui::GetIO().WantTextInput && action == GLFW_PRESS)
-	{
-		handle_menu_keys(key, mods);
-	}
 }
 
 void imgui_layer::add_window(imgui_window* window)
@@ -155,9 +147,9 @@ void imgui_layer::remove_window(imgui_window* window)
 
 void imgui_layer::draw_menus()
 {
-	if (m_menus.size() > 0 && ImGui::BeginMenuBar())
+	if (m_app_ctx->shortcut_menus.size() > 0 && ImGui::BeginMenuBar())
 	{
-		for (const imgui_menu& menu : m_menus)
+		for (const shortcut_menu& menu : m_app_ctx->shortcut_menus)
 		{
 			draw_menu(menu);
 		}
@@ -165,16 +157,16 @@ void imgui_layer::draw_menus()
 	}
 }
 
-void imgui_layer::draw_menu(const imgui_menu& menu)
+void imgui_layer::draw_menu(const shortcut_menu& menu)
 {
 	if (ImGui::BeginMenu(menu.name.c_str()))
 	{
 		for (size_t i = 0; i < menu.groups.size(); ++i)
 		{
-			const imgui_menu_item_group& group = menu.groups[i];
-			for (const imgui_menu_item& item : group)
+			const shortcut_menu_item_group& group = menu.groups[i];
+			for (const shortcut_menu_item& item : group)
 			{
-				if (ImGui::MenuItem(item.name.c_str(), item.shortcut_text.c_str()))
+				if (ImGui::MenuItem(item.name.c_str(), item.keys_text.c_str()))
 				{
 					item.handler();
 				}
@@ -186,142 +178,5 @@ void imgui_layer::draw_menu(const imgui_menu& menu)
 			}
 		}
 		ImGui::EndMenu();
-	}
-}
-
-void imgui_layer::init_menus()
-{
-	imgui_menu file_menu;
-	file_menu.name = "File";
-	imgui_menu_item file_new = {
-		"New Phonky Phorm",
-		[]()
-		{
-			std::cout << "MENU: NEW\n";
-		},
-		"Ctrl+N",
-		GLFW_KEY_N,
-		GLFW_MOD_CONTROL,
-	};
-	imgui_menu_item file_open = {
-		"Open Phonky Phorm",
-		[]()
-		{
-			std::cout << "MENU: OPEN\n";
-		},
-		"Ctrl+O",
-		GLFW_KEY_O,
-		GLFW_MOD_CONTROL,
-	};
-	imgui_menu_item file_save = {
-		"Save Phonky Phorm",
-		[]()
-		{
-			std::cout << "MENU: SAVE\n";
-		},
-		"Ctrl+S",
-		GLFW_KEY_S,
-		GLFW_MOD_CONTROL,
-	};
-	imgui_menu_item file_save_as = {
-		"Save Phonky Phorm As...",
-		[]()
-		{
-			std::cout << "MENU: SAVE AS\n";
-		},
-		"Ctrl+Shift+S",
-		GLFW_KEY_S,
-		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
-	};
-	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
-	m_menus.push_back(file_menu);
-
-	imgui_menu edit_menu;
-	edit_menu.name = "Edit";
-	imgui_menu_item edit_delete = {
-		"Delete Node",
-		[&]()
-		{
-			sgnode* const selected = m_app_ctx->scene.get_selected_node();
-			if (selected && selected->parent)
-			{
-				m_app_ctx->destroy_action(selected);
-				m_app_ctx->scene.set_selected_node(nullptr);
-			}
-		},
-		"Delete",
-		GLFW_KEY_DELETE,
-		0,
-	};
-	edit_menu.groups.push_back({ edit_delete });
-	imgui_menu_item edit_undo = {
-		"Undo Tranzphormation",
-		[&]()
-		{
-			m_app_ctx->undo();
-		},
-		"Ctrl+Z",
-		GLFW_KEY_Z,
-		GLFW_MOD_CONTROL,
-	};
-	imgui_menu_item edit_redo = {
-		"Redo Tranzphormation",
-		[&]()
-		{
-			m_app_ctx->redo();
-		},
-		"Ctrl+Y",
-		GLFW_KEY_Y,
-		GLFW_MOD_CONTROL,
-	};
-	edit_menu.groups.push_back({ edit_undo, edit_redo });
-	imgui_menu_item edit_translate = {
-		"Gizmo: Translate",
-		[&]()
-		{
-			m_app_ctx->gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
-		},
-		"T",
-		GLFW_KEY_T,
-		0,
-	};
-	imgui_menu_item edit_rotate = {
-		"Gizmo: Rotate",
-		[&]()
-		{
-			m_app_ctx->gizmo_op = ImGuizmo::OPERATION::ROTATE;
-		},
-		"R",
-		GLFW_KEY_R,
-		0,
-	};
-	imgui_menu_item edit_scale = {
-		"Gizmo: Scale",
-		[&]()
-		{
-			m_app_ctx->gizmo_op = ImGuizmo::OPERATION::SCALE;
-		},
-		"S",
-		GLFW_KEY_S,
-		0,
-	};
-	edit_menu.groups.push_back({ edit_translate, edit_rotate, edit_scale });
-	m_menus.push_back(edit_menu);
-}
-
-void imgui_layer::handle_menu_keys(const s32 key, const s32 mods)
-{
-	for (const imgui_menu& menu : m_menus)
-	{
-		for (const imgui_menu_item_group& group : menu.groups)
-		{
-			for (const imgui_menu_item& item : group)
-			{
-				if (key == item.shortcut_key && item.shortcut_mods == (mods & 0xf))
-				{
-					item.handler();
-				}
-			}
-		}
 	}
 }

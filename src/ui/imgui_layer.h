@@ -1,5 +1,4 @@
 #pragma once
-#include "imgui_menu.h"
 #include "imgui_window.h"
 #include "app_ctx.h"
 
@@ -19,11 +18,9 @@ public:
 private:
 	app_ctx* const m_app_ctx = nullptr;
 	std::vector<imgui_window*> m_windows;
-	std::vector<imgui_menu> m_menus;
 	std::function<void()> m_exit_callback;
 private:
 	void draw_menus();
-	void draw_menu(const imgui_menu& menu);
-	void init_menus();
+	void draw_menu(const shortcut_menu& menu);
 	void handle_menu_keys(const s32 key, const s32 mods);
 };
