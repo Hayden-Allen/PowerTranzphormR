@@ -125,37 +125,11 @@ void imgui_layer::on_scroll(const f32 x, const f32 y)
 void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	ImGui_ImplGlfw_KeyCallback(m_app_ctx->mgl_ctx.window, key, scancode, action, mods);
-
-	if (action == GLFW_PRESS)
+	// This should ideally be WantCaptureKeyboard, but that seems to be true pretty much all the time
+	// The goal here is that at least we can prevent Delete/Backspace in text fields from triggering menu items
+	if (!ImGui::GetIO().WantTextInput && action == GLFW_PRESS)
 	{
 		handle_menu_keys(key, mods);
-
-		// HATODO add as menu item
-		if (mods & GLFW_MOD_CONTROL)
-		{
-			if (key == GLFW_KEY_Z)
-				m_app_ctx->undo();
-			if (key == GLFW_KEY_Y)
-				m_app_ctx->redo();
-		}
-		else
-		{
-			if (key == GLFW_KEY_T)
-				m_app_ctx->gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
-			if (key == GLFW_KEY_R)
-				m_app_ctx->gizmo_op = ImGuizmo::OPERATION::ROTATE;
-			if (key == GLFW_KEY_S)
-				m_app_ctx->gizmo_op = ImGuizmo::OPERATION::SCALE;
-			if (key == GLFW_KEY_DELETE)
-			{
-				sgnode* const selected = m_app_ctx->scene.get_selected_node();
-				if (selected && selected->parent)
-				{
-					m_app_ctx->destroy_action(selected);
-					m_app_ctx->scene.set_selected_node(nullptr);
-				}
-			}
-		}
 	}
 }
 
@@ -264,11 +238,27 @@ void imgui_layer::init_menus()
 
 	imgui_menu edit_menu;
 	edit_menu.name = "Edit";
+	imgui_menu_item edit_delete = {
+		"Delete Node",
+		[&]()
+		{
+			sgnode* const selected = m_app_ctx->scene.get_selected_node();
+			if (selected && selected->parent)
+			{
+				m_app_ctx->destroy_action(selected);
+				m_app_ctx->scene.set_selected_node(nullptr);
+			}
+		},
+		"Delete",
+		GLFW_KEY_DELETE,
+		0,
+	};
+	edit_menu.groups.push_back({ edit_delete });
 	imgui_menu_item edit_undo = {
 		"Undo Tranzphormation",
-		[]()
+		[&]()
 		{
-			std::cout << "MENU: UNDO\n";
+			m_app_ctx->undo();
 		},
 		"Ctrl+Z",
 		GLFW_KEY_Z,
@@ -276,15 +266,46 @@ void imgui_layer::init_menus()
 	};
 	imgui_menu_item edit_redo = {
 		"Redo Tranzphormation",
-		[]()
+		[&]()
 		{
-			std::cout << "MENU: REDO\n";
+			m_app_ctx->redo();
 		},
 		"Ctrl+Y",
 		GLFW_KEY_Y,
 		GLFW_MOD_CONTROL,
 	};
 	edit_menu.groups.push_back({ edit_undo, edit_redo });
+	imgui_menu_item edit_translate = {
+		"Gizmo: Translate",
+		[&]()
+		{
+			m_app_ctx->gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
+		},
+		"T",
+		GLFW_KEY_T,
+		0,
+	};
+	imgui_menu_item edit_rotate = {
+		"Gizmo: Rotate",
+		[&]()
+		{
+			m_app_ctx->gizmo_op = ImGuizmo::OPERATION::ROTATE;
+		},
+		"R",
+		GLFW_KEY_R,
+		0,
+	};
+	imgui_menu_item edit_scale = {
+		"Gizmo: Scale",
+		[&]()
+		{
+			m_app_ctx->gizmo_op = ImGuizmo::OPERATION::SCALE;
+		},
+		"S",
+		GLFW_KEY_S,
+		0,
+	};
+	edit_menu.groups.push_back({ edit_translate, edit_rotate, edit_scale });
 	m_menus.push_back(edit_menu);
 }
 
