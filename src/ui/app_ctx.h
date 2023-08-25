@@ -100,11 +100,14 @@ private:
 			"Delete Node",
 			[&]()
 			{
-				sgnode* const selected = scene.get_selected_node();
-				if (selected && selected->parent)
+				if (!mgl_ctx.is_cursor_locked())
 				{
-					destroy_action(selected);
-					scene.set_selected_node(nullptr);
+					sgnode* const selected = scene.get_selected_node();
+					if (selected && selected->parent)
+					{
+						destroy_action(selected);
+						scene.set_selected_node(nullptr);
+					}
 				}
 			},
 			"Delete",
