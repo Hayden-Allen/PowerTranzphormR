@@ -9,10 +9,7 @@ public:
 	sgnode* parent;
 	std::vector<sgnode*> children;
 	std::vector<point<space::OBJECT>> src_verts;
-	// leaf nodes have a generated_mesh, non-leaves have a raw mesh
-	mesh_t* raw;
 	generated_mesh* gen;
-	//-------------------------------------------------------------
 	carve::csg::CSG::OP operation;
 	std::string id, name;
 	bool selected, dirty;
@@ -23,7 +20,6 @@ public:
 	// leaf node
 	sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
-		raw(nullptr),
 		gen(m),
 		operation(carve::csg::CSG::OP::ALL),
 		id("sgn" + std::to_string(s_next_id++)),
@@ -41,7 +37,6 @@ public:
 	// non-leaf node
 	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
-		raw(nullptr),
 		gen(nullptr),
 		operation(op),
 		id("sgn" + std::to_string(s_next_id++)),
@@ -56,8 +51,9 @@ public:
 	virtual ~sgnode()
 	{
 		// avoid double free
-		if (owns_raw())
-			delete get_raw();
+		if (owns_mesh())
+			delete gen->mesh;
+		delete gen;
 		for (sgnode* const child : children)
 			delete child;
 	}
@@ -83,7 +79,7 @@ public:
 		children.erase(it);
 		// delete node;
 		// not sure why this is necessary
-		raw = nullptr;
+		gen = nullptr;
 		set_dirty();
 
 		return index;
@@ -105,33 +101,34 @@ public:
 		dirty = false;
 		if (is_leaf())
 		{
-			if (gen && gen->mesh)
+			if (gen)
 				transform_verts();
 			return;
 		}
 
 		// get rid of existing mesh
-		if (owns_raw())
+		if (owns_mesh())
 		{
-			delete raw;
+			delete gen;
 		}
-		raw = nullptr;
+		gen = nullptr;
 		// if there are more children, add them one by one to this node's mesh
 		for (u32 i = 0; i < children.size(); i++)
 		{
 			children[i]->recompute(scene);
-			if (!children[i]->get_raw())
+			if (!children[i]->gen)
 				continue;
 
-			if (!raw)
+			if (!gen)
 			{
-				raw = children[i]->get_raw();
+				// raw = children[i]->get_raw();
+				gen = new generated_mesh(children[i]->gen->mesh);
 			}
 			else
 			{
-				mesh_t* old_mesh = raw;
-				bool delete_old_mesh = owns_raw();
-				raw = scene.compute(raw, children[i]->get_raw(), operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				mesh_t* old_mesh = gen->mesh;
+				bool delete_old_mesh = owns_mesh();
+				gen->mesh = scene.compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
 				if (delete_old_mesh)
 				{
 					delete old_mesh;
@@ -154,13 +151,12 @@ public:
 		operation = op;
 		set_dirty();
 	}
-	bool owns_raw() const
+	bool owns_mesh() const
 	{
-		const mesh_t* const m = get_raw();
-		if (!m)
+		if (!gen)
 			return false;
 		for (const sgnode* const child : children)
-			if (m == child->get_raw())
+			if (child->gen && gen->mesh == child->gen->mesh)
 				return false;
 		return true;
 	}
@@ -185,18 +181,6 @@ public:
 		{
 			return tmat<space::OBJECT, space::WORLD>();
 		}
-	}
-	mesh_t* get_raw()
-	{
-		if (is_leaf())
-			return gen ? gen->mesh : nullptr;
-		return raw;
-	}
-	const mesh_t* get_raw() const
-	{
-		if (is_leaf())
-			return gen ? gen->mesh : nullptr;
-		return raw;
 	}
 private:
 	void set_dirty()
