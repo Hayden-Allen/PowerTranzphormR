@@ -190,7 +190,8 @@ void imgui_layer::draw_menu_item(const shortcut_menu_item& item)
 {
 	if (item.groups.size())
 	{
-		if (ImGui::BeginMenu(item.name.c_str(), item.enabled()))
+		const std::string name = item.groups.size() ? (item.name + std::string("...")) : item.name;
+		if (ImGui::BeginMenu(name.c_str(), item.enabled()))
 		{
 			for (size_t i = 0; i < item.groups.size(); ++i)
 			{
