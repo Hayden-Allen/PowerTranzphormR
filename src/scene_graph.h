@@ -109,6 +109,7 @@ public:
 		// get rid of existing mesh
 		if (owns_mesh())
 		{
+			delete gen->mesh;
 			delete gen;
 		}
 		gen = nullptr;
