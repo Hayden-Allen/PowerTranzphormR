@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "scene_ctx.h"
+#include "scene_graph.h"
 
 scene_ctx::scene_ctx()
 {
@@ -46,7 +47,7 @@ void scene_ctx::update()
 {
 	if (m_sg_root->dirty)
 	{
-		m_sg_root->recompute(m_csg);
+		m_sg_root->recompute(this);
 		m_build_sg_vaos();
 	}
 
@@ -74,6 +75,30 @@ void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
 	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
 	m_draw_vaos(glctx, mats, m_sg_vaos_for_mtl);
+}
+generated_mesh* scene_ctx::generated_textured_cuboid(GLuint mtl_id, const cuboid_options& options)
+{
+	return new generated_cuboid(this, mtl_id, options);
+}
+generated_mesh* scene_ctx::generated_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options)
+{
+	return new generated_ellipsoid(this, mtl_id, options);
+}
+generated_mesh* scene_ctx::generated_textured_cylinder(GLuint mtl_id, const cylinder_options& options)
+{
+	return new generated_cylinder(this, mtl_id, options);
+}
+generated_mesh* scene_ctx::generated_textured_cone(GLuint mtl_id, const cone_options& options)
+{
+	return new generated_cone(this, mtl_id, options);
+}
+generated_mesh* scene_ctx::generated_textured_torus(GLuint mtl_id, const torus_options& options)
+{
+	return new generated_torus(this, mtl_id, options);
+}
+generated_mesh* scene_ctx::generated_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options)
+{
+	return new generated_heightmap(this, mtl_id, options);
 }
 
 

@@ -11,27 +11,27 @@ sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid
 {
 	/*mesh_t* m = textured_cuboid(tex_coord_attr, mtl_id_attr, mtl_id, options);
 	return new sgnode(nullptr, m, "Box", options.transform);*/
-	generated_mesh* m = scene->create_textured_cuboid(mtl_id, options);
+	generated_mesh* m = scene->generated_textured_cuboid(mtl_id, options);
 	return new sgnode(nullptr, m, "Box", options.transform);
 }
 sgnode* textured_ellipsoid_node(scene_ctx* const scene, GLuint mtl_id, const ellipsoid_options& options = {})
 {
-	generated_mesh* m = scene->create_textured_ellipsoid(mtl_id, options);
+	generated_mesh* m = scene->generated_textured_ellipsoid(mtl_id, options);
 	return new sgnode(nullptr, m, "Ellipsoid", options.transform);
 }
 sgnode* textured_cylinder_node(scene_ctx* const scene, GLuint mtl_id, const cylinder_options& options = {})
 {
-	generated_mesh* m = scene->create_textured_cylinder(mtl_id, options);
+	generated_mesh* m = scene->generated_textured_cylinder(mtl_id, options);
 	return new sgnode(nullptr, m, "Cylinder", options.transform);
 }
 sgnode* textured_cone_node(scene_ctx* const scene, GLuint mtl_id, const cone_options& options = {})
 {
-	generated_mesh* m = scene->create_textured_cone(mtl_id, options);
+	generated_mesh* m = scene->generated_textured_cone(mtl_id, options);
 	return new sgnode(nullptr, m, "Cone", options.transform);
 }
 sgnode* textured_torus_node(scene_ctx* const scene, GLuint mtl_id, const torus_options& options = {})
 {
-	generated_mesh* m = scene->create_textured_torus(mtl_id, options);
+	generated_mesh* m = scene->generated_textured_torus(mtl_id, options);
 	return new sgnode(nullptr, m, "Torus", options.transform);
 }
 
@@ -50,9 +50,7 @@ void make_scene(scene_ctx* const out_scene)
 
 	sgnode* n2 = textured_ellipsoid_node(
 		out_scene, 1,
-		{
-			.transform = tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 0.5f, 0.0f)
-		});
+		{ .transform = tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 0.5f, 0.0f) });
 
 	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B);
 	na->add_child(n1);

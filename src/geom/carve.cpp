@@ -179,8 +179,8 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 {
 	assert(options.center_radius > 0.f);
 	assert(options.tube_radius > 0.f);
-	assert(options.num_center_steps > 0);
-	assert(options.num_tube_steps > 0);
+	assert(options.num_center_steps > 2);
+	assert(options.num_tube_steps > 2);
 
 	// number of circles to generate around the center of the torus
 	const u32 CENTER_STEPS = options.num_center_steps;

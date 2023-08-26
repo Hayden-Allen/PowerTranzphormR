@@ -28,10 +28,7 @@ public:
 		dirty(false),
 		mat(t)
 	{
-		for (const auto& v : gen->mesh->vertex_storage)
-		{
-			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
-		}
+		copy_verts();
 		set_dirty();
 	}
 	// non-leaf node
@@ -96,15 +93,20 @@ public:
 	{
 		return operation == carve::csg::CSG::OP::ALL;
 	}
-	void recompute(carve::csg::CSG& scene)
+	void recompute(scene_ctx* const scene)
 	{
 		dirty = false;
 		if (is_leaf())
 		{
-			if (gen->dirty)
-				gen->recompute();
 			if (gen)
+			{
+				if (gen->dirty)
+				{
+					gen->recompute(scene);
+					copy_verts();
+				}
 				transform_verts();
+			}
 			return;
 		}
 
@@ -119,7 +121,7 @@ public:
 		for (u32 i = 0; i < children.size(); i++)
 		{
 			children[i]->recompute(scene);
-			if (!children[i]->gen)
+			if (!children[i]->gen || !children[i]->gen->mesh->vertex_storage.size())
 				continue;
 
 			if (!gen)
@@ -131,7 +133,7 @@ public:
 			{
 				mesh_t* old_mesh = gen->mesh;
 				bool delete_old_mesh = owns_mesh();
-				gen->mesh = scene.compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				gen->mesh = scene->get_csg().compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
 				if (delete_old_mesh)
 				{
 					delete old_mesh;
@@ -197,6 +199,14 @@ public:
 			parent->set_dirty();
 	}
 private:
+	void copy_verts()
+	{
+		src_verts.clear();
+		for (const auto& v : gen->mesh->vertex_storage)
+		{
+			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
+		}
+	}
 	void transform_verts()
 	{
 		if (is_leaf())

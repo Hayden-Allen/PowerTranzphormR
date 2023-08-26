@@ -62,26 +62,27 @@ struct app_ctx
 	}
 	void create_cube_action()
 	{
-		create_shape_action(&scene_ctx::create_textured_cuboid, "Cube");
+		create_shape_action(&scene_ctx::generated_textured_cuboid, "Cube");
 	}
 	void create_sphere_action()
 	{
-		create_shape_action(&scene_ctx::create_textured_ellipsoid, "Sphere");
+		create_shape_action(&scene_ctx::generated_textured_ellipsoid, "Sphere");
 	}
 	void create_cylinder_action()
 	{
-		create_shape_action(&scene_ctx::create_textured_cylinder, "Cylinder");
+		create_shape_action(&scene_ctx::generated_textured_cylinder, "Cylinder");
 	}
 	void create_cone_action()
 	{
-		create_shape_action(&scene_ctx::create_textured_cone, "Cone");
+		create_shape_action(&scene_ctx::generated_textured_cone, "Cone");
 	}
 	void create_torus_action()
 	{
-		create_shape_action(&scene_ctx::create_textured_torus, "Torus");
+		create_shape_action(&scene_ctx::generated_textured_torus, "Torus");
 	}
 	void create_heightmap_action()
 	{
+		assert(false);
 		// FIXME: Heightmaps are not sgnodes
 		/*
 		sgnode* const selected = scene.get_selected_node();
@@ -248,7 +249,7 @@ private:
 			"Gizmo: Rotate",
 			[&]()
 			{
-					gizmo_op = ImGuizmo::OPERATION::ROTATE;
+				gizmo_op = ImGuizmo::OPERATION::ROTATE;
 			},
 			[&]()
 			{
