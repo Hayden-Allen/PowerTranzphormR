@@ -5,7 +5,8 @@
 #include "action_stack.h"
 #include "shortcut_menu.h"
 
-struct app_ctx {
+struct app_ctx
+{
 	scene_ctx scene;
 	action_stack actions;
 	mgl::context mgl_ctx;
@@ -46,7 +47,7 @@ struct app_ctx {
 	{
 		actions.redo();
 	}
-	void destroy_selected_action() 
+	void destroy_selected_action()
 	{
 		sgnode* const selected = scene.get_selected_node();
 		if (selected && selected->parent)
@@ -57,58 +58,23 @@ struct app_ctx {
 	}
 	void create_cube_in_selected_action()
 	{
-		sgnode* const selected = scene.get_selected_node();
-		if (selected)
-		{
-			mesh_t* m = textured_cuboid(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-			sgnode* n = new sgnode(nullptr, m, "Cube");
-			create_action(n, selected);
-			scene.set_selected_node(n);
-		}
+		create_shape_action(&scene_ctx::create_textured_cuboid, "Cube");
 	}
 	void create_sphere_in_selected_action()
 	{
-		sgnode* const selected = scene.get_selected_node();
-		if (selected)
-		{
-			mesh_t* m = textured_ellipsoid(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-			sgnode* n = new sgnode(nullptr, m, "Sphere");
-			create_action(n, selected);
-			scene.set_selected_node(n);
-		}
+		create_shape_action(&scene_ctx::create_textured_ellipsoid, "Sphere");
 	}
 	void create_cylinder_in_selected_action()
 	{
-		sgnode* const selected = scene.get_selected_node();
-		if (selected)
-		{
-			mesh_t* m = textured_cylinder(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-			sgnode* n = new sgnode(nullptr, m, "Cylinder");
-			create_action(n, selected);
-			scene.set_selected_node(n);
-		}
+		create_shape_action(&scene_ctx::create_textured_cylinder, "Cylinder");
 	}
 	void create_cone_in_selected_action()
 	{
-		sgnode* const selected = scene.get_selected_node();
-		if (selected)
-		{
-			mesh_t* m = textured_cone(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-			sgnode* n = new sgnode(nullptr, m, "Cone");
-			create_action(n, selected);
-			scene.set_selected_node(n);
-		}
+		create_shape_action(&scene_ctx::create_textured_cone, "Cone");
 	}
 	void create_torus_in_selected_action()
 	{
-		sgnode* const selected = scene.get_selected_node();
-		if (selected)
-		{
-			mesh_t* m = textured_torus(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-			sgnode* n = new sgnode(nullptr, m, "Torus");
-			create_action(n, selected);
-			scene.set_selected_node(n);
-		}
+		create_shape_action(&scene_ctx::create_textured_torus, "Torus");
 	}
 	void create_heightmap_in_selected_action()
 	{
@@ -125,6 +91,20 @@ struct app_ctx {
 		*/
 	}
 private:
+	template<typename FN>
+	void create_shape_action(FN fn, const std::string& name)
+	{
+		sgnode* const selected = scene.get_selected_node();
+		assert(selected);
+		if (selected)
+		{
+			// mesh_t* m = fn(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1, {});
+			mesh_t* m = (scene.*fn)(1, {});
+			sgnode* n = new sgnode(nullptr, m, name);
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+	}
 	void init_menus()
 	{
 		shortcut_menu file_menu;
@@ -245,8 +225,8 @@ private:
 					gizmo_op = ImGuizmo::OPERATION::SCALE;
 				}
 			},
-			"S",
-			GLFW_KEY_S,
+			"E",
+			GLFW_KEY_E,
 			0,
 		};
 		edit_menu.groups.push_back({ edit_translate, edit_rotate, edit_scale });

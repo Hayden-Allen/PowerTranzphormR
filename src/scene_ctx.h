@@ -63,6 +63,30 @@ public:
 	{
 		return m_csg;
 	}
+	mesh_t* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {})
+	{
+		return textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	}
+	mesh_t* create_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {})
+	{
+		return textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	}
+	mesh_t* create_textured_cone(GLuint mtl_id, const cone_options& options = {})
+	{
+		return textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	}
+	mesh_t* create_textured_torus(GLuint mtl_id, const torus_options& options = {})
+	{
+		return textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	}
+	mesh_t* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {})
+	{
+		return textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	}
+	mesh_t* create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {})
+	{
+		return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, map, options);
+	}
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_vert_size = 8;
