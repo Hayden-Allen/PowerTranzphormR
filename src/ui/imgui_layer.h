@@ -22,5 +22,6 @@ private:
 private:
 	void draw_menus();
 	void draw_menu(const shortcut_menu& menu);
+	void draw_menu_item(const shortcut_menu_item& item);
 	void handle_menu_keys(const s32 key, const s32 mods);
 };

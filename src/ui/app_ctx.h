@@ -34,28 +34,31 @@ struct app_ctx
 	void undo()
 	{
 		const sgnode* const selected = scene.get_selected_node();
+		assert(selected);
 		const action* const a = actions.undo();
-		if (selected && a->undo_conflict(selected))
+		if (a->undo_conflict(selected))
 		{
-			scene.set_selected_node(nullptr);
+			scene.set_selected_node(scene.get_sg_root());
 		}
 	}
 	void redo()
 	{
 		const sgnode* const selected = scene.get_selected_node();
+		assert(selected);
 		const action* const a = actions.redo();
-		if (selected && a->redo_conflict(selected))
+		if (a->redo_conflict(selected))
 		{
-			scene.set_selected_node(nullptr);
+			scene.set_selected_node(scene.get_sg_root());
 		}
 	}
 	void destroy_selected_action()
 	{
 		sgnode* const selected = scene.get_selected_node();
-		if (selected && selected->parent)
+		assert(selected);
+		if (selected->parent)
 		{
 			actions.destroy(selected);
-			scene.set_selected_node(nullptr);
+			scene.set_selected_node(scene.get_sg_root());
 		}
 	}
 	void create_cube_action()
@@ -175,20 +178,6 @@ private:
 		shortcut_menu edit_menu;
 		edit_menu.name = "Edit";
 		// edit_menu.groups.push_back({ edit_add_cube, edit_add_sphere, edit_add_cylinder, edit_add_cone, edit_add_torus, edit_add_heightmap });
-		shortcut_menu_item edit_delete = {
-			"Destroy",
-			[&]()
-			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					destroy_selected_action();
-				}
-			},
-			"Delete",
-			GLFW_KEY_DELETE,
-			0,
-		};
-		edit_menu.groups.push_back({ edit_delete });
 		shortcut_menu_item edit_undo = {
 			"Undo Tranzphormation",
 			[&]()
@@ -251,5 +240,138 @@ private:
 		};
 		edit_menu.groups.push_back({ edit_translate, edit_rotate, edit_scale });
 		shortcut_menus.push_back(edit_menu);
+
+		shortcut_menu phorm_menu;
+		phorm_menu.name = "Phorm";
+		shortcut_menu_item phorm_create_cube = {
+			"Cube",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_cube_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_sphere = {
+			"Sphere",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_sphere_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_cylinder = {
+			"Cylinder",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_cylinder_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_cone = {
+			"Cone",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_cone_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_torus = {
+			"Torus",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_torus_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_union = {
+			"Union",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_union_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_subtract = {
+			"Subtract",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_subtract_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create_intersect = {
+			"Intersect",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					create_intersect_action();
+				}
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item phorm_create = {
+			"Create",
+			[&]() {},
+			"",
+			0,
+			0,
+			{
+				{ phorm_create_cube, phorm_create_sphere, phorm_create_cylinder, phorm_create_cone, phorm_create_torus },
+				{ phorm_create_union, phorm_create_subtract, phorm_create_intersect },
+			}
+		};
+		shortcut_menu_item phorm_destroy = {
+			"Destroy",
+			[&]()
+			{
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					destroy_selected_action();
+				}
+			},
+			"Delete",
+			GLFW_KEY_DELETE,
+			0,
+		};
+		phorm_menu.groups.push_back({ phorm_create, phorm_destroy });
+		shortcut_menus.push_back(phorm_menu);
 	}
 };

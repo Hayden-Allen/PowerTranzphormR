@@ -37,42 +37,33 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 	if (ImGui::BeginPopupContextItem())
 	{
 		m_app_ctx->scene.set_selected_node(node);
-		if (ImGui::MenuItem("Add Union"))
-		{
-			//
-		}
-		ImGui::Separator();
-		if (ImGui::MenuItem("Add Cube"))
-		{
-			m_app_ctx->create_cube_action();
-		}
-		if (ImGui::MenuItem("Add Sphere"))
-		{
-			m_app_ctx->create_sphere_action();
-		}
-		if (ImGui::MenuItem("Add Cylinder"))
-		{
-			m_app_ctx->create_cylinder_action();
-		}
-		if (ImGui::MenuItem("Add Cone"))
-		{
-			m_app_ctx->create_cone_action();
-		}
-		if (ImGui::MenuItem("Add Torus"))
-		{
-			m_app_ctx->create_torus_action();
-		}
-		if (ImGui::MenuItem("Add Heightmap"))
-		{
-			m_app_ctx->create_heightmap_action();
-		}
-		ImGui::Separator();
-		if (ImGui::MenuItem("Destroy"))
-		{
-			m_app_ctx->destroy_selected_action();
-		}
+
 		if (!node->is_mesh())
 		{
+			if (ImGui::MenuItem("Add Cube"))
+			{
+				m_app_ctx->create_cube_action();
+			}
+			if (ImGui::MenuItem("Add Sphere"))
+			{
+				m_app_ctx->create_sphere_action();
+			}
+			if (ImGui::MenuItem("Add Cylinder"))
+			{
+				m_app_ctx->create_cylinder_action();
+			}
+			if (ImGui::MenuItem("Add Cone"))
+			{
+				m_app_ctx->create_cone_action();
+			}
+			if (ImGui::MenuItem("Add Torus"))
+			{
+				m_app_ctx->create_torus_action();
+			}
+			if (ImGui::MenuItem("Add Heightmap"))
+			{
+				m_app_ctx->create_heightmap_action();
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Add Union"))
 			{
@@ -86,6 +77,11 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 			{
 				m_app_ctx->create_intersect_action();
 			}
+			ImGui::Separator();
+		}
+		if (ImGui::MenuItem("Destroy"))
+		{
+			m_app_ctx->destroy_selected_action();
 		}
 
 		ImGui::EndPopup();

@@ -6,6 +6,7 @@ scene_ctx::scene_ctx()
 	m_tex_coord_attr.installHooks(m_csg);
 	m_mtl_id_attr.installHooks(m_csg);
 	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::OP::UNION);
+	set_selected_node(m_sg_root);
 }
 
 scene_ctx::~scene_ctx()

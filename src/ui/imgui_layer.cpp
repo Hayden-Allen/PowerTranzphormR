@@ -166,10 +166,7 @@ void imgui_layer::draw_menu(const shortcut_menu& menu)
 			const shortcut_menu_item_group& group = menu.groups[i];
 			for (const shortcut_menu_item& item : group)
 			{
-				if (ImGui::MenuItem(item.name.c_str(), item.keys_text.c_str()))
-				{
-					item.handler();
-				}
+				draw_menu_item(item);
 			}
 
 			if (i != menu.groups.size() - 1)
@@ -178,5 +175,32 @@ void imgui_layer::draw_menu(const shortcut_menu& menu)
 			}
 		}
 		ImGui::EndMenu();
+	}
+}
+
+void imgui_layer::draw_menu_item(const shortcut_menu_item& item)
+{
+	if (item.groups.size())
+	{
+		if (ImGui::BeginMenu(item.name.c_str()))
+		{
+			for (size_t i = 0; i < item.groups.size(); ++i)
+			{
+				const shortcut_menu_item_group& group = item.groups[i];
+				for (const shortcut_menu_item& item : group)
+				{
+					draw_menu_item(item);
+				}
+				if (i != item.groups.size() - 1)
+				{
+					ImGui::Separator();
+				}
+			}
+			ImGui::EndMenu();
+		}
+	}
+	else if (ImGui::MenuItem(item.name.c_str(), item.keys_text.c_str()))
+	{
+		item.handler();
 	}
 }

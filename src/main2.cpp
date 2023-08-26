@@ -119,6 +119,7 @@ int main(int argc, char** argv)
 	{
 		a_ctx.mgl_ctx.begin_frame();
 
+		printf("%f\n", a_ctx.mgl_ctx.avg_fps);
 		char buf[64] = { 0 };
 		sprintf_s(buf, "PowerTranzphormR (%u FPS)", (u32)std::round(a_ctx.mgl_ctx.avg_fps));
 		a_ctx.mgl_ctx.set_title(buf);

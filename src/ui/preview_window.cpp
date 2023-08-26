@@ -24,7 +24,7 @@ void preview_window::handle_frame()
 
 	// if something in the scene graph is selected, and the cursor is not locked, then show a transform gizmo for it
 	sgnode* target = m_app_ctx->scene.get_selected_node();
-	if (target && target->parent && !m_app_ctx->mgl_ctx.is_cursor_locked())
+	if (target && !m_app_ctx->mgl_ctx.is_cursor_locked())
 	{
 		const auto& win_pos = ImGui::GetWindowPos();
 		auto clip_min = win_pos;
