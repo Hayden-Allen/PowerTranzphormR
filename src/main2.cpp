@@ -6,30 +6,32 @@
 #include "ui/scene_graph_window.h"
 #include "ui/app_ctx.h"
 
-sgnode* textured_cuboid_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options = {})
+sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})
 {
-	mesh_t* m = textured_cuboid(tex_coord_attr, mtl_id_attr, mtl_id, options);
+	/*mesh_t* m = textured_cuboid(tex_coord_attr, mtl_id_attr, mtl_id, options);
+	return new sgnode(nullptr, m, "Box", options.transform);*/
+	generated_mesh* m = scene->create_textured_cuboid(mtl_id, options);
 	return new sgnode(nullptr, m, "Box", options.transform);
 }
-sgnode* textured_cylinder_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cylinder_options& options = {})
+sgnode* textured_ellipsoid_node(scene_ctx* const scene, GLuint mtl_id, const ellipsoid_options& options = {})
 {
-	mesh_t* m = textured_cylinder(tex_coord_attr, mtl_id_attr, mtl_id, options);
+	generated_mesh* m = scene->create_textured_ellipsoid(mtl_id, options);
+	return new sgnode(nullptr, m, "Ellipsoid", options.transform);
+}
+sgnode* textured_cylinder_node(scene_ctx* const scene, GLuint mtl_id, const cylinder_options& options = {})
+{
+	generated_mesh* m = scene->create_textured_cylinder(mtl_id, options);
 	return new sgnode(nullptr, m, "Cylinder", options.transform);
 }
-sgnode* textured_cone_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cone_options& options = {})
+sgnode* textured_cone_node(scene_ctx* const scene, GLuint mtl_id, const cone_options& options = {})
 {
-	mesh_t* m = textured_cone(tex_coord_attr, mtl_id_attr, mtl_id, options);
+	generated_mesh* m = scene->create_textured_cone(mtl_id, options);
 	return new sgnode(nullptr, m, "Cone", options.transform);
 }
-sgnode* textured_torus_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const torus_options& options = {})
+sgnode* textured_torus_node(scene_ctx* const scene, GLuint mtl_id, const torus_options& options = {})
 {
-	mesh_t* m = textured_torus(tex_coord_attr, mtl_id_attr, mtl_id, options);
+	generated_mesh* m = scene->create_textured_torus(mtl_id, options);
 	return new sgnode(nullptr, m, "Torus", options.transform);
-}
-sgnode* textured_ellipsoid_node(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const ellipsoid_options& options = {})
-{
-	mesh_t* m = textured_ellipsoid(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, "Ellipsoid", options.transform);
 }
 
 void make_scene(scene_ctx* const out_scene)
@@ -42,18 +44,18 @@ void make_scene(scene_ctx* const out_scene)
 	scene_material mtl2("mtl2", { { "u_tex", t2 } }, s1);
 	out_scene->add_material(mtl2);
 
-	auto& tex_coord_attr = out_scene->get_tex_coord_attr();
-	auto& mtl_id_attr = out_scene->get_mtl_attr();
 	auto& csg = out_scene->get_csg();
 
 	sgnode* n1 = textured_cuboid_node(
-		tex_coord_attr, mtl_id_attr, 1,
+		out_scene, 1,
 		{ .width = 3.f });
 
 	sgnode* n2 = textured_cuboid_node(
-		tex_coord_attr, mtl_id_attr, 2,
-		{ .width = 1.f,
-			.depth = .5f });
+		out_scene, 2,
+		{
+			.width = 1.f,
+			.depth = .5f,
+		});
 
 	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 2.0f, 0.0f));
 	na->add_child(n1);
@@ -119,7 +121,6 @@ int main(int argc, char** argv)
 	{
 		a_ctx.mgl_ctx.begin_frame();
 
-		printf("%f\n", a_ctx.mgl_ctx.avg_fps);
 		char buf[64] = { 0 };
 		sprintf_s(buf, "PowerTranzphormR (%u FPS)", (u32)std::round(a_ctx.mgl_ctx.avg_fps));
 		a_ctx.mgl_ctx.set_title(buf);

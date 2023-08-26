@@ -1,9 +1,8 @@
 #pragma once
-
-#include <mingl/mingl.h>
 #include "scene_ctx.h"
 #include "action_stack.h"
 #include "shortcut_menu.h"
+#include "geom/generated_mesh.h"
 
 struct app_ctx
 {
@@ -115,8 +114,8 @@ private:
 	template<typename FN>
 	void create_shape_action(FN fn, const std::string& name)
 	{
-		mesh_t* m = (scene.*fn)(1, {});
-		create_and_select(new sgnode(nullptr, m, name));
+		generated_mesh* gen = (scene.*fn)(1, {});
+		create_and_select(new sgnode(nullptr, gen, name));
 	}
 	void create_and_select(sgnode* const node)
 	{

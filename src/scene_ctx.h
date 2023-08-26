@@ -1,8 +1,8 @@
 #pragma once
-
 #include "geom/carve.h"
 #include "geom/glu_tess.h"
 #include "scene_graph.h"
+#include "geom/generated_mesh.h"
 
 struct scene_material
 {
@@ -63,29 +63,35 @@ public:
 	{
 		return m_csg;
 	}
-	mesh_t* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {})
+	generated_cuboid* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {})
 	{
-		return textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		mesh_t* const m = textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		return new generated_cuboid(m, options);
 	}
-	mesh_t* create_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {})
+	generated_ellipsoid* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {})
 	{
-		return textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		mesh_t* const m = textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		return new generated_ellipsoid(m, options);
 	}
-	mesh_t* create_textured_cone(GLuint mtl_id, const cone_options& options = {})
+	generated_cylinder* create_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {})
 	{
-		return textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		mesh_t* const m = textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		return new generated_cylinder(m, options);
 	}
-	mesh_t* create_textured_torus(GLuint mtl_id, const torus_options& options = {})
+	generated_cone* create_textured_cone(GLuint mtl_id, const cone_options& options = {})
 	{
-		return textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		mesh_t* const m = textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		return new generated_cone(m, options);
 	}
-	mesh_t* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {})
+	generated_torus* create_textured_torus(GLuint mtl_id, const torus_options& options = {})
 	{
-		return textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		mesh_t* const m = textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+		return new generated_torus(m, options);
 	}
-	mesh_t* create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {})
+	generated_heightmap* create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {})
 	{
-		return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, map, options);
+		mesh_t* const m = textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, map, options);
+		return new generated_heightmap(m, options);
 	}
 private:
 	static inline u32 s_next_mtl_id = 1;

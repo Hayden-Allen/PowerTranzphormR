@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "geom/carve.h"
+#include "geom/generated_mesh.h"
 
 class sgnode
 {
@@ -8,7 +9,10 @@ public:
 	sgnode* parent;
 	std::vector<sgnode*> children;
 	std::vector<point<space::OBJECT>> src_verts;
-	mesh_t* mesh;
+	// leaf nodes have a generated_mesh, non-leaves have a raw mesh
+	mesh_t* raw;
+	generated_mesh* gen;
+	//-------------------------------------------------------------
 	carve::csg::CSG::OP operation;
 	std::string id, name;
 	bool selected, dirty;
@@ -16,9 +20,11 @@ public:
 private:
 	static inline u32 s_next_id = 0;
 public:
-	sgnode(sgnode* p, mesh_t* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
+	// leaf node
+	sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
-		mesh(m),
+		raw(nullptr),
+		gen(m),
 		operation(carve::csg::CSG::OP::ALL),
 		id("sgn" + std::to_string(s_next_id++)),
 		name(n),
@@ -26,15 +32,17 @@ public:
 		dirty(false),
 		mat(t)
 	{
-		for (const auto& v : mesh->vertex_storage)
+		for (const auto& v : gen->mesh->vertex_storage)
 		{
 			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
 		}
 		set_dirty();
 	}
+	// non-leaf node
 	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
-		mesh(nullptr),
+		raw(nullptr),
+		gen(nullptr),
 		operation(op),
 		id("sgn" + std::to_string(s_next_id++)),
 		name(""),
@@ -48,8 +56,8 @@ public:
 	virtual ~sgnode()
 	{
 		// avoid double free
-		if (owns_mesh())
-			delete mesh;
+		if (owns_raw())
+			delete get_raw();
 		for (sgnode* const child : children)
 			delete child;
 	}
@@ -75,7 +83,7 @@ public:
 		children.erase(it);
 		// delete node;
 		// not sure why this is necessary
-		mesh = nullptr;
+		raw = nullptr;
 		set_dirty();
 
 		return index;
@@ -95,37 +103,35 @@ public:
 	void recompute(carve::csg::CSG& scene)
 	{
 		dirty = false;
-		if (is_leaf() && mesh)
-		{
-			transform_verts();
-		}
 		if (is_leaf())
 		{
+			if (gen && gen->mesh)
+				transform_verts();
 			return;
 		}
 
 		// get rid of existing mesh
-		if (owns_mesh())
+		if (owns_raw())
 		{
-			delete mesh;
+			delete raw;
 		}
-		mesh = nullptr;
+		raw = nullptr;
 		// if there are more children, add them one by one to this node's mesh
 		for (u32 i = 0; i < children.size(); i++)
 		{
 			children[i]->recompute(scene);
-			if (!children[i]->mesh)
+			if (!children[i]->get_raw())
 				continue;
 
-			if (!mesh)
+			if (!raw)
 			{
-				mesh = children[i]->mesh;
+				raw = children[i]->get_raw();
 			}
 			else
 			{
-				mesh_t* old_mesh = mesh;
-				bool delete_old_mesh = owns_mesh();
-				mesh = scene.compute(mesh, children[i]->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				mesh_t* old_mesh = raw;
+				bool delete_old_mesh = owns_raw();
+				raw = scene.compute(raw, children[i]->get_raw(), operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
 				if (delete_old_mesh)
 				{
 					delete old_mesh;
@@ -148,10 +154,13 @@ public:
 		operation = op;
 		set_dirty();
 	}
-	bool owns_mesh() const
+	bool owns_raw() const
 	{
-		for (sgnode* const child : children)
-			if (mesh == child->mesh)
+		const mesh_t* const m = get_raw();
+		if (!m)
+			return false;
+		for (const sgnode* const child : children)
+			if (m == child->get_raw())
 				return false;
 		return true;
 	}
@@ -177,6 +186,18 @@ public:
 			return tmat<space::OBJECT, space::WORLD>();
 		}
 	}
+	mesh_t* get_raw()
+	{
+		if (is_leaf())
+			return gen ? gen->mesh : nullptr;
+		return raw;
+	}
+	const mesh_t* get_raw() const
+	{
+		if (is_leaf())
+			return gen ? gen->mesh : nullptr;
+		return raw;
+	}
 private:
 	void set_dirty()
 	{
@@ -186,13 +207,16 @@ private:
 	}
 	void transform_verts()
 	{
-		size_t i = 0;
-		const auto& m = accumulate_mats();
-		mesh->transform([&](vertex_t::vector_t& v)
-			{
-				const auto& out = hats2carve(src_verts[i].transform_copy(m));
-				++i;
-				return out;
-			});
+		if (is_leaf())
+		{
+			size_t i = 0;
+			const auto& m = accumulate_mats();
+			gen->mesh->transform([&](vertex_t::vector_t& v)
+				{
+					const auto& out = hats2carve(src_verts[i].transform_copy(m));
+					++i;
+					return out;
+				});
+		}
 	}
 };
