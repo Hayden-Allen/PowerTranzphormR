@@ -86,7 +86,7 @@ void scene_ctx::m_build_sg_vaos()
 		verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
 	}
 
-	m_tesselate(m_sg_root->get_raw(), verts_for_mtl);
+	m_tesselate(m_sg_root->gen->mesh, verts_for_mtl);
 
 	m_sg_vaos_for_mtl.clear();
 	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)

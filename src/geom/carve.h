@@ -38,6 +38,12 @@ struct cuboid_options
 	f32 width = 2.f, height = 2.f, depth = 2.f;
 	tmat<space::OBJECT, space::PARENT> transform;
 };
+struct ellipsoid_options
+{
+	f32 radius_x = 1.f, radius_y = 1.f, radius_z = 1.f;
+	u32 num_horizontal_steps = 12, num_vertical_steps = 6;
+	tmat<space::OBJECT, space::PARENT> transform;
+};
 struct cylinder_options
 {
 	f32 top_radius = 1.f, bottom_radius = 1.f, height = 2.f;
@@ -54,12 +60,6 @@ struct torus_options
 {
 	f32 center_radius = 1.f, tube_radius = .5f;
 	u32 num_center_steps = 12, num_tube_steps = 12;
-	tmat<space::OBJECT, space::PARENT> transform;
-};
-struct ellipsoid_options
-{
-	f32 radius_x = 1.f, radius_y = 1.f, radius_z = 1.f;
-	u32 num_horizontal_steps = 12, num_vertical_steps = 6;
 	tmat<space::OBJECT, space::PARENT> transform;
 };
 struct heightmap_options
