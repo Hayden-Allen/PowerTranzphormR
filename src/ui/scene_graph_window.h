@@ -16,4 +16,6 @@ private:
 	static std::string operation_to_string(carve::csg::CSG::OP op);
 private:
 	Rect handle_node(sgnode* const node) const;
+private:
+	sgnode* m_show_add_child = nullptr;
 };

@@ -55,6 +55,14 @@ public:
 			delete child;
 	}
 public:
+	s64 get_index() const
+	{
+		if (!parent)
+			return -1;
+		const auto& it = std::find(parent->children.begin(), parent->children.end(), this);
+		assert(it != parent->children.end());
+		return it - parent->children.begin();
+	}
 	void add_child(sgnode* const node, s64 index = -1)
 	{
 		if (index == -1)
@@ -133,7 +141,14 @@ public:
 			{
 				mesh_t* old_mesh = gen->mesh;
 				bool delete_old_mesh = owns_mesh();
-				gen->mesh = scene->get_csg().compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				try
+				{
+					gen->mesh = scene->get_csg().compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				}
+				catch (carve::exception& ex)
+				{
+					std::cerr << "carve::exception occurred: " << ex.what() << "\n";
+				}
 				if (delete_old_mesh)
 				{
 					delete old_mesh;

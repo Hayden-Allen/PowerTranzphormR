@@ -13,7 +13,7 @@ preview_layer::~preview_layer()
 {
 }
 
-void preview_layer::on_frame(const f32 dt)
+bool preview_layer::on_frame(const f32 dt)
 {
 	const direction<space::CAMERA> move_dir(
 		get_key(GLFW_KEY_D) - get_key(GLFW_KEY_A),
@@ -35,10 +35,16 @@ void preview_layer::on_frame(const f32 dt)
 	const scene_ctx_uniforms& uniforms = { mvp, mv, obj, normal, m_app_ctx->preview_cam.get_pos() };
 	m_app_ctx->scene.draw(m_app_ctx->mgl_ctx, uniforms);
 	m_app_ctx->preview_fb.unbind();
+
+	return false;
 }
 
-void preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
+bool preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	if (key == GLFW_KEY_ESCAPE)
+	{
 		disable();
+		return true;
+	}
+	return false;
 }

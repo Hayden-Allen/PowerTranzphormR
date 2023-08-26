@@ -51,23 +51,25 @@ struct reparent_action : public action
 {
 public:
 	sgnode *old_parent, *new_parent;
+	s64 old_index = -1, new_index = -1;
 public:
-	reparent_action(sgnode* const target, sgnode* const _old_parent, sgnode* const _new_parent) :
+	reparent_action(sgnode* const target, sgnode* const _new_parent, const s64 _new_index) :
 		action(target),
-		old_parent(_old_parent),
-		new_parent(_new_parent)
+		old_parent(target->parent),
+		new_parent(_new_parent),
+		new_index(_new_index)
 	{}
 	MGL_DCM(reparent_action);
 public:
 	void apply(scene_ctx* const ctx) override
 	{
-		old_parent->remove_child(target);
-		new_parent->add_child(target);
+		old_index = old_parent->remove_child(target);
+		new_parent->add_child(target, new_index);
 	}
 	void undo(scene_ctx* const ctx) override
 	{
 		new_parent->remove_child(target);
-		old_parent->add_child(target);
+		old_parent->add_child(target, old_index);
 	}
 };
 struct create_action : public action
@@ -159,9 +161,9 @@ public:
 	{
 		new_action(new transform_action(t, old_mat, new_mat), true);
 	}
-	void reparent(sgnode* const target, sgnode* const old_parent, sgnode* const new_parent)
+	void reparent(sgnode* const target, sgnode* const new_parent, const s64 new_index)
 	{
-		new_action(new reparent_action(target, old_parent, new_parent), true);
+		new_action(new reparent_action(target, new_parent, new_index), true);
 	}
 	void create(sgnode* const target, sgnode* const parent)
 	{

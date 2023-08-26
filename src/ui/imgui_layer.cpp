@@ -56,7 +56,7 @@ imgui_layer::~imgui_layer()
 
 
 
-void imgui_layer::on_frame(const f32 dt)
+bool imgui_layer::on_frame(const f32 dt)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -105,26 +105,32 @@ void imgui_layer::on_frame(const f32 dt)
 		glfwMakeContextCurrent(backup_current_context);
 	}
 	glEnable(GL_DEPTH_TEST);
+
+	return false;
 }
 
-void imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
+bool imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
 {
 	ImGui_ImplGlfw_MouseButtonCallback(m_app_ctx->mgl_ctx.window, button, action, mods);
+	return false;
 }
 
-void imgui_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
+bool imgui_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
 {
 	ImGui_ImplGlfw_CursorPosCallback(m_app_ctx->mgl_ctx.window, x, y);
+	return false;
 }
 
-void imgui_layer::on_scroll(const f32 x, const f32 y)
+bool imgui_layer::on_scroll(const f32 x, const f32 y)
 {
 	ImGui_ImplGlfw_ScrollCallback(m_app_ctx->mgl_ctx.window, x, y);
+	return false;
 }
 
-void imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
+bool imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	ImGui_ImplGlfw_KeyCallback(m_app_ctx->mgl_ctx.window, key, scancode, action, mods);
+	return false;
 }
 
 void imgui_layer::add_window(imgui_window* window)

@@ -26,29 +26,9 @@ struct app_ctx
 	{
 		actions.transform(t, old_mat, new_mat);
 	}
-	void reparent_action(sgnode* const target, sgnode* const old_parent, sgnode* const new_parent)
+	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index)
 	{
-		actions.reparent(target, old_parent, new_parent);
-	}
-	void undo()
-	{
-		const sgnode* const selected = scene.get_selected_node();
-		assert(selected);
-		const action* const a = actions.undo();
-		if (a->undo_conflict(selected))
-		{
-			scene.set_selected_node(scene.get_sg_root());
-		}
-	}
-	void redo()
-	{
-		const sgnode* const selected = scene.get_selected_node();
-		assert(selected);
-		const action* const a = actions.redo();
-		if (a->redo_conflict(selected))
-		{
-			scene.set_selected_node(scene.get_sg_root());
-		}
+		actions.reparent(target, new_parent, new_index);
 	}
 	void destroy_selected_action()
 	{
@@ -110,22 +90,21 @@ struct app_ctx
 private:
 	void create_operation_action(const carve::csg::CSG::OP op)
 	{
-		create_and_select(new sgnode(scene.get_csg(), nullptr, op));
+		create(new sgnode(scene.get_csg(), nullptr, op));
 	}
 	template<typename FN>
 	void create_shape_action(FN fn, const std::string& name)
 	{
 		generated_mesh* gen = (scene.*fn)(1, {});
-		create_and_select(new sgnode(nullptr, gen, name));
+		create(new sgnode(nullptr, gen, name));
 	}
-	void create_and_select(sgnode* const node)
+	void create(sgnode* const node)
 	{
 		sgnode* const selected = scene.get_selected_node();
 		assert(selected);
 		if (selected)
 		{
 			actions.create(node, selected);
-			scene.set_selected_node(node);
 		}
 	}
 	void init_menus()
@@ -133,11 +112,9 @@ private:
 		shortcut_menu file_menu;
 		file_menu.name = "File";
 		shortcut_menu_item file_new = {
-			"New Phonky Phorm",
+			"New",
 			[]()
 			{
-				//
-				// TODO
 				//
 			},
 			[]()
@@ -149,11 +126,9 @@ private:
 			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item file_open = {
-			"Open Phonky Phorm",
+			"Open",
 			[]()
 			{
-				//
-				// TODO
 				//
 			},
 			[]()
@@ -165,11 +140,9 @@ private:
 			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item file_save = {
-			"Save Phonky Phorm",
+			"Save",
 			[]()
 			{
-				//
-				// TODO
 				//
 			},
 			[]()
@@ -181,11 +154,9 @@ private:
 			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item file_save_as = {
-			"Save Phonky Phorm As...",
+			"Save As...",
 			[]()
 			{
-				//
-				// TODO
 				//
 			},
 			[]()
@@ -203,10 +174,16 @@ private:
 		edit_menu.name = "Edit";
 		// edit_menu.groups.push_back({ edit_add_cube, edit_add_sphere, edit_add_cylinder, edit_add_cone, edit_add_torus, edit_add_heightmap });
 		shortcut_menu_item edit_undo = {
-			"Undo Tranzphormation",
+			"Undo",
 			[&]()
 			{
-				undo();
+				const sgnode* const selected = scene.get_selected_node();
+				assert(selected);
+				const action* const a = actions.undo();
+				if (a->undo_conflict(selected))
+				{
+					scene.set_selected_node(scene.get_sg_root());
+				}
 			},
 			[&]()
 			{
@@ -217,10 +194,16 @@ private:
 			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item edit_redo = {
-			"Redo Tranzphormation",
+			"Redo",
 			[&]()
 			{
-				redo();
+				const sgnode* const selected = scene.get_selected_node();
+				assert(selected);
+				const action* const a = actions.redo();
+				if (a->redo_conflict(selected))
+				{
+					scene.set_selected_node(scene.get_sg_root());
+				}
 			},
 			[&]()
 			{
@@ -231,52 +214,150 @@ private:
 			GLFW_MOD_CONTROL,
 		};
 		edit_menu.groups.push_back({ edit_undo, edit_redo });
-		shortcut_menu_item edit_translate = {
-			"Gizmo: Translate",
+		shortcut_menu_item edit_cut = {
+			"Cut",
+			[&]()
+			{
+				//
+			},
+			[&]()
+			{
+				sgnode* const selected = scene.get_selected_node();
+				return selected->parent;
+			},
+			"Ctrl+X",
+			GLFW_KEY_X,
+			GLFW_MOD_CONTROL,
+		};
+		shortcut_menu_item edit_copy = {
+			"Copy",
+			[&]()
+			{
+				//
+			},
+			[&]()
+			{
+				sgnode* const selected = scene.get_selected_node();
+				return selected->parent;
+			},
+			"Ctrl+C",
+			GLFW_KEY_C,
+			GLFW_MOD_CONTROL,
+		};
+		shortcut_menu_item edit_paste = {
+			"Paste",
+			[&]()
+			{
+				//
+			},
+			[&]()
+			{
+				sgnode* const selected = scene.get_selected_node();
+				return selected->parent;
+			},
+			"Ctrl+V",
+			GLFW_KEY_V,
+			GLFW_MOD_CONTROL,
+		};
+		edit_menu.groups.push_back({ edit_cut, edit_copy, edit_paste });
+		shortcut_menu_item edit_move_up = {
+			"Move Up",
+			[&]()
+			{
+				sgnode* const selected = scene.get_selected_node();
+				assert(selected);
+				const s64 i = selected->get_index();
+				reparent_action(selected, selected->parent, i - 1);
+			},
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				assert(selected);
+				const s64 i = selected->get_index();
+				return selected->parent && i > 0;
+			},
+			"Ctrl+Up",
+			GLFW_KEY_UP,
+			GLFW_MOD_CONTROL,
+		};
+		shortcut_menu_item edit_move_down = {
+			"Move Down",
+			[&]()
+			{
+				sgnode* const selected = scene.get_selected_node();
+				assert(selected);
+				const s64 i = selected->get_index();
+				reparent_action(selected, selected->parent, i + 1);
+			},
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				assert(selected);
+				const s64 i = selected->get_index();
+				return selected->parent && i < static_cast<s64>(selected->parent->children.size() - 1);
+			},
+			"Ctrl+Down",
+			GLFW_KEY_DOWN,
+			GLFW_MOD_CONTROL,
+		};
+		edit_menu.groups.push_back({ edit_move_up, edit_move_down });
+		shortcut_menu_item gizmodes = {
+			"Gizmodes",
+			[]()
+			{
+			},
+			[&]()
+			{
+				return !mgl_ctx.is_cursor_locked();
+			},
+			"",
+			0,
+			0,
+		};
+		shortcut_menu_item gizmo_translate = {
+			"Translate",
 			[&]()
 			{
 				gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
 			},
 			[&]()
 			{
-				return !mgl_ctx.is_cursor_locked();
+				return true;
 			},
 			"T",
 			GLFW_KEY_T,
 			0,
 		};
-		shortcut_menu_item edit_rotate = {
-			"Gizmo: Rotate",
+		shortcut_menu_item gizmo_rotate = {
+			"Rotate",
 			[&]()
 			{
 				gizmo_op = ImGuizmo::OPERATION::ROTATE;
 			},
 			[&]()
 			{
-				return !mgl_ctx.is_cursor_locked();
+				return true;
 			},
 			"R",
 			GLFW_KEY_R,
 			0,
 		};
-		shortcut_menu_item edit_scale = {
-			"Gizmo: Scale",
+		shortcut_menu_item gizmo_scale = {
+			"Scale",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					gizmo_op = ImGuizmo::OPERATION::SCALE;
-				}
+				gizmo_op = ImGuizmo::OPERATION::SCALE;
 			},
 			[&]()
 			{
-				return !mgl_ctx.is_cursor_locked();
+				return true;
 			},
 			"E",
 			GLFW_KEY_E,
 			0,
 		};
-		edit_menu.groups.push_back({ edit_translate, edit_rotate, edit_scale });
+		gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate, gizmo_scale });
+		edit_menu.groups.push_back({ gizmodes });
 		shortcut_menus.push_back(edit_menu);
 
 		shortcut_menu phorm_menu;
@@ -402,7 +483,7 @@ private:
 			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create = {
-			"Create...",
+			"Create",
 			[&]() {},
 			[&]()
 			{

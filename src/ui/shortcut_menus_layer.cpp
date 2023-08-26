@@ -12,7 +12,7 @@ shortcut_menus_layer::~shortcut_menus_layer()
 
 
 
-void shortcut_menus_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
+bool shortcut_menus_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	// This should ideally be WantCaptureKeyboard, but that seems to be true pretty much all the time
 	// The goal here is that at least we can prevent Delete/Backspace in text fields from triggering menu items
@@ -26,15 +26,19 @@ void shortcut_menus_layer::on_key(const s32 key, const s32 scancode, const s32 a
 				{
 					if (item.enabled())
 					{
-						handle_key_menu_item(key, mods, item);
+						if (handle_key_menu_item(key, mods, item))
+						{
+							return true;
+						}
 					}
 				}
 			}
 		}
 	}
+	return false;
 }
 
-void shortcut_menus_layer::handle_key_menu_item(const s32 key, const s32 mods, const shortcut_menu_item& item)
+bool shortcut_menus_layer::handle_key_menu_item(const s32 key, const s32 mods, const shortcut_menu_item& item)
 {
 	if (item.groups.size())
 	{
@@ -54,6 +58,8 @@ void shortcut_menus_layer::handle_key_menu_item(const s32 key, const s32 mods, c
 		if (key == item.key && item.mods == (mods & 0x7))
 		{
 			item.handler();
+			return true;
 		}
 	}
+	return false;
 }
