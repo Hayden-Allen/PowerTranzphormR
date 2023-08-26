@@ -48,18 +48,16 @@ void make_scene(scene_ctx* const out_scene)
 
 	sgnode* n1 = textured_cuboid_node(
 		tex_coord_attr, mtl_id_attr, 1,
-		{
-			.width = 3.f
-		});
+		{ .width = 3.f });
 
 	sgnode* n2 = textured_cuboid_node(
 		tex_coord_attr, mtl_id_attr, 2,
-		{
-			.width = 1.f,
-			.depth = .5f
-		});
+		{ .width = 1.f,
+			.depth = .5f });
 
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, { n1, n2 }, tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 2.0f, 0.0f));
+	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 2.0f, 0.0f));
+	na->add_child(n1);
+	na->add_child(n2);
 
 	sgnode* sg = out_scene->get_sg_root();
 	sg->add_child(na);
@@ -108,9 +106,10 @@ int main(int argc, char** argv)
 	a_ctx.mgl_ctx.add_layer(&pl);
 
 	preview_window preview(&a_ctx);
-	preview.set_enable_callback([&]() {
-		pl.enable();
-	});
+	preview.set_enable_callback([&]()
+		{
+			pl.enable();
+		});
 	il.add_window(&preview);
 
 	scene_graph_window sg_window(&a_ctx);

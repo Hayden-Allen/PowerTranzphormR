@@ -31,52 +31,54 @@ struct app_ctx
 	{
 		actions.reparent(target, old_parent, new_parent);
 	}
-	void create_action(sgnode* const target, sgnode* const parent)
-	{
-		actions.create(target, parent);
-	}
-	void destroy_action(sgnode* const target)
-	{
-		actions.destroy(target);
-	}
 	void undo()
 	{
-		actions.undo();
+		const sgnode* const selected = scene.get_selected_node();
+		const action* const a = actions.undo();
+		if (selected && a->undo_conflict(selected))
+		{
+			scene.set_selected_node(nullptr);
+		}
 	}
 	void redo()
 	{
-		actions.redo();
+		const sgnode* const selected = scene.get_selected_node();
+		const action* const a = actions.redo();
+		if (selected && a->redo_conflict(selected))
+		{
+			scene.set_selected_node(nullptr);
+		}
 	}
 	void destroy_selected_action()
 	{
 		sgnode* const selected = scene.get_selected_node();
 		if (selected && selected->parent)
 		{
-			destroy_action(selected);
-			scene.set_selected_node(nullptr); // FIXME
+			actions.destroy(selected);
+			scene.set_selected_node(nullptr);
 		}
 	}
-	void create_cube_in_selected_action()
+	void create_cube_action()
 	{
 		create_shape_action(&scene_ctx::create_textured_cuboid, "Cube");
 	}
-	void create_sphere_in_selected_action()
+	void create_sphere_action()
 	{
 		create_shape_action(&scene_ctx::create_textured_ellipsoid, "Sphere");
 	}
-	void create_cylinder_in_selected_action()
+	void create_cylinder_action()
 	{
 		create_shape_action(&scene_ctx::create_textured_cylinder, "Cylinder");
 	}
-	void create_cone_in_selected_action()
+	void create_cone_action()
 	{
 		create_shape_action(&scene_ctx::create_textured_cone, "Cone");
 	}
-	void create_torus_in_selected_action()
+	void create_torus_action()
 	{
 		create_shape_action(&scene_ctx::create_textured_torus, "Torus");
 	}
-	void create_heightmap_in_selected_action()
+	void create_heightmap_action()
 	{
 		// FIXME: Heightmaps are not sgnodes
 		/*
@@ -90,19 +92,37 @@ struct app_ctx
 		}
 		*/
 	}
+	void create_union_action()
+	{
+		create_operation_action(carve::csg::CSG::OP::UNION);
+	}
+	void create_subtract_action()
+	{
+		create_operation_action(carve::csg::CSG::OP::A_MINUS_B);
+	}
+	void create_intersect_action()
+	{
+		create_operation_action(carve::csg::CSG::OP::INTERSECTION);
+	}
 private:
+	void create_operation_action(const carve::csg::CSG::OP op)
+	{
+		create_and_select(new sgnode(scene.get_csg(), nullptr, op));
+	}
 	template<typename FN>
 	void create_shape_action(FN fn, const std::string& name)
+	{
+		mesh_t* m = (scene.*fn)(1, {});
+		create_and_select(new sgnode(nullptr, m, name));
+	}
+	void create_and_select(sgnode* const node)
 	{
 		sgnode* const selected = scene.get_selected_node();
 		assert(selected);
 		if (selected)
 		{
-			// mesh_t* m = fn(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1, {});
-			mesh_t* m = (scene.*fn)(1, {});
-			sgnode* n = new sgnode(nullptr, m, name);
-			create_action(n, selected);
-			scene.set_selected_node(n);
+			actions.create(node, selected);
+			scene.set_selected_node(node);
 		}
 	}
 	void init_menus()

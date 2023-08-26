@@ -11,10 +11,19 @@ public:
 	action(sgnode* const t) :
 		target(t)
 	{}
+	MGL_DCM(action);
 	virtual ~action() {}
 public:
 	virtual void apply(scene_ctx* const ctx) = 0;
 	virtual void undo(scene_ctx* const ctx) = 0;
+	virtual bool redo_conflict(const sgnode* const selected) const
+	{
+		return false;
+	}
+	virtual bool undo_conflict(const sgnode* const selected) const
+	{
+		return false;
+	}
 };
 struct transform_action : public action
 {
@@ -22,11 +31,12 @@ public:
 	tmat<space::OBJECT, space::PARENT> initial;
 	tmat<space::OBJECT, space::PARENT> mat;
 public:
-	transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat) :
-		action(t),
+	transform_action(sgnode* const target, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat) :
+		action(target),
 		initial(old_mat),
 		mat(new_mat)
 	{}
+	MGL_DCM(transform_action);
 public:
 	void apply(scene_ctx* const ctx) override
 	{
@@ -42,11 +52,12 @@ struct reparent_action : public action
 public:
 	sgnode *old_parent, *new_parent;
 public:
-	reparent_action(sgnode* const t, sgnode* const o, sgnode* const n) :
-		action(t),
-		old_parent(o),
-		new_parent(n)
+	reparent_action(sgnode* const target, sgnode* const _old_parent, sgnode* const _new_parent) :
+		action(target),
+		old_parent(_old_parent),
+		new_parent(_new_parent)
 	{}
+	MGL_DCM(reparent_action);
 public:
 	void apply(scene_ctx* const ctx) override
 	{
@@ -64,10 +75,11 @@ struct create_action : public action
 public:
 	sgnode* parent;
 public:
-	create_action(sgnode* const t, sgnode* const p) :
-		action(t),
-		parent(p)
+	create_action(sgnode* const new_node, sgnode* const _parent) :
+		action(new_node),
+		parent(_parent)
 	{}
+	MGL_DCM(create_action);
 public:
 	void apply(scene_ctx* const ctx) override
 	{
@@ -77,6 +89,14 @@ public:
 	{
 		parent->remove_child(target);
 	}
+	bool redo_conflict(const sgnode* const selected) const
+	{
+		return false;
+	}
+	bool undo_conflict(const sgnode* const selected) const
+	{
+		return selected == target;
+	}
 };
 struct destroy_action : public action
 {
@@ -84,18 +104,38 @@ public:
 	sgnode* parent;
 	s64 index;
 public:
-	destroy_action(sgnode* const t) :
-		action(t),
-		parent(t->parent)
-	{}
+	destroy_action(sgnode* const target) :
+		action(target),
+		parent(target->parent),
+		index(-1)
+	{
+		// shouldn't be able to destroy root
+		assert(parent);
+	}
+	MGL_DCM(destroy_action);
 public:
 	void apply(scene_ctx* const ctx) override
 	{
-		index = parent->remove_child(target);
+		if (parent)
+		{
+			index = parent->remove_child(target);
+		}
 	}
 	void undo(scene_ctx* const ctx) override
 	{
-		parent->add_child(target, index);
+		if (parent)
+		{
+			assert(index != -1);
+			parent->add_child(target, index);
+		}
+	}
+	bool redo_conflict(const sgnode* const selected) const
+	{
+		return selected == target;
+	}
+	bool undo_conflict(const sgnode* const selected) const
+	{
+		return false;
 	}
 };
 
@@ -132,7 +172,7 @@ public:
 		new_action(new destroy_action(target), true);
 	}
 	// undo last action made and move it to the redo stack
-	void undo()
+	action* undo()
 	{
 		if (m_past.size())
 		{
@@ -140,10 +180,12 @@ public:
 			m_past.pop_back();
 			a->undo(m_ctx);
 			m_future.push_back(a);
+			return a;
 		}
+		return nullptr;
 	}
 	// redo last action undone and move it to the undo stack
-	void redo()
+	action* redo()
 	{
 		if (m_future.size())
 		{
@@ -151,7 +193,9 @@ public:
 			m_future.pop_back();
 			a->apply(m_ctx);
 			m_past.push_back(a);
+			return a;
 		}
+		return nullptr;
 	}
 private:
 	scene_ctx* m_ctx;

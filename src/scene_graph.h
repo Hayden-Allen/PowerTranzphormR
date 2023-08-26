@@ -26,14 +26,14 @@ public:
 		dirty(false),
 		mat(t)
 	{
-		for (const auto& v : mesh->vertex_storage) {
+		for (const auto& v : mesh->vertex_storage)
+		{
 			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
 		}
 		set_dirty();
 	}
-	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const std::vector<sgnode*>& c, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
+	sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
-		children(c),
 		mesh(nullptr),
 		operation(op),
 		id("sgn" + std::to_string(s_next_id++)),
@@ -42,8 +42,6 @@ public:
 		dirty(false),
 		mat(t)
 	{
-		for (sgnode* const child : children)
-			child->parent = this;
 		set_dirty();
 	}
 	MGL_DCM(sgnode);
@@ -73,13 +71,14 @@ public:
 	{
 		const auto& it = std::find(children.begin(), children.end(), node);
 		assert(it != children.end());
+		const s64 index = it - children.begin();
 		children.erase(it);
 		// delete node;
 		// not sure why this is necessary
 		mesh = nullptr;
 		set_dirty();
 
-		return it - children.begin();
+		return index;
 	}
 	bool is_root() const
 	{
@@ -196,5 +195,4 @@ private:
 				return out;
 			});
 	}
-
 };
