@@ -4,6 +4,7 @@
 #include "ui/preview_layer.h"
 #include "ui/preview_window.h"
 #include "ui/scene_graph_window.h"
+#include "ui/properties_window.h"
 #include "ui/app_ctx.h"
 
 sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})
@@ -38,26 +39,22 @@ void make_scene(scene_ctx* const out_scene)
 {
 	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
 	auto t1 = load_texture_rgb_u8("res/1.png");
-	auto t2 = load_texture_rgb_u8("res/2.png");
 	scene_material mtl1("mtl1", { { "u_tex", t1 } }, s1);
 	out_scene->add_material(mtl1);
-	scene_material mtl2("mtl2", { { "u_tex", t2 } }, s1);
-	out_scene->add_material(mtl2);
 
 	auto& csg = out_scene->get_csg();
 
 	sgnode* n1 = textured_cuboid_node(
 		out_scene, 1,
-		{ .width = 3.f });
+		{});
 
-	sgnode* n2 = textured_cuboid_node(
-		out_scene, 2,
+	sgnode* n2 = textured_ellipsoid_node(
+		out_scene, 1,
 		{
-			.width = 1.f,
-			.depth = .5f,
+			.transform = tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 0.5f, 0.0f)
 		});
 
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B, tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 2.0f, 0.0f));
+	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B);
 	na->add_child(n1);
 	na->add_child(n2);
 
@@ -116,6 +113,9 @@ int main(int argc, char** argv)
 
 	scene_graph_window sg_window(&a_ctx);
 	il.add_window(&sg_window);
+
+	properties_window prop_window(&a_ctx);
+	il.add_window(&prop_window);
 
 	while (a_ctx.mgl_ctx.is_running())
 	{

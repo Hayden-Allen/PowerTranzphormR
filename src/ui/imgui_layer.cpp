@@ -182,7 +182,7 @@ void imgui_layer::draw_menu_item(const shortcut_menu_item& item)
 {
 	if (item.groups.size())
 	{
-		if (ImGui::BeginMenu(item.name.c_str()))
+		if (ImGui::BeginMenu(item.name.c_str(), item.enabled()))
 		{
 			for (size_t i = 0; i < item.groups.size(); ++i)
 			{
@@ -199,7 +199,7 @@ void imgui_layer::draw_menu_item(const shortcut_menu_item& item)
 			ImGui::EndMenu();
 		}
 	}
-	else if (ImGui::MenuItem(item.name.c_str(), item.keys_text.c_str()))
+	else if (ImGui::MenuItem(item.name.c_str(), item.keys_text.c_str(), nullptr, item.enabled()))
 	{
 		item.handler();
 	}

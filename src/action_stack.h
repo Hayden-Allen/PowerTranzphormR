@@ -171,10 +171,18 @@ public:
 	{
 		new_action(new destroy_action(target), true);
 	}
+	bool can_undo()
+	{
+		return m_past.size() > 0;
+	}
+	bool can_redo()
+	{
+		return m_future.size() > 0;
+	}
 	// undo last action made and move it to the redo stack
 	action* undo()
 	{
-		if (m_past.size())
+		if (can_undo())
 		{
 			action* a = m_past.back();
 			m_past.pop_back();
@@ -187,7 +195,7 @@ public:
 	// redo last action undone and move it to the undo stack
 	action* redo()
 	{
-		if (m_future.size())
+		if (can_redo())
 		{
 			action* a = m_future.back();
 			m_future.pop_back();

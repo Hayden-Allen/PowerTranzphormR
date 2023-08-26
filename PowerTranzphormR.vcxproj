@@ -366,6 +366,7 @@
     <ClCompile Include="src\ui\preview_layer.cpp" />
     <ClCompile Include="src\ui\preview_window.cpp" />
     <ClCompile Include="src\scene_ctx.cpp" />
+    <ClCompile Include="src\ui\properties_window.cpp" />
     <ClCompile Include="src\ui\scene_graph_window.cpp" />
     <ClCompile Include="src\ui\shortcut_menus_layer.cpp" />
   </ItemGroup>
@@ -378,6 +379,7 @@
     <ClInclude Include="src\ui\app_ctx.h" />
     <ClInclude Include="src\scene_graph.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />
+    <ClInclude Include="src\ui\properties_window.h" />
     <ClInclude Include="src\ui\shortcut_menu.h" />
     <ClInclude Include="src\ui\imgui_window.h" />
     <ClInclude Include="src\log.h" />

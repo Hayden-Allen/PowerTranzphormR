@@ -24,12 +24,36 @@ void shortcut_menus_layer::on_key(const s32 key, const s32 scancode, const s32 a
 			{
 				for (const shortcut_menu_item& item : group)
 				{
-					if (key == item.key && item.mods == (mods & 0xf))
+					if (item.enabled())
 					{
-						item.handler();
+						handle_key_menu_item(key, mods, item);
 					}
 				}
 			}
+		}
+	}
+}
+
+void shortcut_menus_layer::handle_key_menu_item(const s32 key, const s32 mods, const shortcut_menu_item& item)
+{
+	if (item.groups.size())
+	{
+		for (const shortcut_menu_item_group& group : item.groups)
+		{
+			for (const shortcut_menu_item& inner : group)
+			{
+				if (inner.enabled())
+				{
+					handle_key_menu_item(key, mods, inner);
+				}
+			}
+		}
+	}
+	else
+	{
+		if (key == item.key && item.mods == (mods & 0x7))
+		{
+			item.handler();
 		}
 	}
 }

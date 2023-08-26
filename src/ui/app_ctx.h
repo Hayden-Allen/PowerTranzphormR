@@ -15,7 +15,7 @@ struct app_ctx
 	std::vector<shortcut_menu> shortcut_menus;
 	app_ctx() :
 		actions(&scene),
-		mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .b = 1.f } }),
+		mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
 		preview_fb(1280, 720)
 	{
 		f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
@@ -135,7 +135,13 @@ private:
 			"New Phonky Phorm",
 			[]()
 			{
-				std::cout << "MENU: NEW\n";
+				//
+				// TODO
+				//
+			},
+			[]()
+			{
+				return true;
 			},
 			"Ctrl+N",
 			GLFW_KEY_N,
@@ -145,7 +151,13 @@ private:
 			"Open Phonky Phorm",
 			[]()
 			{
-				std::cout << "MENU: OPEN\n";
+				//
+				// TODO
+				//
+			},
+			[]()
+			{
+				return true;
 			},
 			"Ctrl+O",
 			GLFW_KEY_O,
@@ -155,7 +167,13 @@ private:
 			"Save Phonky Phorm",
 			[]()
 			{
-				std::cout << "MENU: SAVE\n";
+				//
+				// TODO
+				//
+			},
+			[]()
+			{
+				return true;
 			},
 			"Ctrl+S",
 			GLFW_KEY_S,
@@ -165,7 +183,13 @@ private:
 			"Save Phonky Phorm As...",
 			[]()
 			{
-				std::cout << "MENU: SAVE AS\n";
+				//
+				// TODO
+				//
+			},
+			[]()
+			{
+				return true;
 			},
 			"Ctrl+Shift+S",
 			GLFW_KEY_S,
@@ -183,6 +207,10 @@ private:
 			{
 				undo();
 			},
+			[&]()
+			{
+				return actions.can_undo();
+			},
 			"Ctrl+Z",
 			GLFW_KEY_Z,
 			GLFW_MOD_CONTROL,
@@ -193,6 +221,10 @@ private:
 			{
 				redo();
 			},
+			[&]()
+			{
+				return actions.can_redo();
+			},
 			"Ctrl+Y",
 			GLFW_KEY_Y,
 			GLFW_MOD_CONTROL,
@@ -202,10 +234,11 @@ private:
 			"Gizmo: Translate",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
-				}
+				gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
+			},
+			[&]()
+			{
+				return !mgl_ctx.is_cursor_locked();
 			},
 			"T",
 			GLFW_KEY_T,
@@ -215,10 +248,11 @@ private:
 			"Gizmo: Rotate",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
 					gizmo_op = ImGuizmo::OPERATION::ROTATE;
-				}
+			},
+			[&]()
+			{
+				return !mgl_ctx.is_cursor_locked();
 			},
 			"R",
 			GLFW_KEY_R,
@@ -233,6 +267,10 @@ private:
 					gizmo_op = ImGuizmo::OPERATION::SCALE;
 				}
 			},
+			[&]()
+			{
+				return !mgl_ctx.is_cursor_locked();
+			},
 			"E",
 			GLFW_KEY_E,
 			0,
@@ -246,109 +284,130 @@ private:
 			"Cube",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_cube_action();
-				}
+				create_cube_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+1",
+			GLFW_KEY_1,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_sphere = {
 			"Sphere",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_sphere_action();
-				}
+				create_sphere_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+2",
+			GLFW_KEY_2,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_cylinder = {
 			"Cylinder",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_cylinder_action();
-				}
+				create_cylinder_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+3",
+			GLFW_KEY_3,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_cone = {
 			"Cone",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_cone_action();
-				}
+				create_cone_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+4",
+			GLFW_KEY_4,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_torus = {
 			"Torus",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_torus_action();
-				}
+				create_torus_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+5",
+			GLFW_KEY_5,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_union = {
 			"Union",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_union_action();
-				}
+				create_union_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+=",
+			GLFW_KEY_EQUAL,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_subtract = {
 			"Subtract",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_subtract_action();
-				}
+				create_subtract_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+-",
+			GLFW_KEY_MINUS,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create_intersect = {
 			"Intersect",
 			[&]()
 			{
-				if (!mgl_ctx.is_cursor_locked())
-				{
-					create_intersect_action();
-				}
+				create_intersect_action();
 			},
-			"",
-			0,
-			0,
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
+			"Ctrl+8",
+			GLFW_KEY_8,
+			GLFW_MOD_CONTROL,
 		};
 		shortcut_menu_item phorm_create = {
-			"Create",
+			"Create...",
 			[&]() {},
+			[&]()
+			{
+				const sgnode* const selected = scene.get_selected_node();
+				return selected && !selected->is_mesh();
+			},
 			"",
 			0,
 			0,
@@ -365,6 +424,10 @@ private:
 				{
 					destroy_selected_action();
 				}
+			},
+			[&]()
+			{
+				return scene.get_selected_node();
 			},
 			"Delete",
 			GLFW_KEY_DELETE,
