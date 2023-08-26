@@ -36,12 +36,46 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 	ImGui::PushID(node->id.c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		//
-		// TODO
-		//
+		m_app_ctx->scene.set_selected_node(node);
+		if (ImGui::MenuItem("Add Union"))
+		{
+			//
+		}
+		ImGui::Separator();
+		if (ImGui::MenuItem("Add Cube"))
+		{
+			m_app_ctx->create_cube_in_selected_action();
+		}
+		if (ImGui::MenuItem("Add Sphere"))
+		{
+			m_app_ctx->create_sphere_in_selected_action();
+		}
+		if (ImGui::MenuItem("Add Cylinder"))
+		{
+			m_app_ctx->create_cylinder_in_selected_action();
+		}
+		if (ImGui::MenuItem("Add Cone"))
+		{
+			m_app_ctx->create_cone_in_selected_action();
+		}
+		if (ImGui::MenuItem("Add Torus"))
+		{
+			m_app_ctx->create_torus_in_selected_action();
+		}
+		if (ImGui::MenuItem("Add Heightmap"))
+		{
+			m_app_ctx->create_heightmap_in_selected_action();
+		}
+		ImGui::Separator();
+		if (ImGui::MenuItem("Destroy"))
+		{
+			m_app_ctx->destroy_selected_action();
+		}
+
 		ImGui::EndPopup();
 	}
 	ImGui::PopID();
+
 	if (ImGui::IsItemClicked())
 	{
 		//

@@ -16,7 +16,7 @@ public:
 private:
 	static inline u32 s_next_id = 0;
 public:
-	sgnode(sgnode* p, mesh_t* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t) :
+	sgnode(sgnode* p, mesh_t* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>()) :
 		parent(p),
 		mesh(m),
 		operation(carve::csg::CSG::OP::ALL),

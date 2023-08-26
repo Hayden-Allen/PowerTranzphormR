@@ -46,6 +46,84 @@ struct app_ctx {
 	{
 		actions.redo();
 	}
+	void destroy_selected_action() 
+	{
+		sgnode* const selected = scene.get_selected_node();
+		if (selected && selected->parent)
+		{
+			destroy_action(selected);
+			scene.set_selected_node(nullptr); // FIXME
+		}
+	}
+	void create_cube_in_selected_action()
+	{
+		sgnode* const selected = scene.get_selected_node();
+		if (selected)
+		{
+			mesh_t* m = textured_cuboid(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+			sgnode* n = new sgnode(nullptr, m, "Cube");
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+	}
+	void create_sphere_in_selected_action()
+	{
+		sgnode* const selected = scene.get_selected_node();
+		if (selected)
+		{
+			mesh_t* m = textured_ellipsoid(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+			sgnode* n = new sgnode(nullptr, m, "Sphere");
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+	}
+	void create_cylinder_in_selected_action()
+	{
+		sgnode* const selected = scene.get_selected_node();
+		if (selected)
+		{
+			mesh_t* m = textured_cylinder(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+			sgnode* n = new sgnode(nullptr, m, "Cylinder");
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+	}
+	void create_cone_in_selected_action()
+	{
+		sgnode* const selected = scene.get_selected_node();
+		if (selected)
+		{
+			mesh_t* m = textured_cone(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+			sgnode* n = new sgnode(nullptr, m, "Cone");
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+	}
+	void create_torus_in_selected_action()
+	{
+		sgnode* const selected = scene.get_selected_node();
+		if (selected)
+		{
+			mesh_t* m = textured_torus(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+			sgnode* n = new sgnode(nullptr, m, "Torus");
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+	}
+	void create_heightmap_in_selected_action()
+	{
+		// FIXME: Heightmaps are not sgnodes
+		/*
+		sgnode* const selected = scene.get_selected_node();
+		if (selected)
+		{
+			mesh_t* m = textured_heightmap(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+			sgnode* n = new sgnode(nullptr, m, "Heightmap");
+			create_action(n, selected);
+			scene.set_selected_node(n);
+		}
+		*/
+	}
 private:
 	void init_menus()
 	{
@@ -96,18 +174,14 @@ private:
 
 		shortcut_menu edit_menu;
 		edit_menu.name = "Edit";
+		// edit_menu.groups.push_back({ edit_add_cube, edit_add_sphere, edit_add_cylinder, edit_add_cone, edit_add_torus, edit_add_heightmap });
 		shortcut_menu_item edit_delete = {
-			"Delete Node",
+			"Destroy",
 			[&]()
 			{
 				if (!mgl_ctx.is_cursor_locked())
 				{
-					sgnode* const selected = scene.get_selected_node();
-					if (selected && selected->parent)
-					{
-						destroy_action(selected);
-						scene.set_selected_node(nullptr);
-					}
+					destroy_selected_action();
 				}
 			},
 			"Delete",
