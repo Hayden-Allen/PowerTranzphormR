@@ -7,16 +7,18 @@ struct generated_mesh_param
 {
 	bool is_float, is_drag;
 	void* value;
-	f32 min, max, step;
+	f32 min, max, speed;
 };
 
 class generated_mesh
 {
 public:
 	mesh_t* mesh;
+	bool dirty;
 public:
 	generated_mesh(mesh_t* const m) :
-		mesh(m)
+		mesh(m),
+		dirty(true)
 	{}
 	MGL_DCM(generated_mesh);
 	virtual ~generated_mesh() {}
@@ -25,6 +27,7 @@ public:
 	{
 		return {};
 	}
+	virtual void recompute() {}
 };
 
 class generated_cuboid : public generated_mesh

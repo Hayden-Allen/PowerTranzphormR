@@ -101,6 +101,8 @@ public:
 		dirty = false;
 		if (is_leaf())
 		{
+			if (gen->dirty)
+				gen->recompute();
 			if (gen)
 				transform_verts();
 			return;
@@ -183,13 +185,18 @@ public:
 			return tmat<space::OBJECT, space::WORLD>();
 		}
 	}
-private:
+	void set_gen_dirty()
+	{
+		gen->dirty = true;
+		set_dirty();
+	}
 	void set_dirty()
 	{
 		dirty = true;
 		if (parent)
 			parent->set_dirty();
 	}
+private:
 	void transform_verts()
 	{
 		if (is_leaf())

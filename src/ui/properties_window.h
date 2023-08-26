@@ -8,4 +8,7 @@ public:
 	virtual ~properties_window() {}
 public:
 	virtual void handle_frame() override;
+private:
+	void handle_transform(sgnode* const selected);
+	void handle_mesh(sgnode* const selected);
 };
