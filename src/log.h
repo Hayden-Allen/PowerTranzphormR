@@ -1,4 +1,5 @@
 #pragma once
+#include "spdlog/spdlog.h"
 
 #ifndef PTR_DIST
 #	define LOG_TRACE(...) ::log::get_log()->trace(__VA_ARGS__)

@@ -7,34 +7,70 @@
 #include "ui/materials_list_window.h"
 #include "ui/properties_window.h"
 #include "ui/app_ctx.h"
+#include "scene_material.h"
 
-sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})
+static mgl::texture2d_rgb_u8* load_texture_rgb_u8(const std::string& fp)
 {
-	/*mesh_t* m = textured_cuboid(tex_coord_attr, mtl_id_attr, mtl_id, options);
-	return new sgnode(nullptr, m, "Box", options.transform);*/
-	generated_mesh* m = scene->generated_textured_cuboid(mtl_id, options);
-	return new sgnode(nullptr, m, "Box", options.transform);
+	std::ifstream test(fp);
+	if (!test.is_open())
+	{
+		LOG_FATAL("Invalid texture filepath {}", fp.c_str());
+		MGL_ASSERT(false);
+		return nullptr;
+	}
+	test.close();
+
+	stbi_set_flip_vertically_on_load(true);
+	int w = -1, h = -1, c = -1;
+	stbi_uc* tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
+	mgl::texture2d_rgb_u8* tex = new mgl::texture2d_rgb_u8(GL_RGB, w, h, tex_data);
+	stbi_image_free(tex_data);
+	return tex;
 }
-sgnode* textured_ellipsoid_node(scene_ctx* const scene, GLuint mtl_id, const ellipsoid_options& options = {})
+static mgl::retained_texture2d_rgb_u8* load_retained_texture_rgb_u8(const std::string& fp)
 {
-	generated_mesh* m = scene->generated_textured_ellipsoid(mtl_id, options);
-	return new sgnode(nullptr, m, "Ellipsoid", options.transform);
+	std::ifstream test(fp);
+	if (!test.is_open())
+	{
+		LOG_FATAL("Invalid texture filepath {}", fp.c_str());
+		MGL_ASSERT(false);
+		return nullptr;
+	}
+	test.close();
+
+	stbi_set_flip_vertically_on_load(true);
+	int w = -1, h = -1, c = -1;
+	stbi_uc* tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
+	mgl::retained_texture2d_rgb_u8* tex = new mgl::retained_texture2d_rgb_u8(GL_RGB, w, h, tex_data);
+	stbi_image_free(tex_data);
+	return tex;
 }
-sgnode* textured_cylinder_node(scene_ctx* const scene, GLuint mtl_id, const cylinder_options& options = {})
-{
-	generated_mesh* m = scene->generated_textured_cylinder(mtl_id, options);
-	return new sgnode(nullptr, m, "Cylinder", options.transform);
-}
-sgnode* textured_cone_node(scene_ctx* const scene, GLuint mtl_id, const cone_options& options = {})
-{
-	generated_mesh* m = scene->generated_textured_cone(mtl_id, options);
-	return new sgnode(nullptr, m, "Cone", options.transform);
-}
-sgnode* textured_torus_node(scene_ctx* const scene, GLuint mtl_id, const torus_options& options = {})
-{
-	generated_mesh* m = scene->generated_textured_torus(mtl_id, options);
-	return new sgnode(nullptr, m, "Torus", options.transform);
-}
+
+// static sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})
+//{
+//	generated_mesh* m = scene->generated_textured_cuboid(mtl_id, options);
+//	return new sgnode(nullptr, m, "Box", options.transform);
+// }
+// static sgnode* textured_ellipsoid_node(scene_ctx* const scene, GLuint mtl_id, const ellipsoid_options& options = {})
+//{
+//	generated_mesh* m = scene->generated_textured_ellipsoid(mtl_id, options);
+//	return new sgnode(nullptr, m, "Ellipsoid", options.transform);
+// }
+// static sgnode* textured_cylinder_node(scene_ctx* const scene, GLuint mtl_id, const cylinder_options& options = {})
+//{
+//	generated_mesh* m = scene->generated_textured_cylinder(mtl_id, options);
+//	return new sgnode(nullptr, m, "Cylinder", options.transform);
+// }
+// static sgnode* textured_cone_node(scene_ctx* const scene, GLuint mtl_id, const cone_options& options = {})
+//{
+//	generated_mesh* m = scene->generated_textured_cone(mtl_id, options);
+//	return new sgnode(nullptr, m, "Cone", options.transform);
+// }
+// static sgnode* textured_torus_node(scene_ctx* const scene, GLuint mtl_id, const torus_options& options = {})
+//{
+//	generated_mesh* m = scene->generated_textured_torus(mtl_id, options);
+//	return new sgnode(nullptr, m, "Torus", options.transform);
+// }
 
 void make_scene(scene_ctx* const out_scene)
 {
@@ -46,7 +82,7 @@ void make_scene(scene_ctx* const out_scene)
 	mtl1->texs = { { "u_tex", t1 } };
 	out_scene->add_material(mtl1);
 
-	auto& csg = out_scene->get_csg();
+	/*auto& csg = out_scene->get_csg();
 
 	sgnode* n1 = textured_cuboid_node(
 		out_scene, 1,
@@ -61,7 +97,7 @@ void make_scene(scene_ctx* const out_scene)
 	na->add_child(n2);
 
 	sgnode* sg = out_scene->get_sg_root();
-	sg->add_child(na);
+	sg->add_child(na);*/
 
 	/*mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");

@@ -18,6 +18,9 @@ public:
 public:
 	app_ctx();
 public:
+	void save(const std::string& fp) const;
+	void load(const std::string& fp);
+public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
 	void create_action(sgnode* const target, sgnode* const parent);
@@ -32,18 +35,6 @@ public:
 	void create_union_action();
 	void create_subtract_action();
 	void create_intersect_action();
-	void save(const std::string& fp) const
-	{
-		std::ofstream out(fp);
-		assert(out.is_open());
-		actions.save(out, scene.get_sg_root());
-	}
-	void load(const std::string& fp)
-	{
-		std::ifstream in(fp);
-		assert(in.is_open());
-		scene.set_sg_root(actions.load(in));
-	}
 private:
 	void create_operation_action(const carve::csg::CSG::OP op);
 	template<typename FN>

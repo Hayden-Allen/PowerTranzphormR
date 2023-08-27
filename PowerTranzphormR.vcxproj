@@ -352,9 +352,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ASan|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\action.cpp" />
     <ClCompile Include="src\action_stack.cpp" />
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
+    <ClCompile Include="src\scene_graph.cpp" />
     <ClCompile Include="src\ui\app_ctx.cpp" />
     <ClCompile Include="src\ui\imgui_layer.cpp" />
     <ClCompile Include="src\main2.cpp" />
@@ -376,10 +378,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
+    <ClInclude Include="src\action.h" />
     <ClInclude Include="src\action_stack.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
+    <ClInclude Include="src\scene_material.h" />
     <ClInclude Include="src\ui\app_ctx.h" />
     <ClInclude Include="src\scene_graph.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />
@@ -394,6 +398,7 @@
     <ClInclude Include="src\scene_ctx.h" />
     <ClInclude Include="src\ui\scene_graph_window.h" />
     <ClInclude Include="src\ui\shortcut_menus_layer.h" />
+    <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

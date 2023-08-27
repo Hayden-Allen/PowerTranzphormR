@@ -46,7 +46,6 @@ imgui_layer::imgui_layer(app_ctx* const a_ctx) :
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 	colors[ImGuiCol_MenuBarBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 }
-
 imgui_layer::~imgui_layer()
 {
 	ImGui_ImplOpenGL3_Shutdown();
@@ -108,37 +107,31 @@ bool imgui_layer::on_frame(const f32 dt)
 
 	return false;
 }
-
 bool imgui_layer::on_mouse_button(const s32 button, const s32 action, const s32 mods)
 {
 	ImGui_ImplGlfw_MouseButtonCallback(m_app_ctx->mgl_ctx.window, button, action, mods);
 	return false;
 }
-
 bool imgui_layer::on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy)
 {
 	ImGui_ImplGlfw_CursorPosCallback(m_app_ctx->mgl_ctx.window, x, y);
 	return false;
 }
-
 bool imgui_layer::on_scroll(const f32 x, const f32 y)
 {
 	ImGui_ImplGlfw_ScrollCallback(m_app_ctx->mgl_ctx.window, x, y);
 	return false;
 }
-
 bool imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	ImGui_ImplGlfw_KeyCallback(m_app_ctx->mgl_ctx.window, key, scancode, action, mods);
 	return false;
 }
-
 void imgui_layer::add_window(imgui_window* window)
 {
 	remove_window(window);
 	m_windows.push_back(window);
 }
-
 void imgui_layer::remove_window(imgui_window* window)
 {
 	for (size_t i = 0; i < m_windows.size(); ++i)
@@ -164,7 +157,6 @@ void imgui_layer::draw_menus()
 		ImGui::EndMenuBar();
 	}
 }
-
 void imgui_layer::draw_menu(const shortcut_menu& menu)
 {
 	if (ImGui::BeginMenu(menu.name.c_str()))
@@ -185,7 +177,6 @@ void imgui_layer::draw_menu(const shortcut_menu& menu)
 		ImGui::EndMenu();
 	}
 }
-
 void imgui_layer::draw_menu_item(const shortcut_menu_item& item)
 {
 	if (item.groups.size())

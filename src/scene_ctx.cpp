@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "scene_ctx.h"
 #include "scene_graph.h"
+#include "scene_material.h"
+#include "geom/generated_mesh.h"
 
 scene_ctx::scene_ctx()
 {
@@ -16,7 +18,6 @@ scene_ctx::scene_ctx()
 	null_mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
 	m_mtls.insert(std::make_pair(0, null_mtl));
 }
-
 scene_ctx::~scene_ctx()
 {
 	delete m_sg_root;
@@ -24,38 +25,15 @@ scene_ctx::~scene_ctx()
 
 
 
-void scene_ctx::set_sg_root(sgnode* const new_root)
+carve::csg::CSG& scene_ctx::get_csg()
 {
-	delete m_sg_root;
-	m_sg_root = new_root;
-	m_selected_node = new_root;
+	return m_csg;
 }
-u32 scene_ctx::add_heightmap(mesh_t* hm)
+void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
-	m_hms.emplace_back(hm);
-	m_hms_dirty = true;
-	return (u32)(m_hms.size() - 1);
+	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
+	m_draw_vaos(glctx, mats, m_sg_vaos_for_mtl);
 }
-
-void scene_ctx::remove_heightmap(const u32 id)
-{
-	m_hms.erase(m_hms.begin() + id);
-	m_hms_dirty = true;
-}
-
-u32 scene_ctx::add_material(scene_material* mtl)
-{
-	const u32 id = s_next_mtl_id;
-	m_mtls.insert(std::make_pair(id, mtl));
-	++s_next_mtl_id;
-	return id;
-}
-
-void scene_ctx::remove_material(const u32 id)
-{
-	m_mtls.erase(id);
-}
-
 void scene_ctx::update()
 {
 	if (m_sg_root->dirty)
@@ -84,10 +62,82 @@ void scene_ctx::update()
 	}
 }
 
-void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
+
+
+sgnode* scene_ctx::get_sg_root()
 {
-	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
-	m_draw_vaos(glctx, mats, m_sg_vaos_for_mtl);
+	return m_sg_root;
+}
+const sgnode* scene_ctx::get_sg_root() const
+{
+	return m_sg_root;
+}
+void scene_ctx::set_sg_root(sgnode* const new_root)
+{
+	delete m_sg_root;
+	m_sg_root = new_root;
+	m_selected_node = new_root;
+}
+sgnode* scene_ctx::get_selected_node()
+{
+	return m_selected_node;
+}
+void scene_ctx::set_selected_node(sgnode* node)
+{
+	m_selected_node = node;
+}
+
+
+
+const std::unordered_map<u32, scene_material*>& scene_ctx::get_materials()
+{
+	return m_mtls;
+}
+u32 scene_ctx::add_material(scene_material* mtl)
+{
+	const u32 id = s_next_mtl_id;
+	m_mtls.insert(std::make_pair(id, mtl));
+	++s_next_mtl_id;
+	return id;
+}
+void scene_ctx::remove_material(const u32 id)
+{
+	m_mtls.erase(id);
+}
+scene_material* scene_ctx::get_selected_material()
+{
+	return m_selected_mtl;
+}
+void scene_ctx::set_selected_material(scene_material* mtl)
+{
+	m_selected_mtl = mtl;
+}
+
+
+
+mesh_t* scene_ctx::create_textured_cuboid(GLuint mtl_id, const cuboid_options& options)
+{
+	return textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+}
+mesh_t* scene_ctx::create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options)
+{
+	return textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+}
+mesh_t* scene_ctx::create_textured_cylinder(GLuint mtl_id, const cylinder_options& options)
+{
+	return textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+}
+mesh_t* scene_ctx::create_textured_cone(GLuint mtl_id, const cone_options& options)
+{
+	return textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+}
+mesh_t* scene_ctx::create_textured_torus(GLuint mtl_id, const torus_options& options)
+{
+	return textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+}
+mesh_t* scene_ctx::create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options)
+{
+	return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, map, options);
 }
 generated_mesh* scene_ctx::generated_textured_cuboid(GLuint mtl_id, const cuboid_options& options)
 {
@@ -136,7 +186,6 @@ void scene_ctx::m_build_sg_vaos()
 		m_sg_vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
 }
-
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl)
 {
 	GLUtesselator* tess = gluNewTess();
@@ -326,7 +375,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		}
 	}
 }
-
 void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos)
 {
 	for (auto it = vaos.begin(); it != vaos.end(); ++it)

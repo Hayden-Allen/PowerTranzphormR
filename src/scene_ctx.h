@@ -4,28 +4,7 @@
 
 class sgnode;
 class generated_mesh;
-
-struct scene_material
-{
-	std::string name;
-	std::unordered_map<std::string, mgl::texture2d_rgb_u8*> texs;
-	mgl::shaders* shaders;
-
-	scene_material() :
-		name(""),
-		shaders(nullptr)
-	{}
-	scene_material(const std::string& n, const std::unordered_map<std::string, mgl::texture2d_rgb_u8*>& t, mgl::shaders* const s) :
-		name(n),
-		texs(t),
-		shaders(s)
-	{}
-	scene_material(const scene_material& o) noexcept :
-		name(o.name),
-		texs(o.texs),
-		shaders(o.shaders)
-	{}
-};
+struct scene_material;
 
 struct scene_ctx_uniforms
 {
@@ -42,56 +21,28 @@ public:
 	scene_ctx();
 	~scene_ctx();
 public:
-	const sgnode* get_sg_root() const { return m_sg_root; }
+	carve::csg::CSG& get_csg();
+	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
+	void update();
+public:
+	sgnode* get_sg_root();
+	const sgnode* get_sg_root() const;
 	void set_sg_root(sgnode* const new_root);
-	const std::unordered_map<u32, scene_material*>& get_materials() { return m_mtls; }
-	sgnode* get_selected_node() { return m_selected_node; }
-	void set_selected_node(sgnode* node) { m_selected_node = node; }
-	scene_material* get_selected_material() { return m_selected_mtl; }
-	void set_selected_material(scene_material* mtl) { m_selected_mtl = mtl; }
-	u32 add_heightmap(mesh_t* hm);
-	void remove_heightmap(const u32 id);
+	sgnode* get_selected_node();
+	void set_selected_node(sgnode* node);
+public:
+	const std::unordered_map<u32, scene_material*>& get_materials();
 	u32 add_material(scene_material* mtl);
 	void remove_material(const u32 id);
-	void update();
-	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
-	// TODO probably remove (change textured_* interface)
-	attr_tex_coord_t& get_tex_coord_attr()
-	{
-		return m_tex_coord_attr;
-	}
-	attr_material_t& get_mtl_attr()
-	{
-		return m_mtl_id_attr;
-	}
-	carve::csg::CSG& get_csg()
-	{
-		return m_csg;
-	}
-	mesh_t* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {})
-	{
-		return textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
-	}
-	mesh_t* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {})
-	{
-		return textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
-	}
-	mesh_t* create_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {})
-	{
-		return textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
-	}
-	mesh_t* create_textured_cone(GLuint mtl_id, const cone_options& options = {})
-	{
-		return textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
-	}
-	mesh_t* create_textured_torus(GLuint mtl_id, const torus_options& options = {})
-	{
-		return textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
-	}
-	mesh_t* create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {})
-	{
-		return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, map, options);
-	}
+	scene_material* get_selected_material();
+	void set_selected_material(scene_material* mtl);
+public:
+	mesh_t* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {});
+	mesh_t* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {});
+	mesh_t* create_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {});
+	mesh_t* create_textured_cone(GLuint mtl_id, const cone_options& options = {});
+	mesh_t* create_textured_torus(GLuint mtl_id, const torus_options& options = {});
+	mesh_t* create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {});
 	generated_mesh* generated_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {});
 	generated_mesh* generated_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {});
 	generated_mesh* generated_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {});
@@ -101,9 +52,7 @@ public:
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_vert_size = 8;
-	// constexpr static f32 s_snap_angle = c::PI / 2;
-	// constexpr static f32 s_snap_angle = c::PI / 3;
-	// constexpr static f32 s_snap_angle = c::PI / 4;
+	// TODO temporary
 public:
 	static inline f32 s_snap_angle = 7 * c::PI / 24;
 	static inline bool s_snap_all = false;

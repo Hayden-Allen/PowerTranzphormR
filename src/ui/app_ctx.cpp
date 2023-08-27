@@ -12,6 +12,21 @@ app_ctx::app_ctx() :
 	init_menus();
 }
 
+void app_ctx::save(const std::string& fp) const
+{
+	std::ofstream out(fp);
+	assert(out.is_open());
+	actions.save(out, scene.get_sg_root());
+}
+void app_ctx::load(const std::string& fp)
+{
+	std::ifstream in(fp);
+	assert(in.is_open());
+	scene.set_sg_root(actions.load(in));
+}
+
+
+
 void app_ctx::transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
 {
 	actions.transform(t, old_mat, new_mat);
