@@ -24,6 +24,28 @@ void app_ctx::load(const std::string& fp)
 	assert(in.is_open());
 	scene.set_sg_root(actions.load(in));
 }
+void app_ctx::undo()
+{
+	const sgnode* const selected = scene.get_selected_node();
+	assert(selected);
+	const action* const a = actions.undo();
+	if (a)
+	{
+		if (a->undo_conflict(selected))
+			scene.set_selected_node(scene.get_sg_root());
+	}
+}
+void app_ctx::redo()
+{
+	const sgnode* const selected = scene.get_selected_node();
+	assert(selected);
+	const action* const a = actions.redo();
+	if (a)
+	{
+		if (a->redo_conflict(selected))
+			scene.set_selected_node(scene.get_sg_root());
+	}
+}
 
 
 
@@ -191,13 +213,7 @@ void app_ctx::init_menus()
 		"Undo",
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			assert(selected);
-			const action* const a = actions.undo();
-			if (a->undo_conflict(selected))
-			{
-				scene.set_selected_node(scene.get_sg_root());
-			}
+			undo();
 		},
 		[&]()
 		{
@@ -211,13 +227,7 @@ void app_ctx::init_menus()
 		"Redo",
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			assert(selected);
-			const action* const a = actions.redo();
-			if (a->redo_conflict(selected))
-			{
-				scene.set_selected_node(scene.get_sg_root());
-			}
+			redo();
 		},
 		[&]()
 		{
@@ -266,8 +276,8 @@ void app_ctx::init_menus()
 		{
 			sgnode* const selected = scene.get_selected_node();
 			// selected->add_child(clipboard->clone());
-			sgnode* const clone = clipboard->clone();
-			create_action(clone, selected);
+			sgnode* const clone = clipboard->clone(this, selected);
+			// create_action(clone, selected);
 			if (clipboard_cut)
 			{
 				destroy_action(clipboard);

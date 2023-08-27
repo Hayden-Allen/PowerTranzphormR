@@ -3,6 +3,7 @@
 
 class generated_mesh;
 class scene_ctx;
+struct app_ctx;
 
 class sgnode
 {
@@ -43,7 +44,7 @@ public:
 public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);
-	sgnode* clone() const;
+	sgnode* clone(app_ctx* const app, sgnode* const parent) const;
 	void recompute(scene_ctx* const scene);
 	void transform(const tmat<space::OBJECT, space::OBJECT>& m);
 	nlohmann::json save() const;

@@ -74,34 +74,36 @@ action* action_stack::redo()
 }
 void action_stack::save(std::ofstream& out, const sgnode* const root) const
 {
+	// combine past and future events into one big list for simplicity
 	std::vector<action*> all;
 	all.reserve(m_past.size() + m_future.size());
 	all.insert(all.end(), m_past.begin(), m_past.end());
 	all.insert(all.end(), m_future.begin(), m_future.end());
 
+	// write out all nodes
 	std::unordered_set<const sgnode*> nodes;
 	nodes.insert(root);
 	for (action* const a : all)
-		// nodes.insert(a->target);
 		all_nodes(a->target, nodes);
-
 	out << nodes.size() << "\n";
 	for (const sgnode* const node : nodes)
 	{
-		// node->save(out);
 		out << std::string(node->save().dump()) << "\n";
 	}
 
+	// write out all events
 	out << m_past.size() << " " << m_future.size() << "\n";
 	for (const action* const a : all)
 		out << std::string(a->save().dump()) << "\n";
 
+	// write out next unique sgnode id
 	out << sgnode::get_next_id() << "\n";
 }
 sgnode* action_stack::load(std::ifstream& in)
 {
 	std::string line;
 
+	// read in all nodes
 	u64 num_nodes;
 	in >> num_nodes;
 	std::getline(in, line);
@@ -119,8 +121,8 @@ sgnode* action_stack::load(std::ifstream& in)
 	u64 past_count, future_count;
 	in >> past_count >> future_count;
 	std::getline(in, line);
+	// read in (and apply) past events
 	m_past.reserve(past_count);
-	m_future.reserve(future_count);
 	for (u64 i = 0; i < past_count; i++)
 	{
 		std::getline(in, line);
@@ -129,14 +131,26 @@ sgnode* action_stack::load(std::ifstream& in)
 		m_past.push_back(a);
 		a->apply(m_ctx);
 	}
+	// read in future events
+	m_future.reserve(future_count);
+	for (u64 i = 0; i < future_count; i++)
+	{
+		std::getline(in, line);
+		const nlohmann::json obj = nlohmann::json::parse(line);
+		action* const a = action::create(obj, nodes);
+		m_future.push_back(a);
+	}
 
+	// need to know what unique id to start making new sgnodes at
 	u32 next_id = 0;
 	in >> next_id;
 	sgnode::set_next_id(next_id);
 
+	// return the parent
 	for (const auto& pair : nodes)
 		if (!pair.second->parent)
 			return pair.second;
+	// no parent found, something broke
 	assert(false);
 	return nullptr;
 }

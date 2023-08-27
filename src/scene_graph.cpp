@@ -3,6 +3,7 @@
 #include "scene_ctx.h"
 #include "geom/carve.h"
 #include "geom/generated_mesh.h"
+#include "ui/app_ctx.h"
 
 sgnode::sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t) :
 	parent(p),
@@ -157,18 +158,19 @@ s64 sgnode::remove_child(sgnode* const node)
 
 	return index;
 }
-sgnode* sgnode::clone() const
+sgnode* sgnode::clone(app_ctx* const app, sgnode* const parent) const
 {
 	sgnode* ret = new sgnode();
 	ret->parent = nullptr;
 	for (const sgnode* const child : children)
-		ret->add_child(child->clone());
-	// ret->src_verts = src_verts;
+		child->clone(app, ret);
 	// does not clone underlying mesh_t
 	ret->gen = gen->clone();
 	ret->operation = operation;
 	ret->name = name;
 	ret->mat = mat;
+	// make sure to alert the action stack (necessary for serialization)
+	app->create_action(ret, parent);
 	return ret;
 }
 void sgnode::recompute(scene_ctx* const scene)

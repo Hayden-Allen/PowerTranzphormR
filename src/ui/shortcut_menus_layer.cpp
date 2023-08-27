@@ -16,7 +16,7 @@ bool shortcut_menus_layer::on_key(const s32 key, const s32 scancode, const s32 a
 {
 	// This should ideally be WantCaptureKeyboard, but that seems to be true pretty much all the time
 	// The goal here is that at least we can prevent Delete/Backspace in text fields from triggering menu items
-	if (!ImGui::GetIO().WantTextInput && action == GLFW_PRESS)
+	if (!ImGui::GetIO().WantTextInput && (action == GLFW_PRESS || action == GLFW_REPEAT))
 	{
 		for (const shortcut_menu& menu : m_app_ctx->shortcut_menus)
 		{
