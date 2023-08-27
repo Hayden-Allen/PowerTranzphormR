@@ -49,7 +49,7 @@ generated_primitive::~generated_primitive() {}
 std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_params() const
 {
 	return {
-		{ "Material", { false, false, (void*)&m_material, 0.f, 1.f * MAX_VALUE(m_material), 1.f } },
+		{ "Material", { false, (void*)&m_material, 0.f, 1.f * MAX_VALUE(m_material), 1.f } },
 	};
 }
 GLuint generated_primitive::get_material() const
@@ -133,8 +133,8 @@ std::unordered_map<std::string, generated_mesh_param> generated_ellipsoid::get_p
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "X Steps", { false, false, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
-		{ "Y Steps", { false, false, (void*)&m_options.num_vertical_steps, 3.f, 64.f, 1.f } },
+		{ "X Steps", { false, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
+		{ "Y Steps", { false, (void*)&m_options.num_vertical_steps, 3.f, 64.f, 1.f } },
 	};
 	m.merge(t);
 	return m;
@@ -190,9 +190,9 @@ std::unordered_map<std::string, generated_mesh_param> generated_cylinder::get_pa
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "Steps", { false, false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
-		{ "Top Radius", { true, true, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Bottom Radius", { true, true, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Steps", { false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Top Radius", { true, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Bottom Radius", { true, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 	m.merge(t);
 	return m;
@@ -246,7 +246,7 @@ std::unordered_map<std::string, generated_mesh_param> generated_cone::get_params
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "Steps", { false, false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Steps", { false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 	};
 	m.merge(t);
 	return m;
@@ -300,10 +300,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_torus::get_param
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "Center Radius", { true, true, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Tube Radius", { true, true, (void*)&m_options.tube_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Center Steps", { false, false, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
-		{ "Tube Steps", { false, false, (void*)&m_options.num_tube_steps, 3.f, 64.f, 1.f } },
+		{ "Center Radius", { true, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Tube Radius", { true, (void*)&m_options.tube_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Center Steps", { false, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
+		{ "Tube Steps", { false, (void*)&m_options.num_tube_steps, 3.f, 64.f, 1.f } },
 	};
 	m.merge(t);
 	return m;

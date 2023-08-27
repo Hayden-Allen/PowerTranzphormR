@@ -13,6 +13,7 @@ public:
 	virtual bool on_mouse_move(const f32 x, const f32 y, const f32 dx, const f32 dy) override;
 	virtual bool on_scroll(const f32 x, const f32 y) override;
 	virtual bool on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods) override;
+	virtual bool on_char(const u32 codepoint) override;
 	void add_window(imgui_window* window);
 	void remove_window(imgui_window* window);
 private:
