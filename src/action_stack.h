@@ -14,6 +14,8 @@ public:
 	void reparent(sgnode* const target, sgnode* const new_parent, const s64 new_index);
 	void create(sgnode* const target, sgnode* const parent);
 	void destroy(sgnode* const target);
+	sgnode* freeze(sgnode* const target);
+	void unfreeze(sgnode* const target, sgnode* const unfrozen);
 	bool can_undo();
 	bool can_redo();
 	// undo last action made and move it to the redo stack

@@ -173,6 +173,18 @@ sgnode* sgnode::clone(app_ctx* const app, sgnode* const parent) const
 	app->create_action(ret, parent);
 	return ret;
 }
+sgnode* sgnode::freeze() const
+{
+	sgnode* ret = new sgnode();
+	ret->parent = nullptr;
+	ret->gen = gen->clone();
+	// FIXME could cause problems?
+	ret->gen->mesh = gen->mesh;
+	ret->operation = carve::csg::CSG::OP::ALL;
+	ret->name = name;
+	ret->mat = mat;
+	return ret;
+}
 void sgnode::recompute(scene_ctx* const scene)
 {
 	dirty = false;

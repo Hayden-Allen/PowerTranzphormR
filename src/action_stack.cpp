@@ -40,6 +40,16 @@ void action_stack::destroy(sgnode* const target)
 {
 	new_action(new destroy_action(target), true);
 }
+sgnode* action_stack::freeze(sgnode* const target)
+{
+	freeze_action* const a = new freeze_action(target);
+	new_action(a, true);
+	return a->frozen;
+}
+void action_stack::unfreeze(sgnode* const target, sgnode* const unfrozen)
+{
+	new_action(new unfreeze_action(target, unfrozen), true);
+}
 bool action_stack::can_undo()
 {
 	return m_past.size() > 0;

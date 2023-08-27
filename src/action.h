@@ -84,3 +84,37 @@ public:
 	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
 };
+
+struct freeze_action : public action
+{
+public:
+	sgnode* frozen;
+	s64 index;
+public:
+	freeze_action(sgnode* const target);
+	freeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
+	MGL_DCM(freeze_action);
+public:
+	void apply(scene_ctx* const ctx) override;
+	void undo(scene_ctx* const ctx) override;
+	bool redo_conflict(const sgnode* const selected) const;
+	bool undo_conflict(const sgnode* const selected) const;
+	nlohmann::json save() const override;
+};
+
+struct unfreeze_action : public action
+{
+public:
+	sgnode* unfrozen;
+	s64 index;
+public:
+	unfreeze_action(sgnode* const target, sgnode* const _unfrozen);
+	unfreeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
+	MGL_DCM(unfreeze_action);
+public:
+	void apply(scene_ctx* const ctx) override;
+	void undo(scene_ctx* const ctx) override;
+	bool redo_conflict(const sgnode* const selected) const;
+	bool undo_conflict(const sgnode* const selected) const;
+	nlohmann::json save() const override;
+};
