@@ -8,6 +8,15 @@ properties_window::properties_window(app_ctx* const a_ctx) :
 
 void properties_window::handle_frame()
 {
+	/*const bool start_all = scene_ctx::s_snap_all;
+	ImGui::Checkbox("Snap All?", &scene_ctx::s_snap_all);
+	const f32 start_angle = scene_ctx::s_snap_angle;
+	ImGui::SliderAngle("Snap Angle", &scene_ctx::s_snap_angle, 0.f, 360.f);
+
+	if (start_angle != scene_ctx::s_snap_angle || start_all != scene_ctx::s_snap_all)
+		m_app_ctx->scene.get_sg_root()->set_dirty();
+
+	return;*/
 	sgnode* const selected = m_app_ctx->scene.get_selected_node();
 	assert(selected);
 

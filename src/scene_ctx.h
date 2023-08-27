@@ -100,7 +100,9 @@ private:
 	// constexpr static f32 s_snap_angle = c::PI / 2;
 	// constexpr static f32 s_snap_angle = c::PI / 3;
 	// constexpr static f32 s_snap_angle = c::PI / 4;
-	constexpr static f32 s_snap_angle = 7 * c::PI / 24;
+public:
+	static inline f32 s_snap_angle = 7 * c::PI / 24;
+	static inline bool s_snap_all = false;
 private:
 	carve::csg::CSG m_csg;
 	attr_tex_coord_t m_tex_coord_attr;

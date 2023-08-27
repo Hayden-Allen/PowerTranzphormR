@@ -206,33 +206,39 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 						{
 							const auto& face_norm = instance.second.at(k);
 							const f32 angle = norm.angle_to(face_norm);
-							// current vertex cannot be added to this instance (ALL)
-							// if (fabs(angle) >= s_snap_angle)
-							//{
-							//	// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
-							//	break;
-							//}
-							//// made it to the end of the list, current vertex is part of this instance
-							// if (k == instance.second.size() - 1)
-							//{
-							//	vert2index.at(key).at(instance.first).push_back(norm);
-							//	instance.second.push_back(norm);
-							//	indices.push_back(instance.first);
-							//	input_vert2index.push_back(instance.first);
-							//	found = true;
-							//	// need to break here because we're adding to instance.second, so this loop will go forever
-							//	break;
-							// }
-							// current vertex can be added to this instance (ANY)
-							if (fabs(angle) < s_snap_angle)
+							if (s_snap_all)
 							{
-								vert2index.at(key).at(instance.first).push_back(norm);
-								instance.second.push_back(norm);
-								indices.push_back(instance.first);
-								input_vert2index.push_back(instance.first);
-								found = true;
-								// need to break here because we're adding to instance.second, so this loop will go forever
-								break;
+								// current vertex cannot be added to this instance (ALL)
+								if (fabs(angle) >= s_snap_angle)
+								{
+									// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
+									break;
+								}
+								// made it to the end of the list, current vertex is part of this instance
+								if (k == instance.second.size() - 1)
+								{
+									vert2index.at(key).at(instance.first).push_back(norm);
+									instance.second.push_back(norm);
+									indices.push_back(instance.first);
+									input_vert2index.push_back(instance.first);
+									found = true;
+									// need to break here because we're adding to instance.second, so this loop will go forever
+									break;
+								}
+							}
+							else
+							{
+								// current vertex can be added to this instance (ANY)
+								if (fabs(angle) < s_snap_angle)
+								{
+									vert2index.at(key).at(instance.first).push_back(norm);
+									instance.second.push_back(norm);
+									indices.push_back(instance.first);
+									input_vert2index.push_back(instance.first);
+									found = true;
+									// need to break here because we're adding to instance.second, so this loop will go forever
+									break;
+								}
 							}
 						}
 						// current vertex inserted, stop
