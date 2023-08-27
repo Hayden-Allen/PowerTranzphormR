@@ -353,6 +353,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ASan|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\geom\carve.cpp" />
+    <ClCompile Include="src\ui\app_ctx.cpp" />
     <ClCompile Include="src\ui\imgui_layer.cpp" />
     <ClCompile Include="src\main2.cpp" />
     <ClCompile Include="src\pch.cpp">

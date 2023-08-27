@@ -55,6 +55,20 @@ public:
 			delete child;
 	}
 public:
+	sgnode* clone() const
+	{
+		sgnode* ret = new sgnode();
+		ret->parent = nullptr;
+		for (const sgnode* const child : children)
+			ret->add_child(child->clone());
+		// ret->src_verts = src_verts;
+		// does not clone underlying mesh_t
+		ret->gen = gen->clone();
+		ret->operation = operation;
+		ret->name = name;
+		ret->mat = mat;
+		return ret;
+	}
 	s64 get_index() const
 	{
 		if (!parent)
@@ -213,6 +227,16 @@ public:
 		if (parent)
 			parent->set_dirty();
 	}
+private:
+	sgnode() :
+		parent(nullptr),
+		gen(nullptr),
+		operation(carve::csg::CSG::OP::ALL),
+		id("sgn" + std::to_string(s_next_id++)),
+		name(""),
+		selected(false),
+		dirty(false)
+	{}
 private:
 	void copy_verts()
 	{

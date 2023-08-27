@@ -29,6 +29,10 @@ public:
 		return {};
 	}
 	virtual void recompute(scene_ctx* const scene) {}
+	virtual generated_mesh* clone() const
+	{
+		return new generated_mesh(nullptr);
+	}
 };
 
 class generated_cuboid : public generated_mesh
@@ -51,6 +55,16 @@ public:
 		// delete mesh;
 		mesh = scene->create_textured_cuboid(m_material, m_options);
 	}
+	virtual generated_mesh* clone() const
+	{
+		return new generated_cuboid(m_material, m_options);
+	}
+private:
+	generated_cuboid(const GLuint material, const cuboid_options& opts) :
+		generated_mesh(nullptr),
+		m_material(material),
+		m_options(opts)
+	{}
 private:
 	GLuint m_material;
 	cuboid_options m_options;
@@ -79,6 +93,16 @@ public:
 		// delete mesh;
 		mesh = scene->create_textured_ellipsoid(m_material, m_options);
 	}
+	virtual generated_mesh* clone() const
+	{
+		return new generated_ellipsoid(m_material, m_options);
+	}
+private:
+	generated_ellipsoid(const GLuint material, const ellipsoid_options& opts) :
+		generated_mesh(nullptr),
+		m_material(material),
+		m_options(opts)
+	{}
 private:
 	GLuint m_material;
 	ellipsoid_options m_options;
@@ -108,6 +132,16 @@ public:
 		// delete mesh;
 		mesh = scene->create_textured_cylinder(m_material, m_options);
 	}
+	virtual generated_mesh* clone() const
+	{
+		return new generated_cylinder(m_material, m_options);
+	}
+private:
+	generated_cylinder(const GLuint material, const cylinder_options& opts) :
+		generated_mesh(nullptr),
+		m_material(material),
+		m_options(opts)
+	{}
 private:
 	GLuint m_material;
 	cylinder_options m_options;
@@ -135,6 +169,16 @@ public:
 		// delete mesh;
 		mesh = scene->create_textured_cone(m_material, m_options);
 	}
+	virtual generated_mesh* clone() const
+	{
+		return new generated_cone(m_material, m_options);
+	}
+private:
+	generated_cone(const GLuint material, const cone_options& opts) :
+		generated_mesh(nullptr),
+		m_material(material),
+		m_options(opts)
+	{}
 private:
 	GLuint m_material;
 	cone_options m_options;
@@ -165,6 +209,16 @@ public:
 		// delete mesh;
 		mesh = scene->create_textured_torus(m_material, m_options);
 	}
+	virtual generated_mesh* clone() const
+	{
+		return new generated_torus(m_material, m_options);
+	}
+private:
+	generated_torus(const GLuint material, const torus_options& opts) :
+		generated_mesh(nullptr),
+		m_material(material),
+		m_options(opts)
+	{}
 private:
 	GLuint m_material;
 	torus_options m_options;
@@ -192,6 +246,18 @@ public:
 		// TODO
 		assert(false);
 	}
+	virtual generated_mesh* clone() const
+	{
+		// TODO
+		assert(false);
+		return new generated_heightmap(m_material, m_options);
+	}
+private:
+	generated_heightmap(const GLuint material, const heightmap_options& opts) :
+		generated_mesh(nullptr),
+		m_material(material),
+		m_options(opts)
+	{}
 private:
 	GLuint m_material;
 	heightmap_options m_options;
