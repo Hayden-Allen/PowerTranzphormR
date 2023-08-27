@@ -127,6 +127,11 @@ bool imgui_layer::on_key(const s32 key, const s32 scancode, const s32 action, co
 	ImGui_ImplGlfw_KeyCallback(m_app_ctx->mgl_ctx.window, key, scancode, action, mods);
 	return false;
 }
+bool imgui_layer::on_char(const u32 codepoint)
+{
+	ImGui_ImplGlfw_CharCallback(m_app_ctx->mgl_ctx.window, codepoint);
+	return false;
+}
 void imgui_layer::add_window(imgui_window* window)
 {
 	remove_window(window);

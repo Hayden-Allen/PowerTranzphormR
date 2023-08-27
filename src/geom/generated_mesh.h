@@ -6,7 +6,7 @@
 constexpr static f32 MIN_PARAM_VALUE = .01f, MAX_PARAM_VALUE = 4096.f, DRAG_PARAM_STEP = .01f;
 struct generated_mesh_param
 {
-	bool is_float, is_drag;
+	bool is_float;
 	void* value;
 	f32 min, max, speed;
 };

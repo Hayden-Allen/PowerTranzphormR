@@ -149,11 +149,11 @@ int main(int argc, char** argv)
 		});
 	il.add_window(&preview);
 
-	scene_graph_window sg_window(&a_ctx);
-	il.add_window(&sg_window);
-
 	materials_list_window ml_window(&a_ctx);
 	il.add_window(&ml_window);
+
+	scene_graph_window sg_window(&a_ctx);
+	il.add_window(&sg_window);
 
 	properties_window prop_window(&a_ctx);
 	il.add_window(&prop_window);

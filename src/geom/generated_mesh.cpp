@@ -110,8 +110,8 @@ generated_ellipsoid::generated_ellipsoid(const nlohmann::json& obj) :
 std::unordered_map<std::string, generated_mesh_param> generated_ellipsoid::get_params() const
 {
 	return {
-		{ "X Steps", { false, false, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
-		{ "Y Steps", { false, false, (void*)&m_options.num_vertical_steps, 3.f, 64.f, 1.f } },
+		{ "X Steps", { false, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
+		{ "Y Steps", { false, (void*)&m_options.num_vertical_steps, 3.f, 64.f, 1.f } },
 	};
 }
 void generated_ellipsoid::recompute(scene_ctx* const scene)
@@ -167,9 +167,9 @@ generated_cylinder::generated_cylinder(const nlohmann::json& obj) :
 std::unordered_map<std::string, generated_mesh_param> generated_cylinder::get_params() const
 {
 	return {
-		{ "Steps", { false, false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
-		{ "Top Radius", { true, true, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Bottom Radius", { true, true, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Steps", { false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Top Radius", { true, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Bottom Radius", { true, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
 void generated_cylinder::recompute(scene_ctx* const scene)
@@ -223,7 +223,7 @@ generated_cone::generated_cone(const nlohmann::json& obj) :
 std::unordered_map<std::string, generated_mesh_param> generated_cone::get_params() const
 {
 	return {
-		{ "Steps", { false, false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Steps", { false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 	};
 }
 void generated_cone::recompute(scene_ctx* const scene)
@@ -277,10 +277,10 @@ generated_torus::generated_torus(const nlohmann::json& obj) :
 std::unordered_map<std::string, generated_mesh_param> generated_torus::get_params() const
 {
 	return {
-		{ "Center Radius", { true, true, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Tube Radius", { true, true, (void*)&m_options.tube_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Center Steps", { false, false, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
-		{ "Tube Steps", { false, false, (void*)&m_options.num_tube_steps, 3.f, 64.f, 1.f } },
+		{ "Center Radius", { true, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Tube Radius", { true, (void*)&m_options.tube_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Center Steps", { false, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
+		{ "Tube Steps", { false, (void*)&m_options.num_tube_steps, 3.f, 64.f, 1.f } },
 	};
 }
 void generated_torus::recompute(scene_ctx* const scene)
