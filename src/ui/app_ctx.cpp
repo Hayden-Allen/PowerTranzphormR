@@ -122,6 +122,21 @@ void app_ctx::create_intersect_action()
 {
 	create_operation_action(carve::csg::CSG::OP::INTERSECTION);
 }
+void app_ctx::freeze_action(sgnode* const target)
+{
+	assert(!target->is_root());
+	sgnode* const new_node = actions.freeze(target);
+	frozen.insert({ new_node, target });
+	scene.set_selected_node(new_node);
+}
+void app_ctx::unfreeze_action(sgnode* const target)
+{
+	const auto& it = frozen.find(target);
+	assert(it != frozen.end());
+	actions.unfreeze(target, it->second);
+	scene.set_selected_node(it->second);
+	frozen.erase(it);
+}
 
 
 

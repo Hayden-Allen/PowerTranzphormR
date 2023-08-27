@@ -31,7 +31,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 	ImGui::PopStyleVar();
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
-	 
+
 	// handle controls
 	ImGui::PushID(node->id.c_str());
 	if (ImGui::BeginPopupContextItem())
@@ -41,48 +41,39 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 		if (!node->is_mesh())
 		{
 			if (ImGui::MenuItem("Add Cube"))
-			{
 				m_app_ctx->create_cube_action();
-			}
 			if (ImGui::MenuItem("Add Sphere"))
-			{
 				m_app_ctx->create_sphere_action();
-			}
 			if (ImGui::MenuItem("Add Cylinder"))
-			{
 				m_app_ctx->create_cylinder_action();
-			}
 			if (ImGui::MenuItem("Add Cone"))
-			{
 				m_app_ctx->create_cone_action();
-			}
 			if (ImGui::MenuItem("Add Torus"))
-			{
 				m_app_ctx->create_torus_action();
-			}
 			if (ImGui::MenuItem("Add Heightmap"))
-			{
 				m_app_ctx->create_heightmap_action();
-			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Add Union"))
-			{
 				m_app_ctx->create_union_action();
-			}
 			if (ImGui::MenuItem("Add Subtract"))
-			{
 				m_app_ctx->create_subtract_action();
-			}
 			if (ImGui::MenuItem("Add Intersect"))
-			{
 				m_app_ctx->create_intersect_action();
-			}
+			ImGui::Separator();
+		}
+		if (!node->is_root() || m_app_ctx->is_node_frozen(node))
+		{
+			const bool is_frozen = m_app_ctx->is_node_frozen(node);
+			if (!node->is_root() && !is_frozen)
+				if (ImGui::MenuItem("Phreeze!"))
+					m_app_ctx->freeze_action(node);
+			if (is_frozen)
+				if (ImGui::MenuItem("Unphreeze!"))
+					m_app_ctx->unfreeze_action(node);
 			ImGui::Separator();
 		}
 		if (ImGui::MenuItem("Destroy"))
-		{
 			m_app_ctx->destroy_selected_action();
-		}
 
 		ImGui::EndPopup();
 	}

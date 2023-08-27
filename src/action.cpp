@@ -16,6 +16,7 @@ action* action::create(const nlohmann::json& obj, const std::unordered_map<std::
 	case 1: return new reparent_action(obj, nodes);
 	case 2: return new create_action(obj, nodes);
 	case 3: return new destroy_action(obj, nodes);
+	case 4: return new freeze_action(obj, nodes);
 	default: assert(false);
 	}
 	return nullptr;
@@ -175,6 +176,90 @@ nlohmann::json destroy_action::save() const
 	obj["type"] = 3;
 	obj["t"] = target->id;
 	obj["p"] = parent->id;
+	obj["i"] = index;
+	return obj;
+}
+
+
+
+freeze_action::freeze_action(sgnode* const target) :
+	action(target),
+	frozen(target->freeze()),
+	index(target->get_index())
+{
+	assert(!target->is_root());
+}
+freeze_action::freeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+	action(obj, nodes),
+	frozen(nodes.at(obj["f"])),
+	index(obj["i"])
+{}
+void freeze_action::apply(scene_ctx* const ctx)
+{
+	target->parent->remove_child(target);
+	target->parent->add_child(frozen, index);
+}
+void freeze_action::undo(scene_ctx* const ctx)
+{
+	target->parent->remove_child(frozen);
+	target->parent->add_child(target, index);
+}
+bool freeze_action::redo_conflict(const sgnode* const selected) const
+{
+	return selected == target;
+}
+bool freeze_action::undo_conflict(const sgnode* const selected) const
+{
+	return selected == frozen;
+}
+nlohmann::json freeze_action::save() const
+{
+	nlohmann::json obj;
+	obj["type"] = 4;
+	obj["t"] = target->id;
+	obj["f"] = frozen->id;
+	obj["i"] = index;
+	return obj;
+}
+
+
+
+unfreeze_action::unfreeze_action(sgnode* const target, sgnode* const _unfrozen) :
+	action(target),
+	unfrozen(_unfrozen),
+	index(target->get_index())
+{
+	assert(!target->is_root());
+}
+unfreeze_action::unfreeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+	action(obj, nodes),
+	unfrozen(nodes.at(obj["u"])),
+	index(obj["i"])
+{}
+void unfreeze_action::apply(scene_ctx* const ctx)
+{
+	target->parent->remove_child(target);
+	target->parent->add_child(unfrozen, index);
+}
+void unfreeze_action::undo(scene_ctx* const ctx)
+{
+	target->parent->remove_child(unfrozen);
+	target->parent->add_child(target, index);
+}
+bool unfreeze_action::redo_conflict(const sgnode* const selected) const
+{
+	return selected == target;
+}
+bool unfreeze_action::undo_conflict(const sgnode* const selected) const
+{
+	return selected == unfrozen;
+}
+nlohmann::json unfreeze_action::save() const
+{
+	nlohmann::json obj;
+	obj["type"] = 4;
+	obj["t"] = target->id;
+	obj["u"] = unfrozen->id;
 	obj["i"] = index;
 	return obj;
 }

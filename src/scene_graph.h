@@ -45,6 +45,7 @@ public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);
 	sgnode* clone(app_ctx* const app, sgnode* const parent) const;
+	sgnode* freeze() const;
 	void recompute(scene_ctx* const scene);
 	void transform(const tmat<space::OBJECT, space::OBJECT>& m);
 	nlohmann::json save() const;
