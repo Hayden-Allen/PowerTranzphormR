@@ -36,6 +36,8 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "log.h"
 
+#include "nlohmann/json.hpp"
+
 #define MAX_VALUE(x) std::numeric_limits<decltype(x)>::max()
 
 // HATODO move all this crap
@@ -101,3 +103,14 @@ struct mesh_vertex
 		printf("(%f %f %f) (%f %f) (%f %f %f)\n", x, y, z, u, v, nx, ny, nz);
 	}
 };
+template<space FROM, space TO>
+static tmat<FROM, TO> json2tmat(const nlohmann::json& obj)
+{
+	nlohmann::json::array_t arr = obj;
+	f32 e[16] = { 0.f };
+	assert(arr.size() == 16);
+	s32 i = 0;
+	for (const auto& v : arr)
+		e[i++] = v.get<f32>();
+	return tmat<FROM, TO>(e);
+}

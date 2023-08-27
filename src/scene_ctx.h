@@ -43,6 +43,8 @@ public:
 	~scene_ctx();
 public:
 	sgnode* get_sg_root() { return m_sg_root; }
+	const sgnode* get_sg_root() const { return m_sg_root; }
+	void set_sg_root(sgnode* const new_root);
 	sgnode* get_selected_node() { return m_selected_node; }
 	void set_selected_node(sgnode* node) { m_selected_node = node; }
 	u32 add_heightmap(mesh_t* hm);

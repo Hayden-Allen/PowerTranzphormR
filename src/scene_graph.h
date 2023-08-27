@@ -44,6 +44,20 @@ public:
 	{
 		set_dirty();
 	}
+	sgnode(const nlohmann::json& obj) :
+		parent(nullptr),
+		operation(obj["op"]),
+		id(obj["id"]),
+		name(obj["name"]),
+		dirty(false),
+		selected(false)
+	{
+		if (!obj["gen"].is_null())
+			gen = generated_mesh::create(obj["gen"]);
+		else
+			gen = new generated_mesh(nullptr);
+		mat = json2tmat<space::OBJECT, space::PARENT>(obj["mat"]);
+	}
 	MGL_DCM(sgnode);
 	virtual ~sgnode()
 	{
@@ -53,6 +67,15 @@ public:
 		delete gen;
 		for (sgnode* const child : children)
 			delete child;
+	}
+public:
+	static u32 get_next_id()
+	{
+		return s_next_id;
+	}
+	static void set_next_id(const u32 id)
+	{
+		s_next_id = id;
 	}
 public:
 	sgnode* clone() const
@@ -197,24 +220,14 @@ public:
 	tmat<space::OBJECT, space::WORLD> accumulate_mats()
 	{
 		if (parent)
-		{
 			return parent->accumulate_mats().cast_copy<space::PARENT, space::WORLD>() * mat;
-		}
-		else
-		{
-			return mat.cast_copy<space::OBJECT, space::WORLD>();
-		}
+		return mat.cast_copy<space::OBJECT, space::WORLD>();
 	}
 	tmat<space::OBJECT, space::WORLD> accumulate_parent_mats()
 	{
 		if (parent)
-		{
 			return parent->accumulate_mats();
-		}
-		else
-		{
-			return tmat<space::OBJECT, space::WORLD>();
-		}
+		return tmat<space::OBJECT, space::WORLD>();
 	}
 	void set_gen_dirty()
 	{
@@ -226,6 +239,24 @@ public:
 		dirty = true;
 		if (parent)
 			parent->set_dirty();
+	}
+	nlohmann::json save() const
+	{
+		nlohmann::json obj;
+		obj["parent"] = parent ? parent->id : "";
+
+		std::vector<std::string> child_ids;
+		for (const sgnode* const child : children)
+			child_ids.push_back(child->id);
+		obj["children"] = child_ids;
+
+		obj["gen"] = gen->save();
+		obj["op"] = operation;
+		obj["id"] = id;
+		obj["name"] = name;
+		obj["mat"] = mat.e;
+
+		return obj;
 	}
 private:
 	sgnode() :

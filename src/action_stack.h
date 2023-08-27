@@ -11,8 +11,13 @@ public:
 	action(sgnode* const t) :
 		target(t)
 	{}
+	action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+		target(nodes.at(obj["t"]))
+	{}
 	MGL_DCM(action);
 	virtual ~action() {}
+public:
+	static action* create(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 public:
 	virtual void apply(scene_ctx* const ctx) = 0;
 	virtual void undo(scene_ctx* const ctx) = 0;
@@ -24,6 +29,7 @@ public:
 	{
 		return false;
 	}
+	virtual nlohmann::json save() const = 0;
 };
 struct transform_action : public action
 {
@@ -36,6 +42,11 @@ public:
 		initial(old_mat),
 		mat(new_mat)
 	{}
+	transform_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+		action(obj, nodes),
+		initial(json2tmat<space::OBJECT, space::PARENT>(obj["i"])),
+		mat(json2tmat<space::OBJECT, space::PARENT>(obj["m"]))
+	{}
 	MGL_DCM(transform_action);
 public:
 	void apply(scene_ctx* const ctx) override
@@ -45,6 +56,15 @@ public:
 	void undo(scene_ctx* const ctx) override
 	{
 		target->set_transform(initial);
+	}
+	nlohmann::json save() const override
+	{
+		nlohmann::json obj;
+		obj["type"] = 0;
+		obj["t"] = target->id;
+		obj["i"] = initial.e;
+		obj["m"] = mat.e;
+		return obj;
 	}
 };
 struct reparent_action : public action
@@ -59,6 +79,13 @@ public:
 		new_parent(_new_parent),
 		new_index(_new_index)
 	{}
+	reparent_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+		action(obj, nodes),
+		old_parent(nodes.at(obj["op"])),
+		new_parent(nodes.at(obj["np"])),
+		old_index(obj["oi"]),
+		new_index(obj["ni"])
+	{}
 	MGL_DCM(reparent_action);
 public:
 	void apply(scene_ctx* const ctx) override
@@ -71,6 +98,17 @@ public:
 		new_parent->remove_child(target);
 		old_parent->add_child(target, old_index);
 	}
+	nlohmann::json save() const override
+	{
+		nlohmann::json obj;
+		obj["type"] = 1;
+		obj["t"] = target->id;
+		obj["op"] = old_parent->id;
+		obj["np"] = new_parent->id;
+		obj["oi"] = old_index;
+		obj["ni"] = new_index;
+		return obj;
+	}
 };
 struct create_action : public action
 {
@@ -80,6 +118,10 @@ public:
 	create_action(sgnode* const new_node, sgnode* const _parent) :
 		action(new_node),
 		parent(_parent)
+	{}
+	create_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+		action(obj, nodes),
+		parent(nodes.at(obj["p"]))
 	{}
 	MGL_DCM(create_action);
 public:
@@ -99,6 +141,14 @@ public:
 	{
 		return selected == target;
 	}
+	nlohmann::json save() const override
+	{
+		nlohmann::json obj;
+		obj["type"] = 2;
+		obj["t"] = target->id;
+		obj["p"] = parent->id;
+		return obj;
+	}
 };
 struct destroy_action : public action
 {
@@ -114,6 +164,11 @@ public:
 		// shouldn't be able to destroy root
 		assert(parent);
 	}
+	destroy_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+		action(obj, nodes),
+		parent(nodes.at(obj["p"])),
+		index(obj["i"])
+	{}
 	MGL_DCM(destroy_action);
 public:
 	void apply(scene_ctx* const ctx) override
@@ -138,6 +193,15 @@ public:
 	bool undo_conflict(const sgnode* const selected) const
 	{
 		return false;
+	}
+	nlohmann::json save() const override
+	{
+		nlohmann::json obj;
+		obj["type"] = 3;
+		obj["t"] = target->id;
+		obj["p"] = parent->id;
+		obj["i"] = index;
+		return obj;
 	}
 };
 
@@ -205,6 +269,73 @@ public:
 			m_past.push_back(a);
 			return a;
 		}
+		return nullptr;
+	}
+	void save(std::ofstream& out, const sgnode* const root) const
+	{
+		std::vector<action*> all;
+		all.reserve(m_past.size() + m_future.size());
+		all.insert(all.end(), m_past.begin(), m_past.end());
+		all.insert(all.end(), m_future.begin(), m_future.end());
+
+		std::unordered_set<const sgnode*> nodes;
+		nodes.insert(root);
+		for (action* const a : all)
+			nodes.insert(a->target);
+
+		out << nodes.size() << "\n";
+		for (const sgnode* const node : nodes)
+		{
+			// node->save(out);
+			out << std::string(node->save().dump()) << "\n";
+		}
+
+		out << m_past.size() << " " << m_future.size() << "\n";
+		for (const action* const a : all)
+			out << std::string(a->save().dump()) << "\n";
+
+		out << sgnode::get_next_id() << "\n";
+	}
+	sgnode* load(std::ifstream& in)
+	{
+		std::string line;
+
+		u64 num_nodes;
+		in >> num_nodes;
+		std::getline(in, line);
+		std::unordered_map<std::string, sgnode*> nodes;
+		nodes.reserve(num_nodes);
+		for (u64 i = 0; i < num_nodes; i++)
+		{
+			std::getline(in, line);
+			const nlohmann::json obj = nlohmann::json::parse(line);
+			sgnode* node = new sgnode(obj);
+			node->set_dirty();
+			nodes[obj["id"]] = node;
+		}
+
+		u64 past_count, future_count;
+		in >> past_count >> future_count;
+		std::getline(in, line);
+		m_past.reserve(past_count);
+		m_future.reserve(future_count);
+		for (u64 i = 0; i < past_count; i++)
+		{
+			std::getline(in, line);
+			const nlohmann::json obj = nlohmann::json::parse(line);
+			action* const a = action::create(obj, nodes);
+			m_past.push_back(a);
+			a->apply(m_ctx);
+		}
+
+		u32 next_id = 0;
+		in >> next_id;
+		sgnode::set_next_id(next_id);
+
+		for (const auto& pair : nodes)
+			if (!pair.second->parent)
+				return pair.second;
+		assert(false);
 		return nullptr;
 	}
 private:

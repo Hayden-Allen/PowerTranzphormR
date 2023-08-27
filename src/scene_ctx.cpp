@@ -17,6 +17,12 @@ scene_ctx::~scene_ctx()
 
 
 
+void scene_ctx::set_sg_root(sgnode* const new_root)
+{
+	delete m_sg_root;
+	m_sg_root = new_root;
+	m_selected_node = new_root;
+}
 u32 scene_ctx::add_heightmap(mesh_t* hm)
 {
 	m_hms.emplace_back(hm);

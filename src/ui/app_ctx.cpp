@@ -127,9 +127,9 @@ void app_ctx::init_menus()
 	};
 	shortcut_menu_item file_open = {
 		"Open",
-		[]()
+		[&]()
 		{
-			//
+			load("test.txt");
 		},
 		[]()
 		{
@@ -141,9 +141,9 @@ void app_ctx::init_menus()
 	};
 	shortcut_menu_item file_save = {
 		"Save",
-		[]()
+		[&]()
 		{
-			//
+			save("test.txt");
 		},
 		[]()
 		{
