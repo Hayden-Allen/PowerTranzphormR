@@ -27,9 +27,34 @@ public:
 	virtual void recompute(scene_ctx* const scene);
 	virtual generated_mesh* clone() const;
 	virtual nlohmann::json save() const;
+	virtual GLuint get_material() const
+	{
+		assert(false);
+		GLuint tmp = 0;
+		return MAX_VALUE(tmp);
+	}
+	virtual void set_material(const GLuint mat)
+	{
+		assert(false);
+	}
 };
 
-class generated_cuboid : public generated_mesh
+class generated_primitive : public generated_mesh
+{
+public:
+	generated_primitive(mesh_t* const m, const GLuint material);
+	generated_primitive(const nlohmann::json& obj);
+	MGL_DCM(generated_primitive);
+	virtual ~generated_primitive();
+public:
+	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	GLuint get_material() const override;
+	void set_material(const GLuint mat) override;
+protected:
+	GLuint m_material;
+};
+
+class generated_cuboid : public generated_primitive
 {
 public:
 	generated_cuboid(scene_ctx* const scene, const GLuint material, const cuboid_options& opts);
@@ -42,11 +67,10 @@ public:
 private:
 	generated_cuboid(const GLuint material, const cuboid_options& opts);
 private:
-	GLuint m_material;
 	cuboid_options m_options;
 };
 
-class generated_ellipsoid : public generated_mesh
+class generated_ellipsoid : public generated_primitive
 {
 public:
 	generated_ellipsoid(scene_ctx* const scene, const GLuint material, const ellipsoid_options& opts);
@@ -59,11 +83,10 @@ public:
 private:
 	generated_ellipsoid(const GLuint material, const ellipsoid_options& opts);
 private:
-	GLuint m_material;
 	ellipsoid_options m_options;
 };
 
-class generated_cylinder : public generated_mesh
+class generated_cylinder : public generated_primitive
 {
 public:
 	generated_cylinder(scene_ctx* const scene, const GLuint material, const cylinder_options& opts);
@@ -76,11 +99,10 @@ public:
 private:
 	generated_cylinder(const GLuint material, const cylinder_options& opts);
 private:
-	GLuint m_material;
 	cylinder_options m_options;
 };
 
-class generated_cone : public generated_mesh
+class generated_cone : public generated_primitive
 {
 public:
 	generated_cone(scene_ctx* const scene, const GLuint material, const cone_options& opts);
@@ -93,11 +115,10 @@ public:
 private:
 	generated_cone(const GLuint material, const cone_options& opts);
 private:
-	GLuint m_material;
 	cone_options m_options;
 };
 
-class generated_torus : public generated_mesh
+class generated_torus : public generated_primitive
 {
 public:
 	generated_torus(scene_ctx* const scene, const GLuint material, const torus_options& opts);
@@ -110,11 +131,10 @@ public:
 private:
 	generated_torus(const GLuint material, const torus_options& opts);
 private:
-	GLuint m_material;
 	torus_options m_options;
 };
 
-class generated_heightmap : public generated_mesh
+class generated_heightmap : public generated_primitive
 {
 public:
 	generated_heightmap(scene_ctx* const scene, const GLuint material, const heightmap_options& opts);
@@ -127,6 +147,5 @@ public:
 private:
 	generated_heightmap(const GLuint material, const heightmap_options& opts);
 private:
-	GLuint m_material;
 	heightmap_options m_options;
 };

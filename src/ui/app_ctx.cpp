@@ -147,7 +147,7 @@ void app_ctx::create_operation_action(const carve::csg::CSG::OP op)
 template<typename FN>
 void app_ctx::create_shape_action(FN fn, const std::string& name)
 {
-	generated_mesh* gen = (scene.*fn)(1, {});
+	generated_mesh* gen = (scene.*fn)(0, {});
 	create(new sgnode(nullptr, gen, name));
 }
 void app_ctx::create(sgnode* const node)
