@@ -3,8 +3,8 @@
 #include "geom/generated_mesh.h"
 
 app_ctx::app_ctx() :
-	actions(&scene),
 	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
+	actions(&scene),
 	preview_fb(1280, 720)
 {
 	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());

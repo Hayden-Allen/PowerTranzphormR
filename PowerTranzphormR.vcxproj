@@ -366,6 +366,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ASan|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\ui\materials_list_window.cpp" />
     <ClCompile Include="src\ui\preview_layer.cpp" />
     <ClCompile Include="src\ui\preview_window.cpp" />
     <ClCompile Include="src\scene_ctx.cpp" />
@@ -382,6 +383,7 @@
     <ClInclude Include="src\ui\app_ctx.h" />
     <ClInclude Include="src\scene_graph.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />
+    <ClInclude Include="src\ui\materials_list_window.h" />
     <ClInclude Include="src\ui\properties_window.h" />
     <ClInclude Include="src\ui\shortcut_menu.h" />
     <ClInclude Include="src\ui\imgui_window.h" />

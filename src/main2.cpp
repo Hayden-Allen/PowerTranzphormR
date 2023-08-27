@@ -4,6 +4,7 @@
 #include "ui/preview_layer.h"
 #include "ui/preview_window.h"
 #include "ui/scene_graph_window.h"
+#include "ui/materials_list_window.h"
 #include "ui/properties_window.h"
 #include "ui/app_ctx.h"
 
@@ -39,7 +40,10 @@ void make_scene(scene_ctx* const out_scene)
 {
 	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
 	auto t1 = load_texture_rgb_u8("res/1.png");
-	scene_material mtl1("mtl1", { { "u_tex", t1 } }, s1);
+	scene_material* mtl1 = new scene_material;
+	mtl1->name = "Material 1";
+	mtl1->shaders = s1;
+	mtl1->texs = { { "u_tex", t1 } };
 	out_scene->add_material(mtl1);
 
 	auto& csg = out_scene->get_csg();
@@ -111,6 +115,9 @@ int main(int argc, char** argv)
 
 	scene_graph_window sg_window(&a_ctx);
 	il.add_window(&sg_window);
+
+	materials_list_window ml_window(&a_ctx);
+	il.add_window(&ml_window);
 
 	properties_window prop_window(&a_ctx);
 	il.add_window(&prop_window);

@@ -8,6 +8,13 @@ scene_ctx::scene_ctx()
 	m_mtl_id_attr.installHooks(m_csg);
 	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::OP::UNION);
 	set_selected_node(m_sg_root);
+
+	scene_material* null_mtl = new scene_material;
+	null_mtl->shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	null_mtl->name = "<NULL>";
+	u8 pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };
+	null_mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
+	m_mtls.insert(std::make_pair(0, null_mtl));
 }
 
 scene_ctx::~scene_ctx()
@@ -36,7 +43,7 @@ void scene_ctx::remove_heightmap(const u32 id)
 	m_hms_dirty = true;
 }
 
-u32 scene_ctx::add_material(const scene_material& mtl)
+u32 scene_ctx::add_material(scene_material* mtl)
 {
 	const u32 id = s_next_mtl_id;
 	m_mtls.insert(std::make_pair(id, mtl));
@@ -143,7 +150,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		{
 			const mesh_t::face_t* f = *i;
 			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
-			assert(mtl_id != 0);
 
 			std::vector<tess_vtx> verts;
 			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
@@ -325,21 +331,22 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 {
 	for (auto it = vaos.begin(); it != vaos.end(); ++it)
 	{
-		const scene_material& mat = m_mtls[it->first];
-		mat.shaders->bind();
-		mat.shaders->uniform_mat4("u_mvp", mats.mvp.e);
-		mat.shaders->uniform_mat4("u_mv", mats.mv.e);
-		mat.shaders->uniform_mat4("u_m", mats.model.e);
-		mat.shaders->uniform_mat4("u_normal", mats.normal.e);
-		mat.shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
+		const scene_material* mat = m_mtls[it->first];
+		mat->shaders->bind();
+		mat->shaders->uniform_mat4("u_mvp", mats.mvp.e);
+		mat->shaders->uniform_mat4("u_mv", mats.mv.e);
+		mat->shaders->uniform_mat4("u_m", mats.model.e);
+		mat->shaders->uniform_mat4("u_normal", mats.normal.e);
+		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
 
-
-		for (u32 i = 0; i < mat.texs.size(); i++)
+		u32 slot = 0;
+		for (const auto& it : mat->texs)
 		{
-			mat.texs[i].second->bind(i);
-			mat.shaders->uniform_1i(mat.texs[i].first.c_str(), i);
+			it.second->bind(slot);
+			mat->shaders->uniform_1i(it.first.c_str(), slot);
+			++slot;
 		}
 
-		glctx.draw(it->second, *mat.shaders);
+		glctx.draw(it->second, *mat->shaders);
 	}
 }

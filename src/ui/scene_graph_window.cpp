@@ -2,7 +2,7 @@
 #include "scene_graph_window.h"
 
 scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
-	imgui_window(a_ctx, "Scene Graph")
+	imgui_window(a_ctx, "Phorms")
 {}
 
 void scene_graph_window::handle_frame()
@@ -31,7 +31,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 	ImGui::PopStyleVar();
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
-
+	 
 	// handle controls
 	ImGui::PushID(node->id.c_str());
 	if (ImGui::BeginPopupContextItem())
@@ -88,7 +88,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 	}
 	ImGui::PopID();
 
-	if (ImGui::IsItemActive())
+	if (ImGui::IsItemFocused())
 	{
 		m_app_ctx->scene.set_selected_node(node);
 	}

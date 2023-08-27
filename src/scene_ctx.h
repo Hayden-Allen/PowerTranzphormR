@@ -8,14 +8,14 @@ class generated_mesh;
 struct scene_material
 {
 	std::string name;
-	std::vector<std::pair<std::string, mgl::texture2d_rgb_u8*>> texs;
+	std::unordered_map<std::string, mgl::texture2d_rgb_u8*> texs;
 	mgl::shaders* shaders;
 
 	scene_material() :
 		name(""),
 		shaders(nullptr)
 	{}
-	scene_material(const std::string& n, const std::vector<std::pair<std::string, mgl::texture2d_rgb_u8*>>& t, mgl::shaders* const s) :
+	scene_material(const std::string& n, const std::unordered_map<std::string, mgl::texture2d_rgb_u8*>& t, mgl::shaders* const s) :
 		name(n),
 		texs(t),
 		shaders(s)
@@ -42,14 +42,16 @@ public:
 	scene_ctx();
 	~scene_ctx();
 public:
-	sgnode* get_sg_root() { return m_sg_root; }
 	const sgnode* get_sg_root() const { return m_sg_root; }
 	void set_sg_root(sgnode* const new_root);
+	const std::unordered_map<u32, scene_material*>& get_materials() { return m_mtls; }
 	sgnode* get_selected_node() { return m_selected_node; }
 	void set_selected_node(sgnode* node) { m_selected_node = node; }
+	scene_material* get_selected_material() { return m_selected_mtl; }
+	void set_selected_material(scene_material* mtl) { m_selected_mtl = mtl; }
 	u32 add_heightmap(mesh_t* hm);
 	void remove_heightmap(const u32 id);
-	u32 add_material(const scene_material& mtl);
+	u32 add_material(scene_material* mtl);
 	void remove_material(const u32 id);
 	void update();
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
@@ -109,11 +111,12 @@ private:
 	carve::csg::CSG m_csg;
 	attr_tex_coord_t m_tex_coord_attr;
 	attr_material_t m_mtl_id_attr;
-	std::unordered_map<u32, scene_material> m_mtls;
+	std::unordered_map<u32, scene_material*> m_mtls;
 	std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
 	std::vector<mesh_t*> m_hms;
 	sgnode* m_sg_root = nullptr;
 	sgnode* m_selected_node = nullptr;
+	scene_material* m_selected_mtl = nullptr;
 	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();

@@ -6,9 +6,9 @@
 struct app_ctx
 {
 public:
+	mgl::context mgl_ctx;
 	scene_ctx scene;
 	action_stack actions;
-	mgl::context mgl_ctx;
 	mgl::framebuffer_u8 preview_fb;
 	mgl::camera preview_cam;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
