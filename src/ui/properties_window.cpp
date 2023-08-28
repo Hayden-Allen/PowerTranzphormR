@@ -12,7 +12,7 @@ void properties_window::handle_frame()
 	sgnode* const selected = m_app_ctx->scene.get_selected_node();
 	assert(selected);
 
-	if (!selected->parent)
+	if (selected->is_root())
 	{
 		handle_snapping_angle();
 	}

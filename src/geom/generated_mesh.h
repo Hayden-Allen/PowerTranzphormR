@@ -27,16 +27,10 @@ public:
 	virtual void recompute(scene_ctx* const scene);
 	virtual generated_mesh* clone() const;
 	virtual nlohmann::json save() const;
-	virtual GLuint get_material() const
-	{
-		assert(false);
-		GLuint tmp = 0;
-		return MAX_VALUE(tmp);
-	}
-	virtual void set_material(const GLuint mat)
-	{
-		assert(false);
-	}
+	virtual GLuint get_material() const;
+	virtual void set_material(const GLuint mat);
+protected:
+	virtual primitive_options* get_options() const;
 };
 
 class generated_primitive : public generated_mesh
@@ -50,6 +44,7 @@ public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	GLuint get_material() const override;
 	void set_material(const GLuint mat) override;
+	nlohmann::json save() const override;
 protected:
 	GLuint m_material;
 };
@@ -64,6 +59,8 @@ public:
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone() const;
 	nlohmann::json save() const override;
+protected:
+	primitive_options* get_options() const override;
 private:
 	generated_cuboid(const GLuint material, const cuboid_options& opts);
 private:
@@ -80,6 +77,8 @@ public:
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone() const;
 	nlohmann::json save() const override;
+protected:
+	primitive_options* get_options() const override;
 private:
 	generated_ellipsoid(const GLuint material, const ellipsoid_options& opts);
 private:
@@ -96,6 +95,8 @@ public:
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone() const;
 	nlohmann::json save() const override;
+protected:
+	primitive_options* get_options() const override;
 private:
 	generated_cylinder(const GLuint material, const cylinder_options& opts);
 private:
@@ -112,6 +113,8 @@ public:
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone() const;
 	nlohmann::json save() const override;
+protected:
+	primitive_options* get_options() const override;
 private:
 	generated_cone(const GLuint material, const cone_options& opts);
 private:
@@ -128,6 +131,8 @@ public:
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone() const;
 	nlohmann::json save() const override;
+protected:
+	primitive_options* get_options() const override;
 private:
 	generated_torus(const GLuint material, const torus_options& opts);
 private:
@@ -144,6 +149,8 @@ public:
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone() const;
 	nlohmann::json save() const override;
+protected:
+	primitive_options* get_options() const override;
 private:
 	generated_heightmap(const GLuint material, const heightmap_options& opts);
 private:

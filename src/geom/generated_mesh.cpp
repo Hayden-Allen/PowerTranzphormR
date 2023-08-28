@@ -34,6 +34,21 @@ nlohmann::json generated_mesh::save() const
 {
 	return {};
 }
+GLuint generated_mesh::get_material() const
+{
+	assert(false);
+	GLuint tmp = 0;
+	return MAX_VALUE(tmp);
+}
+void generated_mesh::set_material(const GLuint mat)
+{
+	assert(false);
+}
+primitive_options* generated_mesh::get_options() const
+{
+	assert(false);
+	return nullptr;
+}
 
 
 
@@ -48,8 +63,11 @@ generated_primitive::generated_primitive(const nlohmann::json& obj) :
 generated_primitive::~generated_primitive() {}
 std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_params() const
 {
+	const primitive_options* const opts = get_options();
 	return {
 		{ "Material", { false, (void*)&m_material, 0.f, 1.f * MAX_VALUE(m_material), 1.f } },
+		{ "U Scale", { true, (void*)&opts->u_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "V Scale", { true, (void*)&opts->v_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
 GLuint generated_primitive::get_material() const
@@ -60,6 +78,17 @@ void generated_primitive::set_material(const GLuint mat)
 {
 	m_material = mat;
 	dirty = true;
+}
+nlohmann::json generated_primitive::save() const
+{
+	const primitive_options* const opts = get_options();
+	nlohmann::json obj;
+	obj["opts"] = {
+		{ "t", opts->transform.e },
+		{ "u", opts->u_scale },
+		{ "v", opts->v_scale },
+	};
+	return obj;
 }
 
 
@@ -74,9 +103,6 @@ generated_cuboid::generated_cuboid(const nlohmann::json& obj) :
 	generated_primitive(obj)
 {
 	const auto& opts = obj["opts"];
-	m_options.width = opts["w"];
-	m_options.height = opts["h"];
-	m_options.depth = opts["d"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::unordered_map<std::string, generated_mesh_param> generated_cuboid::get_params() const
@@ -97,13 +123,12 @@ nlohmann::json generated_cuboid::save() const
 	nlohmann::json obj;
 	obj["type"] = 0;
 	obj["mat"] = m_material;
-	obj["opts"] = {
-		{ "w", m_options.width },
-		{ "h", m_options.height },
-		{ "d", m_options.depth },
-		{ "t", m_options.transform.e },
-	};
+	obj["opts"] = generated_primitive::save()["opts"];
 	return obj;
+}
+primitive_options* generated_cuboid::get_options() const
+{
+	return (primitive_options*)&m_options;
 }
 generated_cuboid::generated_cuboid(const GLuint material, const cuboid_options& opts) :
 	generated_primitive(nullptr, material),
@@ -122,9 +147,6 @@ generated_ellipsoid::generated_ellipsoid(const nlohmann::json& obj) :
 	generated_primitive(obj)
 {
 	const auto& opts = obj["opts"];
-	m_options.radius_x = opts["rx"];
-	m_options.radius_y = opts["ry"];
-	m_options.radius_z = opts["rz"];
 	m_options.num_horizontal_steps = opts["nh"];
 	m_options.num_vertical_steps = opts["nv"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
@@ -153,15 +175,14 @@ nlohmann::json generated_ellipsoid::save() const
 	nlohmann::json obj;
 	obj["type"] = 1;
 	obj["mat"] = m_material;
-	obj["opts"] = {
-		{ "rx", m_options.radius_x },
-		{ "ry", m_options.radius_y },
-		{ "rz", m_options.radius_z },
-		{ "nh", m_options.num_horizontal_steps },
-		{ "nv", m_options.num_vertical_steps },
-		{ "t", m_options.transform.e },
-	};
+	obj["opts"] = generated_primitive::save()["opts"];
+	obj["opts"]["nh"] = m_options.num_horizontal_steps;
+	obj["opts"]["nv"] = m_options.num_vertical_steps;
 	return obj;
+}
+primitive_options* generated_ellipsoid::get_options() const
+{
+	return (primitive_options*)&m_options;
 }
 generated_ellipsoid::generated_ellipsoid(const GLuint material, const ellipsoid_options& opts) :
 	generated_primitive(nullptr, material),
@@ -182,7 +203,6 @@ generated_cylinder::generated_cylinder(const nlohmann::json& obj) :
 	const auto& opts = obj["opts"];
 	m_options.top_radius = opts["rt"];
 	m_options.bottom_radius = opts["rb"];
-	m_options.height = opts["h"];
 	m_options.num_steps = opts["n"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
@@ -211,14 +231,15 @@ nlohmann::json generated_cylinder::save() const
 	nlohmann::json obj;
 	obj["type"] = 2;
 	obj["mat"] = m_material;
-	obj["opts"] = {
-		{ "rt", m_options.top_radius },
-		{ "rb", m_options.bottom_radius },
-		{ "h", m_options.height },
-		{ "n", m_options.num_steps },
-		{ "t", m_options.transform.e },
-	};
+	obj["opts"] = generated_primitive::save()["opts"];
+	obj["opts"]["rt"] = m_options.top_radius;
+	obj["opts"]["rb"] = m_options.bottom_radius;
+	obj["opts"]["n"] = m_options.num_steps;
 	return obj;
+}
+primitive_options* generated_cylinder::get_options() const
+{
+	return (primitive_options*)&m_options;
 }
 generated_cylinder::generated_cylinder(const GLuint material, const cylinder_options& opts) :
 	generated_primitive(nullptr, material),
@@ -237,8 +258,6 @@ generated_cone::generated_cone(const nlohmann::json& obj) :
 	generated_primitive(obj)
 {
 	const auto& opts = obj["opts"];
-	m_options.radius = opts["r"];
-	m_options.height = opts["h"];
 	m_options.num_steps = opts["n"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
@@ -265,13 +284,13 @@ nlohmann::json generated_cone::save() const
 	nlohmann::json obj;
 	obj["type"] = 3;
 	obj["mat"] = m_material;
-	obj["opts"] = {
-		{ "r", m_options.radius },
-		{ "h", m_options.height },
-		{ "n", m_options.num_steps },
-		{ "t", m_options.transform.e },
-	};
+	obj["opts"] = generated_primitive::save()["opts"];
+	obj["opts"]["n"] = m_options.num_steps;
 	return obj;
+}
+primitive_options* generated_cone::get_options() const
+{
+	return (primitive_options*)&m_options;
 }
 generated_cone::generated_cone(const GLuint material, const cone_options& opts) :
 	generated_primitive(nullptr, material),
@@ -322,14 +341,16 @@ nlohmann::json generated_torus::save() const
 	nlohmann::json obj;
 	obj["type"] = 4;
 	obj["mat"] = m_material;
-	obj["opts"] = {
-		{ "rc", m_options.center_radius },
-		{ "rt", m_options.tube_radius },
-		{ "nc", m_options.num_center_steps },
-		{ "nt", m_options.num_tube_steps },
-		{ "t", m_options.transform.e },
-	};
+	obj["opts"] = generated_primitive::save()["opts"];
+	obj["opts"]["rc"] = m_options.center_radius;
+	obj["opts"]["rt"] = m_options.tube_radius;
+	obj["opts"]["nc"] = m_options.num_center_steps;
+	obj["opts"]["nt"] = m_options.num_tube_steps;
 	return obj;
+}
+primitive_options* generated_torus::get_options() const
+{
+	return (primitive_options*)&m_options;
 }
 generated_torus::generated_torus(const GLuint material, const torus_options& opts) :
 	generated_primitive(nullptr, material),
@@ -349,9 +370,6 @@ generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
 {
 	assert(false);
 	const auto& opts = obj["opts"];
-	m_options.width = opts["w"];
-	m_options.max_height = opts["mh"];
-	m_options.depth = opts["d"];
 	m_options.width_steps = opts["nw"];
 	m_options.depth_steps = opts["nd"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
@@ -381,15 +399,14 @@ nlohmann::json generated_heightmap::save() const
 	nlohmann::json obj;
 	obj["type"] = 5;
 	obj["mat"] = m_material;
-	obj["opts"] = {
-		{ "w", m_options.width },
-		{ "mh", m_options.max_height },
-		{ "d", m_options.depth },
-		{ "nw", m_options.width_steps },
-		{ "nd", m_options.depth_steps },
-		{ "t", m_options.transform.e },
-	};
+	obj["opts"] = generated_primitive::save()["opts"];
+	obj["opts"]["nw"] = m_options.width_steps;
+	obj["opts"]["nd"] = m_options.depth_steps;
 	return obj;
+}
+primitive_options* generated_heightmap::get_options() const
+{
+	return (primitive_options*)&m_options;
 }
 generated_heightmap::generated_heightmap(const GLuint material, const heightmap_options& opts) :
 	generated_primitive(nullptr, material),
