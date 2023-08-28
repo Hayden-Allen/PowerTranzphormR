@@ -103,7 +103,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 			// map each vertex to where it lies within the texture
 			// (don't stretch rectangle texture to fit circle, just take subtexture that fits)
 			const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-			tex_coord_attr.setAttribute(face, i, tex_coord_t(u, v));
+			tex_coord_attr.setAttribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
 		}
 	}
 	// vertical strips
@@ -139,7 +139,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	vertices.reserve(STEPS + 1);
 	for (u32 j = 0; j < STEPS; j++)
 	{
-		const f32 x = cosf(j * DTHETA), z = sinf(j * DTHETA);
+		const f32 x = .5f * cosf(j * DTHETA), z = .5f * sinf(j * DTHETA);
 		// make cone vertically centered on the origin
 		const f32 y = -.5f;
 		vertices.push_back(new vertex_t(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
@@ -156,7 +156,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	for (uint32_t i = 0; i < STEPS; i++)
 	{
 		const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-		tex_coord_attr.setAttribute(face, i, tex_coord_t(u, v));
+		tex_coord_attr.setAttribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
 	}
 	// generate vertical strips for cone
 	for (u32 i = 0; i < STEPS; i++)

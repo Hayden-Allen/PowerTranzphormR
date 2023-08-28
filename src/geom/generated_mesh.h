@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "carve.h"
-#include "scene_ctx.h"
+
+class scene_ctx;
 
 constexpr static f32 MIN_PARAM_VALUE = .01f, MAX_PARAM_VALUE = 4096.f, DRAG_PARAM_STEP = .01f;
 struct generated_mesh_param

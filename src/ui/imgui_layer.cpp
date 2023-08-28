@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "imgui_layer.h"
+#include "app_ctx.h"
 
 imgui_layer::imgui_layer(app_ctx* const a_ctx) :
 	m_app_ctx(a_ctx)

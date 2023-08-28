@@ -1,6 +1,7 @@
 #pragma once
 #include "imgui_layer.h"
-#include "app_ctx.h"
+
+struct app_ctx;
 
 class preview_layer : public mgl::layer
 {

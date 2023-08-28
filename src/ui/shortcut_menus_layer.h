@@ -1,5 +1,8 @@
 #pragma once
-#include "app_ctx.h"
+#include "pch.h"
+#include "shortcut_menu.h"
+
+struct app_ctx;
 
 class shortcut_menus_layer : public mgl::layer
 {

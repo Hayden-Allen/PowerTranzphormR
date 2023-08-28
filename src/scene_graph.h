@@ -5,7 +5,7 @@ class generated_mesh;
 class scene_ctx;
 struct app_ctx;
 
-class sgnode
+struct sgnode
 {
 public:
 	sgnode* parent;

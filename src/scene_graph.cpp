@@ -201,7 +201,7 @@ sgnode* sgnode::freeze() const
 	// FIXME could cause problems?
 	if (gen)
 	{
-		ret->gen = gen->clone(accumulate_parent_mats());
+		ret->gen = gen->clone(accumulate_mats());
 	}
 	ret->operation = carve::csg::CSG::OP::ALL;
 	ret->name = name;

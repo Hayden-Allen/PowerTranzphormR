@@ -2,6 +2,7 @@
 #include "scene_ctx.h"
 #include "scene_graph.h"
 #include "scene_material.h"
+#include "geom/carve.h"
 #include "geom/generated_mesh.h"
 
 scene_ctx::scene_ctx()

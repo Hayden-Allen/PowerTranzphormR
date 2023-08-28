@@ -1,6 +1,8 @@
 #pragma once
 #include "imgui_window.h"
-#include "app_ctx.h"
+#include "shortcut_menu.h"
+
+struct app_ctx;
 
 class imgui_layer : public mgl::layer
 {

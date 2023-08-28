@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "preview_window.h"
+#include "app_ctx.h"
+#include "preview_layer.h"
+#include "scene_graph.h"
 
 preview_window::preview_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Preview")

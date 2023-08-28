@@ -1,8 +1,6 @@
 #pragma once
 #include "scene_ctx.h"
 #include "imgui_window.h"
-#include "imgui_layer.h"
-#include "preview_layer.h"
 
 class scene_graph_window : public imgui_window
 {

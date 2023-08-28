@@ -1,7 +1,6 @@
 #pragma once
 #include "pch.h"
 
-
 struct tex_coord_t
 {
 	f32 u, v;
@@ -46,7 +45,7 @@ struct ellipsoid_options : public primitive_options
 };
 struct cylinder_options : public primitive_options
 {
-	f32 top_radius = 1.f, bottom_radius = 1.f;
+	f32 top_radius = .5f, bottom_radius = .5f;
 	u32 num_steps = 16;
 };
 struct cone_options : public primitive_options
@@ -55,7 +54,7 @@ struct cone_options : public primitive_options
 };
 struct torus_options : public primitive_options
 {
-	f32 center_radius = 1.f, tube_radius = .5f;
+	f32 center_radius = 1.f / 3.f, tube_radius = .5f - 1.f / 3.f;
 	u32 num_center_steps = 12, num_tube_steps = 12;
 };
 struct heightmap_options : public primitive_options
