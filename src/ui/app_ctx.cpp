@@ -36,6 +36,8 @@ void app_ctx::save(const std::string& fp) const
 {
 	std::ofstream out(fp);
 	assert(out.is_open());
+	const auto& cp = preview_cam.get_pos();
+	out << cp.x << " " << cp.y << " " << cp.z << "\n";
 	actions.save(out, scene.get_sg_root());
 	loaded_filename = fp;
 }
@@ -75,6 +77,9 @@ void app_ctx::load(const std::string& fp)
 	clear();
 	std::ifstream in(fp);
 	assert(in.is_open());
+	f32 x, y, z;
+	in >> x >> y >> z;
+	preview_cam.set_pos(point<space::WORLD>(x, y, z));
 	scene.set_sg_root(actions.load(in));
 	loaded_filename = fp;
 }
@@ -372,7 +377,8 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			return clipboard;
+			sgnode* const selected = scene.get_selected_node();
+			return clipboard && !selected->is_mesh();
 		},
 		"Ctrl+V",
 		GLFW_KEY_V,

@@ -15,7 +15,6 @@ sgnode::sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<sp
 	dirty(false),
 	mat(t)
 {
-	copy_verts();
 	set_dirty();
 }
 sgnode::sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t) :
@@ -85,7 +84,7 @@ bool sgnode::is_leaf() const
 }
 bool sgnode::is_mesh() const
 {
-	return operation == carve::csg::CSG::OP::ALL;
+	return operation == carve::csg::CSG::OP::ALL && gen;
 }
 bool sgnode::owns_mesh() const
 {
@@ -117,13 +116,13 @@ void sgnode::set_dirty()
 	if (parent)
 		parent->set_dirty();
 }
-tmat<space::OBJECT, space::WORLD> sgnode::accumulate_mats()
+tmat<space::OBJECT, space::WORLD> sgnode::accumulate_mats() const
 {
 	if (parent)
 		return parent->accumulate_mats().cast_copy<space::PARENT, space::WORLD>() * mat;
 	return mat.cast_copy<space::OBJECT, space::WORLD>();
 }
-tmat<space::OBJECT, space::WORLD> sgnode::accumulate_parent_mats()
+tmat<space::OBJECT, space::WORLD> sgnode::accumulate_parent_mats() const
 {
 	if (parent)
 		return parent->accumulate_mats();
@@ -183,12 +182,15 @@ sgnode* sgnode::freeze() const
 {
 	sgnode* ret = new sgnode();
 	ret->parent = nullptr;
-	ret->gen = gen->clone();
 	// FIXME could cause problems?
-	ret->gen->mesh = gen->mesh;
+	if (gen)
+	{
+		ret->gen = gen->clone(accumulate_mats());
+	}
 	ret->operation = carve::csg::CSG::OP::ALL;
 	ret->name = name;
 	ret->mat = mat;
+	ret->set_dirty();
 	return ret;
 }
 void sgnode::recompute(scene_ctx* const scene)
@@ -201,7 +203,6 @@ void sgnode::recompute(scene_ctx* const scene)
 			if (gen->dirty)
 			{
 				gen->recompute(scene);
-				copy_verts();
 			}
 			transform_verts();
 		}
@@ -284,14 +285,6 @@ sgnode::sgnode() :
 
 
 
-void sgnode::copy_verts()
-{
-	src_verts.clear();
-	for (const auto& v : gen->mesh->vertex_storage)
-	{
-		src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
-	}
-}
 void sgnode::transform_verts()
 {
 	if (is_leaf())
@@ -300,7 +293,7 @@ void sgnode::transform_verts()
 		const auto& m = accumulate_mats();
 		gen->mesh->transform([&](vertex_t::vector_t& v)
 			{
-				const auto& out = hats2carve(src_verts[i].transform_copy(m));
+				const auto& out = hats2carve(gen->src_verts[i].transform_copy(m));
 				++i;
 				return out;
 			});

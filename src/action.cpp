@@ -240,11 +240,13 @@ void unfreeze_action::apply(scene_ctx* const ctx)
 {
 	target->parent->remove_child(target);
 	target->parent->add_child(unfrozen, index);
+	unfrozen->set_transform(target->mat);
 }
 void unfreeze_action::undo(scene_ctx* const ctx)
 {
 	target->parent->remove_child(unfrozen);
 	target->parent->add_child(target, index);
+	target->set_transform(unfrozen->mat);
 }
 bool unfreeze_action::redo_conflict(const sgnode* const selected) const
 {
