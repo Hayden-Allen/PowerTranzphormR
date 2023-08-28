@@ -34,5 +34,5 @@ private:
 private:
 	// create and apply a new action
 	void new_action(action* const a, const bool apply);
-	void clear(sgnode* const node, std::unordered_set<sgnode*> freed);
+	void clear(sgnode* const node, std::unordered_set<sgnode*>& freed);
 };

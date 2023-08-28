@@ -193,7 +193,7 @@ void action_stack::new_action(action* const a, const bool apply)
 		delete f;
 	m_future.clear();
 }
-void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*> freed)
+void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*>& freed)
 {
 	for (sgnode* const child : node->children)
 		clear(child, freed);
