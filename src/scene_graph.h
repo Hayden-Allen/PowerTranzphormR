@@ -13,7 +13,7 @@ public:
 	generated_mesh* gen;
 	carve::csg::CSG::OP operation;
 	std::string id, name;
-	bool selected, dirty;
+	bool selected, dirty, is_renaming = false;
 	tmat<space::OBJECT, space::PARENT> mat;
 private:
 	static inline u32 s_next_id = 0;
@@ -38,6 +38,8 @@ public:
 	void set_operation(const carve::csg::CSG::OP op);
 	void set_gen_dirty();
 	void set_dirty();
+	void set_name(const std::string& n);
+	void set_renaming(const bool r);
 	tmat<space::OBJECT, space::WORLD> accumulate_mats() const;
 	tmat<space::OBJECT, space::WORLD> accumulate_parent_mats() const;
 public:

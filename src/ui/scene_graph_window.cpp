@@ -31,8 +31,40 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
 	}
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 2.f));
-	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	bool open = false;
+	if (!node->is_renaming)
+	{
+		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+	}
+	else
+	{
+		const f32 x = ImGui::GetCursorPosX();
+		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+
+		constexpr u32 BUF_SIZE = 32;
+		char buf[32] = { 0 };
+		memcpy_s(buf, BUF_SIZE, node->name.c_str(), node->name.size());
+
+		// FIXME kind of hacky?
+		ImGui::SameLine();
+		const f32 size = ImGui::GetFontSize();
+		ImGui::SetCursorPosX(x + size + padding_x);
+
+		// auto focus but weird
+		if (!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+			ImGui::SetKeyboardFocusHere(0);
+
+		if (ImGui::InputText("##SGW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
+		{
+			std::string new_name(buf);
+			if (!new_name.empty())
+				node->set_name(new_name);
+			node->set_renaming(false);
+		}
+	}
 	ImGui::PopStyleVar();
 	if (cutted_to_clipboard)
 	{
@@ -70,6 +102,9 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 				m_app_ctx->create_intersect_action();
 			ImGui::Separator();
 		}
+		if (ImGui::MenuItem("Rename"))
+			node->set_renaming(true);
+		ImGui::Separator();
 		if (!node->is_root() || m_app_ctx->is_node_frozen(node))
 		{
 			const bool is_frozen = m_app_ctx->is_node_frozen(node);
@@ -123,25 +158,4 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	}
 
 	return std::make_pair(cur_min, cur_max);
-}
-
-std::string scene_graph_window::operation_to_string(carve::csg::CSG::OP op)
-{
-	switch (op)
-	{
-	case carve::csg::CSG::OP::ALL:
-		return "All";
-	case carve::csg::CSG::OP::A_MINUS_B:
-		return "Subtract (A - B)";
-	case carve::csg::CSG::OP::B_MINUS_A:
-		return "Subtract (B - A)";
-	case carve::csg::CSG::OP::INTERSECTION:
-		return "Intersect";
-	case carve::csg::CSG::OP::SYMMETRIC_DIFFERENCE:
-		return "Difference (Symmetric)";
-	case carve::csg::CSG::OP::UNION:
-		return "Union";
-	default:
-		return "<ERROR>";
-	}
 }

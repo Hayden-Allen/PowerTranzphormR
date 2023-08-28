@@ -21,3 +21,16 @@ static hats::tmat<FROM, TO> json2tmat(const nlohmann::json& obj)
 		e[i++] = v.get<f32>();
 	return tmat<FROM, TO>(e);
 }
+
+static std::string operation_to_string(carve::csg::CSG::OP op)
+{
+	switch (op)
+	{
+	case carve::csg::CSG::OP::ALL: return "All";
+	case carve::csg::CSG::OP::A_MINUS_B: return "Subtract (A - B)";
+	case carve::csg::CSG::OP::INTERSECTION: return "Intersect";
+	case carve::csg::CSG::OP::UNION: return "Union";
+	}
+	assert(false);
+	return "<ERROR>";
+}

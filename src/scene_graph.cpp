@@ -22,7 +22,7 @@ sgnode::sgnode(carve::csg::CSG& scene, sgnode* p, carve::csg::CSG::OP op, const 
 	gen(nullptr),
 	operation(op),
 	id("sgn" + std::to_string(s_next_id++)),
-	name(""),
+	name(operation_to_string(op)),
 	selected(false),
 	dirty(false),
 	mat(t)
@@ -115,6 +115,14 @@ void sgnode::set_dirty()
 	dirty = true;
 	if (parent)
 		parent->set_dirty();
+}
+void sgnode::set_name(const std::string& n)
+{
+	name = n;
+}
+void sgnode::set_renaming(const bool r)
+{
+	is_renaming = r;
 }
 tmat<space::OBJECT, space::WORLD> sgnode::accumulate_mats() const
 {

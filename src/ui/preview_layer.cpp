@@ -6,12 +6,9 @@ using namespace hats;
 
 preview_layer::preview_layer(app_ctx* const a_ctx) :
 	m_app_ctx(a_ctx)
-{
-}
+{}
 
-preview_layer::~preview_layer()
-{
-}
+
 
 bool preview_layer::on_frame(const f32 dt)
 {
@@ -38,7 +35,6 @@ bool preview_layer::on_frame(const f32 dt)
 
 	return false;
 }
-
 bool preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods)
 {
 	if (key == GLFW_KEY_ESCAPE)
