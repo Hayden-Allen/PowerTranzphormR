@@ -21,4 +21,10 @@ struct scene_material
 		texs(o.texs),
 		shaders(o.shaders)
 	{}
+	~scene_material()
+	{
+		delete shaders;
+		for (const auto& pair : texs)
+			delete pair.second;
+	}
 };

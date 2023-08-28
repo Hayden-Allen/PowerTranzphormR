@@ -158,19 +158,25 @@ s64 sgnode::remove_child(sgnode* const node)
 
 	return index;
 }
-sgnode* sgnode::clone(app_ctx* const app, sgnode* const parent) const
+sgnode* sgnode::clone(app_ctx* const app, sgnode* const parent, bool create) const
 {
 	sgnode* ret = new sgnode();
 	ret->parent = nullptr;
 	for (const sgnode* const child : children)
-		child->clone(app, ret);
+		child->clone(app, ret, create);
 	// does not clone underlying mesh_t
-	ret->gen = gen->clone();
+	if (gen)
+	{
+		ret->gen = gen->clone();
+	}
 	ret->operation = operation;
 	ret->name = name;
 	ret->mat = mat;
 	// make sure to alert the action stack (necessary for serialization)
-	app->create_action(ret, parent);
+	if (create)
+	{
+		app->create_action(ret, parent);
+	}
 	return ret;
 }
 sgnode* sgnode::freeze() const

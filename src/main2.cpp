@@ -74,6 +74,7 @@ static mgl::retained_texture2d_rgb_u8* load_retained_texture_rgb_u8(const std::s
 
 void make_scene(scene_ctx* const out_scene)
 {
+	/*
 	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
 	auto t1 = load_texture_rgb_u8("res/1.png");
 	scene_material* mtl1 = new scene_material;
@@ -82,7 +83,7 @@ void make_scene(scene_ctx* const out_scene)
 	mtl1->texs = { { "u_tex", t1 } };
 	out_scene->add_material(mtl1);
 
-	/*auto& csg = out_scene->get_csg();
+	auto& csg = out_scene->get_csg();
 
 	sgnode* n1 = textured_cuboid_node(
 		out_scene, 1,
@@ -120,7 +121,7 @@ void make_scene(scene_ctx* const out_scene)
 int main(int argc, char** argv)
 {
 	app_ctx a_ctx;
-	make_scene(&a_ctx.scene);
+	// make_scene(&a_ctx.scene);
 
 	shortcut_menus_layer sl(&a_ctx);
 	a_ctx.mgl_ctx.add_layer(&sl);

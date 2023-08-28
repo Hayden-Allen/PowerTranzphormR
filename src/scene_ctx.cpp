@@ -6,21 +6,13 @@
 
 scene_ctx::scene_ctx()
 {
-	m_tex_coord_attr.installHooks(m_csg);
-	m_mtl_id_attr.installHooks(m_csg);
-	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::OP::UNION);
-	set_selected_node(m_sg_root);
-
-	scene_material* null_mtl = new scene_material;
-	null_mtl->shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
-	null_mtl->name = "<NULL>";
-	u8 pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };
-	null_mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
-	m_mtls.insert(std::make_pair(0, null_mtl));
+	clear();
 }
 scene_ctx::~scene_ctx()
 {
 	delete m_sg_root;
+	for (const auto& pair : m_mtls)
+		delete pair.second;
 }
 
 
@@ -60,6 +52,27 @@ void scene_ctx::update()
 
 		m_hms_dirty = false;
 	}
+}
+void scene_ctx::clear()
+{
+	m_csg = carve::csg::CSG();
+	m_tex_coord_attr = attr_tex_coord_t();
+	m_mtl_id_attr = attr_material_t();
+
+	m_tex_coord_attr.installHooks(m_csg);
+	m_mtl_id_attr.installHooks(m_csg);
+	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::OP::UNION);
+	set_selected_node(m_sg_root);
+
+	for (const auto& pair : m_mtls)
+		delete pair.second;
+	m_mtls.clear();
+	scene_material* null_mtl = new scene_material();
+	null_mtl->shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	null_mtl->name = "<NULL>";
+	u8 pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };
+	null_mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
+	m_mtls.insert(std::make_pair(0, null_mtl));
 }
 
 

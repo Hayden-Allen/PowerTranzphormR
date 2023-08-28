@@ -12,11 +12,22 @@ app_ctx::app_ctx() :
 	init_menus();
 }
 
+
+
+void app_ctx::clear()
+{
+	actions.clear();
+	scene.clear();
+}
 void app_ctx::save(const std::string& fp) const
 {
 	std::ofstream out(fp);
 	assert(out.is_open());
 	actions.save(out, scene.get_sg_root());
+}
+void app_ctx::save_as() const
+{
+	// TODO
 }
 void app_ctx::load(const std::string& fp)
 {
@@ -45,6 +56,10 @@ void app_ctx::redo()
 		if (a->redo_conflict(selected))
 			scene.set_selected_node(scene.get_sg_root());
 	}
+}
+bool app_ctx::is_node_frozen(sgnode* const node) const
+{
+	return frozen.contains(node);
 }
 
 
@@ -165,9 +180,9 @@ void app_ctx::init_menus()
 	file_menu.name = "File";
 	shortcut_menu_item file_new = {
 		"New",
-		[]()
+		[&]()
 		{
-			//
+			clear();
 		},
 		[]()
 		{
@@ -181,7 +196,9 @@ void app_ctx::init_menus()
 		"Open",
 		[&]()
 		{
-			load("test.txt");
+			// FIXME: Check if current file needs to be saved
+
+
 		},
 		[]()
 		{
@@ -195,7 +212,14 @@ void app_ctx::init_menus()
 		"Save",
 		[&]()
 		{
-			save("test.txt");
+			if (loaded_filename.size())
+			{
+				save(loaded_filename.c_str());
+			}
+			else
+			{
+				save_as();
+			}
 		},
 		[]()
 		{
@@ -207,9 +231,9 @@ void app_ctx::init_menus()
 	};
 	shortcut_menu_item file_save_as = {
 		"Save As...",
-		[]()
+		[&]()
 		{
-			//
+			save_as();
 		},
 		[]()
 		{
@@ -259,7 +283,7 @@ void app_ctx::init_menus()
 		{
 			clipboard_cut = true;
 			sgnode* const selected = scene.get_selected_node();
-			clipboard = selected;
+			clipboard = selected->clone(this, nullptr, false);
 		},
 		[&]()
 		{
@@ -275,7 +299,7 @@ void app_ctx::init_menus()
 		[&]()
 		{
 			sgnode* const selected = scene.get_selected_node();
-			clipboard = selected;
+			clipboard = selected->clone(this, nullptr, false);
 		},
 		[&]()
 		{
@@ -301,7 +325,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			return true;
+			return clipboard;
 		},
 		"Ctrl+V",
 		GLFW_KEY_V,

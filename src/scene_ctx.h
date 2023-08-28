@@ -24,6 +24,7 @@ public:
 	carve::csg::CSG& get_csg();
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
 	void update();
+	void clear();
 public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;

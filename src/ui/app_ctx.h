@@ -13,20 +13,20 @@ public:
 	mgl::camera preview_cam;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
 	std::vector<shortcut_menu> shortcut_menus;
-	sgnode* clipboard;
+	sgnode* clipboard = nullptr;
 	std::unordered_map<sgnode*, sgnode*> frozen;
 	bool clipboard_cut = false;
+	std::string loaded_filename;
 public:
 	app_ctx();
 public:
+	void clear();
 	void save(const std::string& fp) const;
+	void save_as() const;
 	void load(const std::string& fp);
 	void undo();
 	void redo();
-	bool is_node_frozen(sgnode* const node) const
-	{
-		return frozen.contains(node);
-	}
+	bool is_node_frozen(sgnode* const node) const;
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);

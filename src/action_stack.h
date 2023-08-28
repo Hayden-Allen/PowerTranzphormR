@@ -24,6 +24,7 @@ public:
 	action* redo();
 	void save(std::ofstream& out, const sgnode* const root) const;
 	sgnode* load(std::ifstream& in);
+	void clear();
 private:
 	scene_ctx* m_ctx;
 	// ctrl-z (undo)
@@ -33,4 +34,5 @@ private:
 private:
 	// create and apply a new action
 	void new_action(action* const a, const bool apply);
+	void clear(sgnode* const node, std::unordered_set<sgnode*> freed);
 };

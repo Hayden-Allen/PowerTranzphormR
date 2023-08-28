@@ -111,6 +111,8 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 }
 sgnode* action_stack::load(std::ifstream& in)
 {
+	clear();
+
 	std::string line;
 
 	// read in all nodes
@@ -164,6 +166,20 @@ sgnode* action_stack::load(std::ifstream& in)
 	assert(false);
 	return nullptr;
 }
+void action_stack::clear()
+{
+	std::unordered_set<sgnode*> freed;
+	for (action* const a : m_past)
+	{
+		clear(a->target, freed);
+	}
+	for (action* const a : m_future)
+	{
+		clear(a->target, freed);
+	}
+	m_past.clear();
+	m_future.clear();
+}
 
 
 
@@ -176,4 +192,14 @@ void action_stack::new_action(action* const a, const bool apply)
 	for (action* f : m_future)
 		delete f;
 	m_future.clear();
+}
+void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*> freed)
+{
+	for (sgnode* const child : node->children)
+		clear(child, freed);
+	if (!freed.contains(node))
+	{
+		delete node;
+		freed.insert(node);
+	}
 }

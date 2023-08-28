@@ -8,11 +8,12 @@ scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
-	handle_node(root);
+	handle_node(root, false);
 }
 
-scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) const
+scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, const bool parent_cutted_to_clipboard) const
 {
+	bool cutted_to_clipboard = parent_cutted_to_clipboard || (m_app_ctx->clipboard == node && m_app_ctx->clipboard_cut);
 	// draw current node
 	std::string display_name = node->name;
 	if (!node->is_mesh())
@@ -26,9 +27,17 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 			display_name += " [" + operation_to_string(node->operation) + "]";
 		}
 	}
+	if (cutted_to_clipboard)
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+	}
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 2.f));
 	const bool open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	ImGui::PopStyleVar();
+	if (cutted_to_clipboard)
+	{
+		ImGui::PopStyleVar();
+	}
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
 
@@ -98,7 +107,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node) con
 			ImVec2 vertical_end = vertical_start;
 			for (sgnode* child : node->children)
 			{
-				const Rect& child_rect = handle_node(child);
+				const Rect& child_rect = handle_node(child, cutted_to_clipboard);
 				// draw horizontal line from vertical line to current child
 				const f32 horizontal_size = child->is_leaf() ? 24.f : 12.f;
 				const f32 midpoint = (child_rect.first.y + child_rect.second.y) / 2.f;
