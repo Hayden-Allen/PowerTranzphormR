@@ -84,7 +84,7 @@ bool sgnode::is_leaf() const
 }
 bool sgnode::is_mesh() const
 {
-	return operation == carve::csg::CSG::OP::ALL;
+	return operation == carve::csg::CSG::OP::ALL && gen;
 }
 bool sgnode::owns_mesh() const
 {
@@ -183,12 +183,14 @@ sgnode* sgnode::freeze() const
 	sgnode* ret = new sgnode();
 	ret->parent = nullptr;
 	// FIXME could cause problems?
-	ret->gen = gen->clone(accumulate_mats());
+	if (gen)
+	{
+		ret->gen = gen->clone(accumulate_mats());
+	}
 	ret->operation = carve::csg::CSG::OP::ALL;
 	ret->name = name;
 	ret->mat = mat;
 	ret->set_dirty();
-	ret->set_gen_dirty();
 	return ret;
 }
 void sgnode::recompute(scene_ctx* const scene)

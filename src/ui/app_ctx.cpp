@@ -23,6 +23,8 @@ void app_ctx::save(const std::string& fp) const
 {
 	std::ofstream out(fp);
 	assert(out.is_open());
+	const auto& cp = preview_cam.get_pos();
+	out << cp.x << " " << cp.y << " " << cp.z << "\n";
 	actions.save(out, scene.get_sg_root());
 }
 void app_ctx::save_as() const
@@ -33,6 +35,9 @@ void app_ctx::load(const std::string& fp)
 {
 	std::ifstream in(fp);
 	assert(in.is_open());
+	f32 x, y, z;
+	in >> x >> y >> z;
+	preview_cam.set_pos(point<space::WORLD>(x, y, z));
 	scene.set_sg_root(actions.load(in));
 }
 void app_ctx::undo()
