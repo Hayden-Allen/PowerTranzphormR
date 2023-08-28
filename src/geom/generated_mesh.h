@@ -31,6 +31,7 @@ public:
 	virtual nlohmann::json save() const;
 	virtual GLuint get_material() const;
 	virtual void set_material(const GLuint mat);
+	void set_mesh(mesh_t* const m);
 protected:
 	virtual primitive_options* get_options() const;
 	void copy_verts();

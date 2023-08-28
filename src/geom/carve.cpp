@@ -250,13 +250,13 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	{
 		const f32 phi = iy * DPHI;
 		const f32 cp = cos(phi), sp = sin(phi);
-		const f32 y = sin(phi - c::PI / 2);
+		const f32 y = .5f * sin(phi - c::PI / 2);
 		// generate ellipse for current vertical step
 		for (u32 ix = 0; ix < nh; ix++)
 		{
 			const f32 theta = ix * DTHETA;
 			const f32 ct = cos(theta), st = sin(theta);
-			const f32 x = sp * ct;
+			const f32 x = .5f * sp * ct;
 			// due to imprecision, values of `ct` that should be 0 can cause the radical used to calculate `z` can be negative
 			// when `ct` is 0, `z` should also be 0, so make this the default value
 			f32 z = 0.f;
@@ -266,14 +266,14 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 				const f32 tmp = sin(phi - c::PI / 2) * sin(phi - c::PI / 2);
 				const f32 rz2 = 1.f;
 				const f32 rad = 1 - ct2 * sp2 - tmp;
-				z = sign(st) * sqrt(rad);
+				z = .5f * sign(st) * sqrt(rad);
 			}
 			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
 		}
 	}
 	// poles
-	vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(0, -1.f, 0).transform_copy(options.transform))));
-	vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(0, 1.f, 0).transform_copy(options.transform))));
+	vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(0, -.5f, 0).transform_copy(options.transform))));
+	vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform))));
 
 	std::vector<face_t*> faces;
 	// poles are comprised of triangles from each vertical strip

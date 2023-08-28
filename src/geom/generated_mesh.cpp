@@ -27,7 +27,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_mesh::get_params
 {
 	return {};
 }
-void generated_mesh::recompute(scene_ctx* const scene) {}
+void generated_mesh::recompute(scene_ctx* const scene)
+{
+	copy_verts();
+}
 generated_mesh* generated_mesh::clone() const
 {
 	return new generated_mesh(nullptr);
@@ -73,6 +76,11 @@ void generated_mesh::copy_verts()
 			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
 		}
 	}
+}
+void generated_mesh::set_mesh(mesh_t* const m)
+{
+	mesh = m;
+	copy_verts();
 }
 
 

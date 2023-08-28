@@ -47,7 +47,11 @@ bool app_ctx::save_as() const
 	nfdresult_t nfd_res = NFD_SaveDialog("phorm", nullptr, &nfd_path);
 	if (nfd_res == NFD_OKAY)
 	{
-		save(std::string(nfd_path));
+		// TODO probably not correct
+		std::string path(nfd_path);
+		if (!path.ends_with(".phorm"))
+			path.append(".phorm");
+		save(path);
 		return true;
 	}
 	else

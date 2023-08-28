@@ -234,7 +234,7 @@ void sgnode::recompute(scene_ctx* const scene)
 			bool delete_old_mesh = owns_mesh();
 			try
 			{
-				gen->mesh = scene->get_csg().compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL);
+				gen->set_mesh(scene->get_csg().compute(gen->mesh, children[i]->gen->mesh, operation, nullptr, carve::csg::CSG::CLASSIFY_NORMAL));
 			}
 			catch (carve::exception& ex)
 			{
