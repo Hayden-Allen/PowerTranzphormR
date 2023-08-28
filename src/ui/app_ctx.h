@@ -3,6 +3,13 @@
 #include "action_stack.h"
 #include "shortcut_menu.h"
 
+enum class global_selection_type
+{
+	none = 0,
+	sgnode,
+	material
+};
+
 struct app_ctx
 {
 public:
@@ -17,6 +24,7 @@ public:
 	std::unordered_map<sgnode*, sgnode*> frozen;
 	bool clipboard_cut = false;
 	mutable std::string loaded_filename;
+	global_selection_type sel_type = global_selection_type::none;
 public:
 	app_ctx();
 public:
@@ -29,6 +37,10 @@ public:
 	void undo();
 	void redo();
 	bool is_node_frozen(sgnode* const node) const;
+	void set_selected_sgnode(sgnode* const node, bool update_sel_type);
+	sgnode* get_selected_sgnode();
+	void set_selected_material(scene_material* const mtl, bool update_sel_type);
+	scene_material* get_selected_material();
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -55,4 +67,7 @@ private:
 	void file_menu();
 	void edit_menu();
 	void phorm_menu();
+private:
+	sgnode* m_selected_sgnode = nullptr;
+	scene_material* m_selected_mtl = nullptr;
 };

@@ -63,7 +63,6 @@ void scene_ctx::clear()
 	m_tex_coord_attr.installHooks(m_csg);
 	m_mtl_id_attr.installHooks(m_csg);
 	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::OP::UNION);
-	set_selected_node(m_sg_root);
 
 	for (const auto& pair : m_mtls)
 		delete pair.second;
@@ -92,14 +91,6 @@ void scene_ctx::set_sg_root(sgnode* const new_root)
 	m_sg_root = new_root;
 	m_selected_node = new_root;
 }
-sgnode* scene_ctx::get_selected_node()
-{
-	return m_selected_node;
-}
-void scene_ctx::set_selected_node(sgnode* node)
-{
-	m_selected_node = node;
-}
 
 
 
@@ -117,14 +108,6 @@ u32 scene_ctx::add_material(scene_material* mtl)
 void scene_ctx::remove_material(const u32 id)
 {
 	m_mtls.erase(id);
-}
-scene_material* scene_ctx::get_selected_material()
-{
-	return m_selected_mtl;
-}
-void scene_ctx::set_selected_material(scene_material* mtl)
-{
-	m_selected_mtl = mtl;
 }
 
 

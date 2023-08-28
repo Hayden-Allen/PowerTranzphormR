@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "action.h"
+#include "ui/app_ctx.h"
 #include "scene_ctx.h"
 #include "scene_graph.h"
 
@@ -45,11 +46,11 @@ transform_action::transform_action(const nlohmann::json& obj, const std::unorder
 	initial(json2tmat<space::OBJECT, space::PARENT>(obj["i"])),
 	mat(json2tmat<space::OBJECT, space::PARENT>(obj["m"]))
 {}
-void transform_action::apply(scene_ctx* const ctx)
+void transform_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	target->set_transform(mat);
 }
-void transform_action::undo(scene_ctx* const ctx)
+void transform_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	target->set_transform(initial);
 }
@@ -78,12 +79,12 @@ reparent_action::reparent_action(const nlohmann::json& obj, const std::unordered
 	old_index(obj["oi"]),
 	new_index(obj["ni"])
 {}
-void reparent_action::apply(scene_ctx* const ctx)
+void reparent_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	old_index = old_parent->remove_child(target);
 	new_parent->add_child(target, new_index);
 }
-void reparent_action::undo(scene_ctx* const ctx)
+void reparent_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	new_parent->remove_child(target);
 	old_parent->add_child(target, old_index);
@@ -110,11 +111,11 @@ create_action::create_action(const nlohmann::json& obj, const std::unordered_map
 	action(obj, nodes),
 	parent(nodes.at(obj["p"]))
 {}
-void create_action::apply(scene_ctx* const ctx)
+void create_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	parent->add_child(target);
 }
-void create_action::undo(scene_ctx* const ctx)
+void create_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	parent->remove_child(target);
 }
@@ -150,14 +151,14 @@ destroy_action::destroy_action(const nlohmann::json& obj, const std::unordered_m
 	parent(nodes.at(obj["p"])),
 	index(obj["i"])
 {}
-void destroy_action::apply(scene_ctx* const ctx)
+void destroy_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	if (parent)
 	{
 		index = parent->remove_child(target);
 	}
 }
-void destroy_action::undo(scene_ctx* const ctx)
+void destroy_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	if (parent)
 	{
@@ -197,17 +198,17 @@ freeze_action::freeze_action(const nlohmann::json& obj, const std::unordered_map
 	frozen(nodes.at(obj["f"])),
 	index(obj["i"])
 {}
-void freeze_action::apply(scene_ctx* const ctx)
+void freeze_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	target->parent->remove_child(target);
 	target->parent->add_child(frozen, index);
-	ctx->set_selected_node(frozen);
+	a_ctx->set_selected_sgnode(frozen, false);
 }
-void freeze_action::undo(scene_ctx* const ctx)
+void freeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	target->parent->remove_child(frozen);
 	target->parent->add_child(target, index);
-	ctx->set_selected_node(target);
+	a_ctx->set_selected_sgnode(target, false);
 }
 nlohmann::json freeze_action::save() const
 {
@@ -233,19 +234,19 @@ unfreeze_action::unfreeze_action(const nlohmann::json& obj, const std::unordered
 	unfrozen(nodes.at(obj["u"])),
 	index(obj["i"])
 {}
-void unfreeze_action::apply(scene_ctx* const ctx)
+void unfreeze_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	target->parent->remove_child(target);
 	target->parent->add_child(unfrozen, index);
 	unfrozen->set_transform(target->mat);
-	ctx->set_selected_node(unfrozen);
+	a_ctx->set_selected_sgnode(unfrozen, false);
 }
-void unfreeze_action::undo(scene_ctx* const ctx)
+void unfreeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	target->parent->remove_child(unfrozen);
 	target->parent->add_child(target, index);
 	target->set_transform(unfrozen->mat);
-	ctx->set_selected_node(target);
+	a_ctx->set_selected_sgnode(target, false);
 }
 nlohmann::json unfreeze_action::save() const
 {

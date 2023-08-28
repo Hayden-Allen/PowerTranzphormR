@@ -20,11 +20,11 @@ void materials_list_window::handle_frame()
 			continue;
 		}
 
-		bool selected = m_app_ctx->scene.get_selected_material() == it->second;
+		bool selected = m_app_ctx->get_selected_material() == it->second;
 		ImGui::Selectable(it->second->name.c_str(), &selected);
 		if (selected)
 		{
-			m_app_ctx->scene.set_selected_material(it->second);
+			m_app_ctx->set_selected_material(it->second, true);
 		}
 	}
 }

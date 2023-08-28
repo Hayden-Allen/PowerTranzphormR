@@ -2,6 +2,7 @@
 #include "pch.h"
 
 class scene_ctx;
+struct app_ctx;
 struct sgnode;
 
 struct action
@@ -16,8 +17,8 @@ public:
 public:
 	static action* create(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 public:
-	virtual void apply(scene_ctx* const ctx) = 0;
-	virtual void undo(scene_ctx* const ctx) = 0;
+	virtual void apply(scene_ctx* const ctx, app_ctx* const a_ctx) = 0;
+	virtual void undo(scene_ctx* const ctx, app_ctx* const a_ctx) = 0;
 	virtual nlohmann::json save() const = 0;
 	virtual bool redo_conflict(const sgnode* const selected) const;
 	virtual bool undo_conflict(const sgnode* const selected) const;
@@ -33,8 +34,8 @@ public:
 	transform_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(transform_action);
 public:
-	void apply(scene_ctx* const ctx) override;
-	void undo(scene_ctx* const ctx) override;
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
 };
 
@@ -48,8 +49,8 @@ public:
 	reparent_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(reparent_action);
 public:
-	void apply(scene_ctx* const ctx) override;
-	void undo(scene_ctx* const ctx) override;
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
 };
 
@@ -62,8 +63,8 @@ public:
 	create_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(create_action);
 public:
-	void apply(scene_ctx* const ctx) override;
-	void undo(scene_ctx* const ctx) override;
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	bool redo_conflict(const sgnode* const selected) const;
 	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
@@ -79,8 +80,8 @@ public:
 	destroy_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(destroy_action);
 public:
-	void apply(scene_ctx* const ctx) override;
-	void undo(scene_ctx* const ctx) override;
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	bool redo_conflict(const sgnode* const selected) const;
 	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
@@ -96,8 +97,8 @@ public:
 	freeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(freeze_action);
 public:
-	void apply(scene_ctx* const ctx) override;
-	void undo(scene_ctx* const ctx) override;
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
 };
 
@@ -111,7 +112,7 @@ public:
 	unfreeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(unfreeze_action);
 public:
-	void apply(scene_ctx* const ctx) override;
-	void undo(scene_ctx* const ctx) override;
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
 };

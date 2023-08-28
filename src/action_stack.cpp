@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "action_stack.h"
 #include "action.h"
+#include "ui/app_ctx.h"
 #include "scene_ctx.h"
 #include "scene_graph.h"
 
@@ -13,8 +14,9 @@ static void all_nodes(const sgnode* const cur, std::unordered_set<const sgnode*>
 }
 
 
-action_stack::action_stack(scene_ctx* const sc) :
-	m_ctx(sc)
+action_stack::action_stack(scene_ctx* const sc, app_ctx* const ac) :
+	m_ctx(sc),
+	m_app_ctx(ac)
 {}
 action_stack::~action_stack()
 {
@@ -67,7 +69,7 @@ action* action_stack::undo()
 	{
 		action* a = m_past.back();
 		m_past.pop_back();
-		a->undo(m_ctx);
+		a->undo(m_ctx, m_app_ctx);
 		m_future.push_back(a);
 		m_modified = true;
 		return a;
@@ -80,7 +82,7 @@ action* action_stack::redo()
 	{
 		action* a = m_future.back();
 		m_future.pop_back();
-		a->apply(m_ctx);
+		a->apply(m_ctx, m_app_ctx);
 		m_past.push_back(a);
 		m_modified = true;
 		return a;
@@ -148,7 +150,7 @@ sgnode* action_stack::load(std::ifstream& in)
 		const nlohmann::json obj = nlohmann::json::parse(line);
 		action* const a = action::create(obj, nodes);
 		m_past.push_back(a);
-		a->apply(m_ctx);
+		a->apply(m_ctx, m_app_ctx);
 	}
 	// read in future events
 	m_future.reserve(future_count);
@@ -198,7 +200,7 @@ bool action_stack::get_modified() const
 void action_stack::new_action(action* const a, const bool apply)
 {
 	if (apply)
-		a->apply(m_ctx);
+		a->apply(m_ctx, m_app_ctx);
 	m_past.push_back(a);
 	// new action has been made, previous future no longer exists
 	for (action* f : m_future)

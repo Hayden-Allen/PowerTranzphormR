@@ -2,13 +2,14 @@
 #include "pch.h"
 
 struct action;
+struct app_ctx;
 class scene_ctx;
 struct sgnode;
 
 class action_stack
 {
 public:
-	action_stack(scene_ctx* const sc);
+	action_stack(scene_ctx* const sc, app_ctx* const ac);
 	MGL_DCM(action_stack);
 	virtual ~action_stack();
 public:
@@ -30,6 +31,7 @@ public:
 	bool get_modified() const;
 private:
 	scene_ctx* m_ctx;
+	app_ctx* m_app_ctx;
 	// ctrl-z (undo)
 	std::vector<action*> m_past;
 	// ctrl-y (redo)

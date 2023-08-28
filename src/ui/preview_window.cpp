@@ -26,7 +26,7 @@ void preview_window::handle_frame()
 	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
 	// if something in the scene graph is selected, and the cursor is not locked, then show a transform gizmo for it
-	sgnode* target = m_app_ctx->scene.get_selected_node();
+	sgnode* target = m_app_ctx->get_selected_sgnode();
 	if (target && !m_app_ctx->mgl_ctx.is_cursor_locked())
 	{
 		const auto& win_pos = ImGui::GetWindowPos();

@@ -40,7 +40,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	if (node->is_renaming)
 	{
 		const f32 x = ImGui::GetCursorPosX();
-		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -70,7 +70,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	}
 	else
 	{
-		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
 	ImGui::PopStyleVar();
 	if (cutted_to_clipboard)
@@ -84,7 +84,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	ImGui::PushID(node->id.c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		m_app_ctx->scene.set_selected_node(node);
+		m_app_ctx->set_selected_sgnode(node, true);
 
 		if (!node->is_mesh())
 		{
@@ -134,7 +134,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 
 	if (ImGui::IsItemFocused())
 	{
-		m_app_ctx->scene.set_selected_node(node);
+		m_app_ctx->set_selected_sgnode(node, true);
 	}
 
 	if (open)

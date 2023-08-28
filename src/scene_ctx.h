@@ -29,14 +29,10 @@ public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;
 	void set_sg_root(sgnode* const new_root);
-	sgnode* get_selected_node();
-	void set_selected_node(sgnode* node);
 public:
 	const std::unordered_map<u32, scene_material*>& get_materials();
 	u32 add_material(scene_material* mtl);
 	void remove_material(const u32 id);
-	scene_material* get_selected_material();
-	void set_selected_material(scene_material* mtl);
 public:
 	mesh_t* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {});
 	mesh_t* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {});

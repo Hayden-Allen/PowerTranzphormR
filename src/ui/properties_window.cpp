@@ -11,8 +11,11 @@ properties_window::properties_window(app_ctx* const a_ctx) :
 
 void properties_window::handle_frame()
 {
-	sgnode* const selected = m_app_ctx->scene.get_selected_node();
-	assert(selected);
+	sgnode* const selected = m_app_ctx->get_selected_sgnode();
+	if (!selected)
+	{
+		return;
+	}
 
 	if (selected->is_root())
 	{

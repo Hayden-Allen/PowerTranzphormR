@@ -6,7 +6,7 @@
 
 app_ctx::app_ctx() :
 	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
-	actions(&scene),
+	actions(&scene, this),
 	preview_fb(1280, 720)
 {
 	NFD_Init(); // Should happen after GLFW initialized
@@ -91,29 +91,55 @@ void app_ctx::load(const std::string& fp)
 }
 void app_ctx::undo()
 {
-	const sgnode* const selected = scene.get_selected_node();
-	assert(selected);
+	const sgnode* const selected = get_selected_sgnode();
 	const action* const a = actions.undo();
 	if (a)
 	{
-		if (a->undo_conflict(selected))
-			scene.set_selected_node(scene.get_sg_root());
+		if (selected && a->undo_conflict(selected))
+			set_selected_sgnode(nullptr, false);
 	}
 }
 void app_ctx::redo()
 {
-	const sgnode* const selected = scene.get_selected_node();
-	assert(selected);
+	const sgnode* const selected = get_selected_sgnode();
 	const action* const a = actions.redo();
 	if (a)
 	{
-		if (a->redo_conflict(selected))
-			scene.set_selected_node(scene.get_sg_root());
+		if (selected && a->redo_conflict(selected))
+			set_selected_sgnode(nullptr, false);
 	}
 }
 bool app_ctx::is_node_frozen(sgnode* const node) const
 {
 	return frozen.contains(node);
+}
+
+void app_ctx::set_selected_sgnode(sgnode* const node, bool update_sel_type)
+{
+	m_selected_sgnode = node;
+	if (update_sel_type)
+	{
+		sel_type = global_selection_type::sgnode;
+	}
+}
+
+sgnode* app_ctx::get_selected_sgnode()
+{
+	return sel_type == global_selection_type::sgnode ? m_selected_sgnode : nullptr;
+}
+
+void app_ctx::set_selected_material(scene_material* const mtl, bool update_sel_type)
+{
+	m_selected_mtl = mtl;
+	if (update_sel_type)
+	{
+		sel_type = global_selection_type::material;
+	}
+}
+
+scene_material* app_ctx::get_selected_material()
+{
+	return sel_type == global_selection_type::material ? m_selected_mtl : nullptr;
 }
 
 
@@ -136,13 +162,10 @@ void app_ctx::destroy_action(sgnode* const target)
 }
 void app_ctx::destroy_selected_action()
 {
-	sgnode* const selected = scene.get_selected_node();
-	assert(selected);
-	if (selected->parent)
-	{
-		actions.destroy(selected);
-		scene.set_selected_node(scene.get_sg_root());
-	}
+	sgnode* const selected = get_selected_sgnode();
+	assert(selected && selected->parent);
+	actions.destroy(selected);
+	set_selected_sgnode(nullptr, false);
 }
 void app_ctx::create_cube_action()
 {
@@ -169,14 +192,12 @@ void app_ctx::create_heightmap_action()
 	assert(false);
 	// FIXME: Heightmaps are not sgnodes
 	/*
-	sgnode* const selected = scene.get_selected_node();
-	if (selected)
-	{
-		mesh_t* m = textured_heightmap(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-		sgnode* n = new sgnode(nullptr, m, "Heightmap");
-		create_action(n, selected);
-		scene.set_selected_node(n);
-	}
+	sgnode* const selected = get_selected_sgnode();
+	asset(selected);
+	mesh_t* m = textured_heightmap(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
+	sgnode* n = new sgnode(nullptr, m, "Heightmap");
+	create_action(n, selected);
+	set_selected_sgnode(n, true);
 	*/
 }
 void app_ctx::create_union_action()
@@ -219,7 +240,7 @@ void app_ctx::create_shape_action(FN fn, const std::string& name)
 }
 void app_ctx::create(sgnode* const node)
 {
-	sgnode* const selected = scene.get_selected_node();
+	sgnode* const selected = get_selected_sgnode();
 	assert(selected);
 	if (!selected->is_mesh())
 	{
@@ -230,7 +251,7 @@ void app_ctx::create(sgnode* const node)
 		assert(!selected->is_root());
 		actions.create(node, selected->parent);
 	}
-	scene.set_selected_node(node);
+	set_selected_sgnode(node, true);
 }
 void app_ctx::init_menus()
 {
@@ -354,13 +375,13 @@ void app_ctx::edit_menu()
 		[&]()
 		{
 			clipboard_cut = true;
-			sgnode* const selected = scene.get_selected_node();
+			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this, nullptr, false);
 		},
 		[&]()
 		{
-			sgnode* const selected = scene.get_selected_node();
-			return selected->parent;
+			sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root();
 		},
 		"Ctrl+X",
 		GLFW_KEY_X,
@@ -370,12 +391,12 @@ void app_ctx::edit_menu()
 		"Copy",
 		[&]()
 		{
-			sgnode* const selected = scene.get_selected_node();
+			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this, nullptr, false);
 		},
 		[&]()
 		{
-			return true;
+			return get_selected_sgnode();
 		},
 		"Ctrl+C",
 		GLFW_KEY_C,
@@ -385,7 +406,7 @@ void app_ctx::edit_menu()
 		"Paste",
 		[&]()
 		{
-			sgnode* const selected = scene.get_selected_node();
+			sgnode* const selected = get_selected_sgnode();
 			// selected->add_child(clipboard->clone());
 			sgnode* const clone = clipboard->clone(this, selected);
 			// create_action(clone, selected);
@@ -397,8 +418,8 @@ void app_ctx::edit_menu()
 		},
 		[&]()
 		{
-			sgnode* const selected = scene.get_selected_node();
-			return clipboard && !selected->is_mesh();
+			sgnode* const selected = get_selected_sgnode();
+			return clipboard && selected && !selected->is_mesh();
 		},
 		"Ctrl+V",
 		GLFW_KEY_V,
@@ -409,17 +430,14 @@ void app_ctx::edit_menu()
 		"Move Up",
 		[&]()
 		{
-			sgnode* const selected = scene.get_selected_node();
-			assert(selected);
+			sgnode* const selected = get_selected_sgnode();
 			const s64 i = selected->get_index();
 			reparent_action(selected, selected->parent, i - 1);
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			assert(selected);
-			const s64 i = selected->get_index();
-			return selected->parent && i > 0;
+			const sgnode* const selected = get_selected_sgnode();
+			return selected && selected->parent && selected->get_index() > 0;
 		},
 		"Ctrl+Up",
 		GLFW_KEY_UP,
@@ -429,17 +447,15 @@ void app_ctx::edit_menu()
 		"Move Down",
 		[&]()
 		{
-			sgnode* const selected = scene.get_selected_node();
+			sgnode* const selected = get_selected_sgnode();
 			assert(selected);
 			const s64 i = selected->get_index();
 			reparent_action(selected, selected->parent, i + 1);
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			assert(selected);
-			const s64 i = selected->get_index();
-			return selected->parent && i < static_cast<s64>(selected->parent->children.size() - 1);
+			const sgnode* const selected = get_selected_sgnode();
+			return selected && selected->parent && selected->get_index() < static_cast<s64>(selected->parent->children.size() - 1);
 		},
 		"Ctrl+Down",
 		GLFW_KEY_DOWN,
@@ -625,7 +641,7 @@ void app_ctx::phorm_menu()
 		[&]() {},
 		[&]()
 		{
-			return true;
+			return get_selected_sgnode();
 		},
 		"",
 		0,
@@ -646,7 +662,7 @@ void app_ctx::phorm_menu()
 		},
 		[&]()
 		{
-			return scene.get_selected_node();
+			return get_selected_sgnode();
 		},
 		"Delete",
 		GLFW_KEY_DELETE,
