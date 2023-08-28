@@ -10,6 +10,6 @@
 [submodule "lib/json"]
 	path = lib/json
 	url = https://github.com/nlohmann/json.git
-[submodule "lib/nfd"]
-	path = lib/nfd
-	url = https://github.com/mlabbe/nativefiledialog.git
+[submodule "lib/nfd-ex"]
+	path = lib/nfd-ex
+	url = https://github.com/btzy/nativefiledialog-extended.git
