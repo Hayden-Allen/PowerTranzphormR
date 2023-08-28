@@ -201,7 +201,7 @@ sgnode* sgnode::freeze() const
 	// FIXME could cause problems?
 	if (gen)
 	{
-		ret->gen = gen->clone(accumulate_mats());
+		ret->gen = gen->clone(accumulate_parent_mats());
 	}
 	ret->operation = carve::csg::CSG::OP::ALL;
 	ret->name = name;
@@ -217,10 +217,9 @@ void sgnode::recompute(scene_ctx* const scene)
 		if (gen)
 		{
 			if (gen->dirty)
-			{
 				gen->recompute(scene);
-			}
-			transform_verts();
+			if (gen->mesh)
+				transform_verts();
 		}
 		return;
 	}
@@ -278,7 +277,7 @@ nlohmann::json sgnode::save() const
 		child_ids.push_back(child->id);
 	obj["children"] = child_ids;
 
-	obj["gen"] = gen->save();
+	obj["gen"] = gen ? gen->save() : nullptr;
 	obj["op"] = operation;
 	obj["id"] = id;
 	obj["name"] = name;
@@ -307,6 +306,7 @@ void sgnode::transform_verts()
 	{
 		size_t i = 0;
 		const auto& m = accumulate_mats();
+		assert(gen->mesh);
 		gen->mesh->transform([&](vertex_t::vector_t& v)
 			{
 				const auto& out = hats2carve(gen->src_verts[i].transform_copy(m));

@@ -97,8 +97,6 @@ public:
 public:
 	void apply(scene_ctx* const ctx) override;
 	void undo(scene_ctx* const ctx) override;
-	bool redo_conflict(const sgnode* const selected) const;
-	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
 };
 
@@ -114,7 +112,5 @@ public:
 public:
 	void apply(scene_ctx* const ctx) override;
 	void undo(scene_ctx* const ctx) override;
-	bool redo_conflict(const sgnode* const selected) const;
-	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
 };

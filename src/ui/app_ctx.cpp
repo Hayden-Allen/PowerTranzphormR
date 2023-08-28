@@ -224,6 +224,7 @@ void app_ctx::create(sgnode* const node)
 	if (selected)
 	{
 		actions.create(node, selected);
+		scene.set_selected_node(node);
 	}
 }
 void app_ctx::init_menus()
