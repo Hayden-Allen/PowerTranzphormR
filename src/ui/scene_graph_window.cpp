@@ -13,7 +13,7 @@ void scene_graph_window::handle_frame()
 	handle_node(root, false);
 }
 
-scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, const bool parent_cutted_to_clipboard) const
+scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, const bool parent_cutted_to_clipboard)
 {
 	bool cutted_to_clipboard = parent_cutted_to_clipboard || (m_app_ctx->clipboard == node && m_app_ctx->clipboard_cut);
 	// draw current node
@@ -37,11 +37,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
 	bool open = false;
-	if (!node->is_renaming)
-	{
-		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
-	}
-	else
+	if (node->is_renaming)
 	{
 		const f32 x = ImGui::GetCursorPosX();
 		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
@@ -55,17 +51,26 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 		const f32 size = ImGui::GetFontSize();
 		ImGui::SetCursorPosX(x + size + padding_x);
 
-		// auto focus but weird
-		if (!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
-			ImGui::SetKeyboardFocusHere(0);
-
-		if (ImGui::InputText("##SGW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
+		if (ImGui::InputText("##SGW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			std::string new_name(buf);
 			if (!new_name.empty())
 				node->set_name(new_name);
 			node->set_renaming(false);
 		}
+		if (m_rename_needs_focus)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+			m_rename_needs_focus = false;
+		}
+		else if (!ImGui::IsItemActive())
+		{
+			node->set_renaming(false);
+		}
+	}
+	else
+	{
+		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->scene.get_selected_node() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
 	ImGui::PopStyleVar();
 	if (cutted_to_clipboard)
@@ -104,9 +109,6 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 				m_app_ctx->create_intersect_action();
 			ImGui::Separator();
 		}
-		if (ImGui::MenuItem("Rename"))
-			node->set_renaming(true);
-		ImGui::Separator();
 		if (!node->is_root() || m_app_ctx->is_node_frozen(node))
 		{
 			const bool is_frozen = m_app_ctx->is_node_frozen(node);
@@ -117,6 +119,11 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 				if (ImGui::MenuItem("Unphreeze!"))
 					m_app_ctx->unfreeze_action(node);
 			ImGui::Separator();
+		}
+		if (ImGui::MenuItem("Rename"))
+		{
+			m_rename_needs_focus = true;
+			node->set_renaming(true);
 		}
 		if (ImGui::MenuItem("Destroy"))
 			m_app_ctx->destroy_selected_action();

@@ -72,9 +72,9 @@ static mgl::retained_texture2d_rgb_u8* load_retained_texture_rgb_u8(const std::s
 //	return new sgnode(nullptr, m, "Torus", options.transform);
 // }
 
+/*
 void make_scene(scene_ctx* const out_scene)
 {
-	/*
 	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
 	auto t1 = load_texture_rgb_u8("res/1.png");
 	scene_material* mtl1 = new scene_material;
@@ -98,9 +98,9 @@ void make_scene(scene_ctx* const out_scene)
 	na->add_child(n2);
 
 	sgnode* sg = out_scene->get_sg_root();
-	sg->add_child(na);*/
+	sg->add_child(na);
 
-	/*mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
+	mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
 	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
 	mgl::texture2d_rgb_u8* t3 = load_texture_rgb_u8("res/3.png");
 	scene_material mtl3("mtl3", { { "u_tex", t3 }, { "u_heightmap", hm_tex } }, s2);
@@ -115,13 +115,13 @@ void make_scene(scene_ctx* const out_scene)
 				.transform = tmat_util::translation<space::OBJECT>(i, -2, 2),
 			});
 		out_scene->add_heightmap(heightmap);
-	}*/
+	}
 }
+*/
 
 int main(int argc, char** argv)
 {
 	app_ctx a_ctx;
-	// make_scene(&a_ctx.scene);
 
 	shortcut_menus_layer sl(&a_ctx);
 	a_ctx.mgl_ctx.add_layer(&sl);
