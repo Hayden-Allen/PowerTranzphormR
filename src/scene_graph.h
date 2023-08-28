@@ -10,7 +10,6 @@ class sgnode
 public:
 	sgnode* parent;
 	std::vector<sgnode*> children;
-	std::vector<point<space::OBJECT>> src_verts;
 	generated_mesh* gen;
 	carve::csg::CSG::OP operation;
 	std::string id, name;
@@ -39,8 +38,8 @@ public:
 	void set_operation(const carve::csg::CSG::OP op);
 	void set_gen_dirty();
 	void set_dirty();
-	tmat<space::OBJECT, space::WORLD> accumulate_mats();
-	tmat<space::OBJECT, space::WORLD> accumulate_parent_mats();
+	tmat<space::OBJECT, space::WORLD> accumulate_mats() const;
+	tmat<space::OBJECT, space::WORLD> accumulate_parent_mats() const;
 public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);
@@ -52,6 +51,5 @@ public:
 private:
 	sgnode();
 private:
-	void copy_verts();
 	void transform_verts();
 };

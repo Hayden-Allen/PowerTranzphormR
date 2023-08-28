@@ -15,6 +15,7 @@ class generated_mesh
 {
 public:
 	mesh_t* mesh;
+	std::vector<point<space::OBJECT>> src_verts;
 	bool dirty;
 public:
 	generated_mesh(mesh_t* const m);
@@ -26,11 +27,13 @@ public:
 	virtual std::unordered_map<std::string, generated_mesh_param> get_params() const;
 	virtual void recompute(scene_ctx* const scene);
 	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(const tmat<space::OBJECT, space::WORLD>& old_transform) const;
 	virtual nlohmann::json save() const;
 	virtual GLuint get_material() const;
 	virtual void set_material(const GLuint mat);
 protected:
 	virtual primitive_options* get_options() const;
+	void copy_verts();
 };
 
 class generated_primitive : public generated_mesh
@@ -42,6 +45,7 @@ public:
 	virtual ~generated_primitive();
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	virtual void recompute(scene_ctx* const scene) override;
 	GLuint get_material() const override;
 	void set_material(const GLuint mat) override;
 	nlohmann::json save() const override;

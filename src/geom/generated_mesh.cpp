@@ -4,7 +4,9 @@
 generated_mesh::generated_mesh(mesh_t* const m) :
 	mesh(m),
 	dirty(true)
-{}
+{
+	copy_verts();
+}
 generated_mesh::~generated_mesh() {}
 generated_mesh* generated_mesh::create(const nlohmann::json& obj)
 {
@@ -30,6 +32,18 @@ generated_mesh* generated_mesh::clone() const
 {
 	return new generated_mesh(nullptr);
 }
+generated_mesh* generated_mesh::clone(const tmat<space::OBJECT, space::WORLD>& old_transform) const
+{
+	const auto& inv = old_transform.invert_copy().cast_copy<space::OBJECT, space::OBJECT>();
+	size_t i = 0;
+	mesh->transform([&](vertex_t::vector_t& v)
+		{
+			const auto& out = hats2carve(src_verts[i].transform_copy(inv));
+			++i;
+			return out;
+		});
+	return new generated_mesh(mesh);
+}
 nlohmann::json generated_mesh::save() const
 {
 	return {};
@@ -48,6 +62,17 @@ primitive_options* generated_mesh::get_options() const
 {
 	assert(false);
 	return nullptr;
+}
+void generated_mesh::copy_verts()
+{
+	src_verts.clear();
+	if (mesh)
+	{
+		for (const auto& v : mesh->vertex_storage)
+		{
+			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
+		}
+	}
 }
 
 
@@ -69,6 +94,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_p
 		{ "U Scale", { true, (void*)&opts->u_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "V Scale", { true, (void*)&opts->v_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
+}
+void generated_primitive::recompute(scene_ctx* const scene)
+{
+	copy_verts();
 }
 GLuint generated_primitive::get_material() const
 {
@@ -113,6 +142,7 @@ void generated_cuboid::recompute(scene_ctx* const scene)
 {
 	// delete mesh;
 	mesh = scene->create_textured_cuboid(m_material, m_options);
+	generated_primitive::recompute(scene);
 }
 generated_mesh* generated_cuboid::clone() const
 {
@@ -165,6 +195,7 @@ void generated_ellipsoid::recompute(scene_ctx* const scene)
 {
 	// delete mesh;
 	mesh = scene->create_textured_ellipsoid(m_material, m_options);
+	generated_primitive::recompute(scene);
 }
 generated_mesh* generated_ellipsoid::clone() const
 {
@@ -221,6 +252,7 @@ void generated_cylinder::recompute(scene_ctx* const scene)
 {
 	// delete mesh;
 	mesh = scene->create_textured_cylinder(m_material, m_options);
+	generated_primitive::recompute(scene);
 }
 generated_mesh* generated_cylinder::clone() const
 {
@@ -274,6 +306,7 @@ void generated_cone::recompute(scene_ctx* const scene)
 {
 	// delete mesh;
 	mesh = scene->create_textured_cone(m_material, m_options);
+	generated_primitive::recompute(scene);
 }
 generated_mesh* generated_cone::clone() const
 {
@@ -331,6 +364,7 @@ void generated_torus::recompute(scene_ctx* const scene)
 {
 	// delete mesh;
 	mesh = scene->create_textured_torus(m_material, m_options);
+	generated_primitive::recompute(scene);
 }
 generated_mesh* generated_torus::clone() const
 {
@@ -385,6 +419,7 @@ void generated_heightmap::recompute(scene_ctx* const scene)
 	// delete mesh;
 	// TODO
 	assert(false);
+	generated_primitive::recompute(scene);
 }
 generated_mesh* generated_heightmap::clone() const
 {

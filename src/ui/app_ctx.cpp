@@ -197,8 +197,6 @@ void app_ctx::init_menus()
 		[&]()
 		{
 			// FIXME: Check if current file needs to be saved
-
-
 		},
 		[]()
 		{
@@ -325,7 +323,8 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			return clipboard;
+			sgnode* const selected = scene.get_selected_node();
+			return clipboard && !selected->is_mesh();
 		},
 		"Ctrl+V",
 		GLFW_KEY_V,
