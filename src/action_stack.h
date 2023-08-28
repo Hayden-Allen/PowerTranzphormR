@@ -25,12 +25,14 @@ public:
 	void save(std::ofstream& out, const sgnode* const root) const;
 	sgnode* load(std::ifstream& in);
 	void clear();
+	bool get_modified() const;
 private:
 	scene_ctx* m_ctx;
 	// ctrl-z (undo)
 	std::vector<action*> m_past;
 	// ctrl-y (redo)
 	std::vector<action*> m_future;
+	mutable bool m_modified = false;
 private:
 	// create and apply a new action
 	void new_action(action* const a, const bool apply);

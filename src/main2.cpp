@@ -159,8 +159,20 @@ int main(int argc, char** argv)
 	properties_window prop_window(&a_ctx);
 	il.add_window(&prop_window);
 
-	while (a_ctx.mgl_ctx.is_running())
+	while (true)
 	{
+		if (!a_ctx.mgl_ctx.is_running())
+		{
+			if (a_ctx.confirm_unsaved_changes())
+			{
+				break;
+			}
+			else
+			{
+				glfwSetWindowShouldClose(a_ctx.mgl_ctx.window, false);
+			}
+		}
+
 		a_ctx.mgl_ctx.begin_frame();
 
 		char buf[64] = { 0 };

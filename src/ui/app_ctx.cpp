@@ -16,24 +16,67 @@ app_ctx::app_ctx() :
 
 void app_ctx::clear()
 {
+	loaded_filename = "";
 	actions.clear();
 	scene.clear();
+}
+bool app_ctx::save() const
+{
+	if (loaded_filename.size())
+	{
+		save(loaded_filename);
+		return true;
+	}
+	else
+	{
+		return save_as();
+	}
 }
 void app_ctx::save(const std::string& fp) const
 {
 	std::ofstream out(fp);
 	assert(out.is_open());
 	actions.save(out, scene.get_sg_root());
+	loaded_filename = fp;
 }
-void app_ctx::save_as() const
+bool app_ctx::save_as() const
 {
-	// TODO
+	nfdchar_t* nfd_path = nullptr;
+	nfdresult_t nfd_res = NFD_SaveDialog("phorm", nullptr, &nfd_path);
+	if (nfd_res == NFD_OKAY)
+	{
+		save(std::string(nfd_path));
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool app_ctx::confirm_unsaved_changes()
+{
+	if (!actions.get_modified())
+	{
+		return true; // Safe to continue if no unsaved changes
+	}
+	s32 res = MessageBox(glfwGetWin32Window(mgl_ctx.window), L"Do you want to save your changes?", L"PowerTranzphormR", MB_YESNOCANCEL | MB_ICONQUESTION);
+	if (res == IDYES)
+	{
+		return save(); // Only continue if save was successful
+	}
+	else if (res == IDNO)
+	{
+		return true; // Continue (true) without saving
+	}
+	return false;
 }
 void app_ctx::load(const std::string& fp)
 {
+	clear();
 	std::ifstream in(fp);
 	assert(in.is_open());
 	scene.set_sg_root(actions.load(in));
+	loaded_filename = fp;
 }
 void app_ctx::undo()
 {
@@ -182,6 +225,10 @@ void app_ctx::init_menus()
 		"New",
 		[&]()
 		{
+			if (!confirm_unsaved_changes())
+			{
+				return;
+			}
 			clear();
 		},
 		[]()
@@ -196,9 +243,16 @@ void app_ctx::init_menus()
 		"Open",
 		[&]()
 		{
-			// FIXME: Check if current file needs to be saved
-
-
+			if (!confirm_unsaved_changes())
+			{
+				return;
+			}
+			nfdchar_t* nfd_path = nullptr;
+			nfdresult_t nfd_res = NFD_OpenDialog("phorm", nullptr, &nfd_path);
+			if (nfd_res == NFD_OKAY)
+			{
+				load(std::string(nfd_path));
+			}
 		},
 		[]()
 		{
@@ -212,14 +266,7 @@ void app_ctx::init_menus()
 		"Save",
 		[&]()
 		{
-			if (loaded_filename.size())
-			{
-				save(loaded_filename.c_str());
-			}
-			else
-			{
-				save_as();
-			}
+			save();
 		},
 		[]()
 		{

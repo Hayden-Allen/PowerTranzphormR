@@ -66,6 +66,7 @@ action* action_stack::undo()
 		m_past.pop_back();
 		a->undo(m_ctx);
 		m_future.push_back(a);
+		m_modified = true;
 		return a;
 	}
 	return nullptr;
@@ -78,6 +79,7 @@ action* action_stack::redo()
 		m_future.pop_back();
 		a->apply(m_ctx);
 		m_past.push_back(a);
+		m_modified = true;
 		return a;
 	}
 	return nullptr;
@@ -108,6 +110,8 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 
 	// write out next unique sgnode id
 	out << sgnode::get_next_id() << "\n";
+
+	m_modified = false;
 }
 sgnode* action_stack::load(std::ifstream& in)
 {
@@ -181,6 +185,11 @@ void action_stack::clear()
 	m_future.clear();
 }
 
+bool action_stack::get_modified() const
+{
+	return m_modified;
+}
+
 
 
 void action_stack::new_action(action* const a, const bool apply)
@@ -192,6 +201,7 @@ void action_stack::new_action(action* const a, const bool apply)
 	for (action* f : m_future)
 		delete f;
 	m_future.clear();
+	m_modified = true;
 }
 void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*>& freed)
 {
@@ -202,4 +212,5 @@ void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*>& freed)
 		delete node;
 		freed.insert(node);
 	}
+	m_modified = false;
 }

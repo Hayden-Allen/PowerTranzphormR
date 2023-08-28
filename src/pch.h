@@ -5,6 +5,9 @@
 #include <chrono>
 #include <functional>
 
+#include "carve/interpolator.hpp"
+#include "carve/csg.hpp"
+
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 // absolutely hilarious
@@ -14,11 +17,10 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "ImGuizmo.h"
 
-#include "carve/interpolator.hpp"
-#include "carve/csg.hpp"
-
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
 #include "nfd.h"
 // absolutely hilarious
 #undef min

@@ -16,13 +16,15 @@ public:
 	sgnode* clipboard = nullptr;
 	std::unordered_map<sgnode*, sgnode*> frozen;
 	bool clipboard_cut = false;
-	std::string loaded_filename;
+	mutable std::string loaded_filename;
 public:
 	app_ctx();
 public:
 	void clear();
+	bool save() const;
 	void save(const std::string& fp) const;
-	void save_as() const;
+	bool save_as() const;
+	bool confirm_unsaved_changes();
 	void load(const std::string& fp);
 	void undo();
 	void redo();
