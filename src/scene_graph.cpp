@@ -162,11 +162,19 @@ sgnode* sgnode::clone(app_ctx* const app, sgnode* const parent, bool create) con
 	sgnode* ret = new sgnode();
 	ret->parent = nullptr;
 	for (const sgnode* const child : children)
-		child->clone(app, ret, create);
-	// does not clone underlying mesh_t
+	{
+		sgnode* const new_child = child->clone(app, ret, create);
+		// when actually creating this clone (adding it to the scene graph),
+		// this function relies on the create_action to add each cloned child to ret.
+		// However, this create_action isn't made if create == false, so manually add the child here instead
+		if (!create)
+			ret->add_child(new_child);
+	}
 	if (gen)
 	{
+		// does not clone underlying mesh_t
 		ret->gen = gen->clone();
+		ret->gen->recompute(&app->scene);
 	}
 	ret->operation = operation;
 	ret->name = name;
