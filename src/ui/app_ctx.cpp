@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "app_ctx.h"
 #include "geom/generated_mesh.h"
+#include "scene_graph.h"
+#include "action.h"
 
 app_ctx::app_ctx() :
 	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
@@ -194,14 +196,12 @@ void app_ctx::freeze_action(sgnode* const target)
 	assert(!target->is_root());
 	sgnode* const new_node = actions.freeze(target);
 	frozen.insert({ new_node, target });
-	scene.set_selected_node(new_node);
 }
 void app_ctx::unfreeze_action(sgnode* const target)
 {
 	const auto& it = frozen.find(target);
 	assert(it != frozen.end());
 	actions.unfreeze(target, it->second);
-	scene.set_selected_node(it->second);
 	frozen.erase(it);
 }
 
@@ -221,13 +221,24 @@ void app_ctx::create(sgnode* const node)
 {
 	sgnode* const selected = scene.get_selected_node();
 	assert(selected);
-	if (selected)
+	if (!selected->is_mesh())
 	{
 		actions.create(node, selected);
-		scene.set_selected_node(node);
 	}
+	else
+	{
+		assert(!selected->is_root());
+		actions.create(node, selected->parent);
+	}
+	scene.set_selected_node(node);
 }
 void app_ctx::init_menus()
+{
+	file_menu();
+	edit_menu();
+	phorm_menu();
+}
+void app_ctx::file_menu()
 {
 	shortcut_menu file_menu;
 	file_menu.name = "File";
@@ -302,7 +313,9 @@ void app_ctx::init_menus()
 	};
 	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
 	shortcut_menus.push_back(file_menu);
-
+}
+void app_ctx::edit_menu()
+{
 	shortcut_menu edit_menu;
 	edit_menu.name = "Edit";
 	shortcut_menu_item edit_undo = {
@@ -488,7 +501,9 @@ void app_ctx::init_menus()
 	gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate, gizmo_scale });
 	edit_menu.groups.push_back({ gizmodes });
 	shortcut_menus.push_back(edit_menu);
-
+}
+void app_ctx::phorm_menu()
+{
 	shortcut_menu phorm_menu;
 	phorm_menu.name = "Phorm";
 	shortcut_menu_item phorm_create_cube = {
@@ -499,8 +514,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+1",
 		GLFW_KEY_1,
@@ -514,8 +528,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+2",
 		GLFW_KEY_2,
@@ -529,8 +542,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+3",
 		GLFW_KEY_3,
@@ -544,8 +556,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+4",
 		GLFW_KEY_4,
@@ -559,8 +570,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+5",
 		GLFW_KEY_5,
@@ -574,8 +584,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+=",
 		GLFW_KEY_EQUAL,
@@ -589,8 +598,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+-",
 		GLFW_KEY_MINUS,
@@ -604,8 +612,7 @@ void app_ctx::init_menus()
 		},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"Ctrl+8",
 		GLFW_KEY_8,
@@ -616,8 +623,7 @@ void app_ctx::init_menus()
 		[&]() {},
 		[&]()
 		{
-			const sgnode* const selected = scene.get_selected_node();
-			return selected && !selected->is_mesh();
+			return true;
 		},
 		"",
 		0,

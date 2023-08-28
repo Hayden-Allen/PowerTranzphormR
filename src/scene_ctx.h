@@ -2,7 +2,7 @@
 #include "geom/carve.h"
 #include "geom/glu_tess.h"
 
-class sgnode;
+struct sgnode;
 class generated_mesh;
 struct scene_material;
 

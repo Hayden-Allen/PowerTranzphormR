@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "action.h"
+#include "scene_ctx.h"
+#include "scene_graph.h"
 
 action::action(sgnode* const t) :
 	target(t)

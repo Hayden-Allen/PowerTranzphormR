@@ -1,6 +1,5 @@
 #pragma once
 #include "imgui_window.h"
-#include "preview_layer.h"
 
 class preview_window : public imgui_window
 {
@@ -9,7 +8,7 @@ public:
 	virtual ~preview_window() {}
 public:
 	virtual void handle_frame() override;
-	void set_enable_callback(const std::function<void()> &callback);
+	void set_enable_callback(const std::function<void()>& callback);
 private:
 	std::function<void()> m_enable_callback;
 private:

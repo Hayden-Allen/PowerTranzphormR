@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "preview_layer.h"
+#include "app_ctx.h"
 
 using namespace mgl;
 using namespace hats;

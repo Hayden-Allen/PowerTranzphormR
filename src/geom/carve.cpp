@@ -139,7 +139,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	vertices.reserve(STEPS + 1);
 	for (u32 j = 0; j < STEPS; j++)
 	{
-		const f32 x = cosf(j * DTHETA), z = sinf(j * DTHETA);
+		const f32 x = .5f * cosf(j * DTHETA), z = .5f * sinf(j * DTHETA);
 		// make cone vertically centered on the origin
 		const f32 y = -.5f;
 		vertices.push_back(new vertex_t(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform))));

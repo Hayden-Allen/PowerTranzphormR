@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "scene_graph_window.h"
+#include "app_ctx.h"
+#include "scene_graph.h"
 
 scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Phorms")

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "generated_mesh.h"
+#include "scene_ctx.h"
 
 generated_mesh::generated_mesh(mesh_t* const m) :
 	mesh(m),

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "shortcut_menus_layer.h"
+#include "app_ctx.h"
 
 shortcut_menus_layer::shortcut_menus_layer(app_ctx* const a_ctx) :
 	m_app_ctx(a_ctx)

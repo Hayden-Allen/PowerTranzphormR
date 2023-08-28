@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "action_stack.h"
+#include "action.h"
+#include "scene_ctx.h"
+#include "scene_graph.h"
 
 
 static void all_nodes(const sgnode* const cur, std::unordered_set<const sgnode*>& nodes)

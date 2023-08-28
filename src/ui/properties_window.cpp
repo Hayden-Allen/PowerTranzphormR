@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "properties_window.h"
 #include "geom/generated_mesh.h"
+#include "app_ctx.h"
+#include "scene_graph.h"
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "materials_list_window.h"
 #include "scene_material.h"
+#include "app_ctx.h"
 
 materials_list_window::materials_list_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Materials")

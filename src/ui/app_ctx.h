@@ -52,4 +52,7 @@ private:
 	void create_shape_action(FN fn, const std::string& name);
 	void create(sgnode* const node);
 	void init_menus();
+	void file_menu();
+	void edit_menu();
+	void phorm_menu();
 };

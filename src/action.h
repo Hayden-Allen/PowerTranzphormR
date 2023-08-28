@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.h"
-#include "scene_ctx.h"
-#include "scene_graph.h"
+
+class scene_ctx;
+struct sgnode;
 
 struct action
 {
