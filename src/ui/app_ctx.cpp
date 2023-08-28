@@ -7,6 +7,7 @@ app_ctx::app_ctx() :
 	actions(&scene),
 	preview_fb(1280, 720)
 {
+	NFD_Init(); // Should happen after GLFW initialized
 	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
 	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
 	init_menus();
@@ -19,6 +20,7 @@ void app_ctx::clear()
 	loaded_filename = "";
 	actions.clear();
 	scene.clear();
+	NFD_Quit(); // Should happen before GLFW destroyed
 }
 bool app_ctx::save() const
 {
@@ -44,14 +46,12 @@ void app_ctx::save(const std::string& fp) const
 bool app_ctx::save_as() const
 {
 	nfdchar_t* nfd_path = nullptr;
-	nfdresult_t nfd_res = NFD_SaveDialog("phorm", nullptr, &nfd_path);
+	nfdfilteritem_t nfd_filters[1] = { { "PowerTranzphormR Scene", "phorm" } };
+	nfdresult_t nfd_res = NFD_SaveDialog(&nfd_path, nfd_filters, 1, nullptr, nullptr);
 	if (nfd_res == NFD_OKAY)
 	{
-		// TODO probably not correct
-		std::string path(nfd_path);
-		if (!path.ends_with(".phorm"))
-			path.append(".phorm");
-		save(path);
+		save(std::string(nfd_path));
+		NFD_FreePath(nfd_path);
 		return true;
 	}
 	else
@@ -258,10 +258,12 @@ void app_ctx::init_menus()
 				return;
 			}
 			nfdchar_t* nfd_path = nullptr;
-			nfdresult_t nfd_res = NFD_OpenDialog("phorm", nullptr, &nfd_path);
+			nfdfilteritem_t nfd_filters[1] = { { "PowerTranzphormR Scene", "phorm" } };
+			nfdresult_t nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);
 			if (nfd_res == NFD_OKAY)
 			{
 				load(std::string(nfd_path));
+				NFD_FreePath(nfd_path);
 			}
 		},
 		[]()

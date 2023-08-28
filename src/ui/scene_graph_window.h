@@ -13,7 +13,8 @@ public:
 public:
 	virtual void handle_frame() override;
 private:
-	Rect handle_node(sgnode* const node, const bool parent_cutted_to_clipboard) const;
+	Rect handle_node(sgnode* const node, const bool parent_cutted_to_clipboard);
 private:
 	sgnode* m_show_add_child = nullptr;
+	bool m_rename_needs_focus = false;
 };
