@@ -68,6 +68,12 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 	{
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
+
+	if (ImGui::IsItemFocused())
+	{
+		m_app_ctx->set_selected_sgnode(node, true);
+	}
+
 	ImGui::PopStyleVar();
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
@@ -130,11 +136,6 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		ImGui::EndPopup();
 	}
 	ImGui::PopID();
-
-	if (ImGui::IsItemFocused())
-	{
-		m_app_ctx->set_selected_sgnode(node, true);
-	}
 
 	if (open)
 	{
