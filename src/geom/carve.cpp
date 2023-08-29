@@ -7,6 +7,12 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& tex_coord_attr = scene->get_tex_coord_attr();
 
+	std::unordered_map<const vertex_t*, vertex_t*> verts_map;
+	for (size_t i = 0; i < mesh->vertex_storage.size(); ++i)
+	{
+		const auto& v = mesh->vertex_storage[i];
+		verts_map.insert({ &mesh->vertex_storage[i], new vertex_t(carve::geom::VECTOR(v.v.x, v.v.y, v.v.z)) });
+	}
 	std::vector<face_t*> faces;
 
 	for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
@@ -17,7 +23,7 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 		std::vector<vertex_t*> verts;
 		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 		{
-			verts.emplace_back(new vertex_t(carve::geom::VECTOR(e->vert->v.x, e->vert->v.y, e->vert->v.z)));
+			verts.emplace_back(verts_map[e->vert]);
 		}
 		mesh_t::face_t* new_f = new mesh_t::face_t(verts.begin(), verts.end());
 		mtl_id_attr.setAttribute(new_f, mtl_id);
