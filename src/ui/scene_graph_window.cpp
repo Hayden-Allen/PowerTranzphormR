@@ -30,16 +30,10 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 {
 	// draw current node
 	std::string display_name = node->get_name();
-	if (node->is_operation())
+	const std::string op_name = operation_to_string(node->get_operation());
+	if (node->is_operation() && display_name != op_name)
 	{
-		if (display_name.empty())
-		{
-			display_name = operation_to_string(node->get_operation());
-		}
-		else
-		{
-			display_name += " [" + operation_to_string(node->get_operation()) + "]";
-		}
+		display_name += " [" + op_name + "]";
 	}
 
 	const f32 padding_x = 3.f;

@@ -20,6 +20,7 @@ sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, spac
 	m_gen(new generated_mesh(nullptr)),
 	m_operation(op),
 	m_id(std::string("sgn") + std::to_string(s_next_id++)),
+	m_name(operation_to_string(op)),
 	m_mat(t)
 {
 	assert(op != carve::csg::CSG::OP::ALL);
