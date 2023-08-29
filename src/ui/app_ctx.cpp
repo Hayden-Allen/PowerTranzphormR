@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "app_ctx.h"
 #include "geom/generated_mesh.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 #include "action.h"
 
 app_ctx::app_ctx() :
@@ -163,7 +163,7 @@ void app_ctx::destroy_action(sgnode* const target)
 void app_ctx::destroy_selected_action()
 {
 	sgnode* const selected = get_selected_sgnode();
-	assert(selected && selected->parent);
+	assert(selected && selected->get_parent());
 	actions.destroy(selected);
 	set_selected_sgnode(nullptr, false);
 }
@@ -230,7 +230,7 @@ void app_ctx::unfreeze_action(sgnode* const target)
 
 void app_ctx::create_operation_action(const carve::csg::CSG::OP op)
 {
-	create(new sgnode(scene.get_csg(), nullptr, op));
+	create(new sgnode(nullptr, op));
 }
 template<typename FN>
 void app_ctx::create_shape_action(FN fn, const std::string& name)
@@ -242,14 +242,14 @@ void app_ctx::create(sgnode* const node)
 {
 	sgnode* const selected = get_selected_sgnode();
 	assert(selected);
-	if (!selected->is_mesh())
+	if (selected->is_operation())
 	{
 		actions.create(node, selected);
 	}
 	else
 	{
 		assert(!selected->is_root());
-		actions.create(node, selected->parent);
+		actions.create(node, selected->get_parent());
 	}
 	set_selected_sgnode(node, true);
 }
@@ -374,9 +374,9 @@ void app_ctx::edit_menu()
 		"Cut",
 		[&]()
 		{
-			clipboard_cut = true;
 			sgnode* const selected = get_selected_sgnode();
-			clipboard = selected->clone(this, nullptr, false);
+			clipboard = selected->clone(this);
+			destroy_action(selected);
 		},
 		[&]()
 		{
@@ -392,7 +392,7 @@ void app_ctx::edit_menu()
 		[&]()
 		{
 			sgnode* const selected = get_selected_sgnode();
-			clipboard = selected->clone(this, nullptr, false);
+			clipboard = selected->clone(this);
 		},
 		[&]()
 		{
@@ -407,19 +407,12 @@ void app_ctx::edit_menu()
 		[&]()
 		{
 			sgnode* const selected = get_selected_sgnode();
-			// selected->add_child(clipboard->clone());
-			sgnode* const clone = clipboard->clone(this, selected);
-			// create_action(clone, selected);
-			if (clipboard_cut)
-			{
-				destroy_action(clipboard);
-				clipboard_cut = false;
-			}
+			sgnode* const clone = clipboard->clone_self_and_insert(this, selected);
 		},
 		[&]()
 		{
 			sgnode* const selected = get_selected_sgnode();
-			return clipboard && selected && !selected->is_mesh();
+			return clipboard && selected && selected->is_operation();
 		},
 		"Ctrl+V",
 		GLFW_KEY_V,
@@ -432,12 +425,12 @@ void app_ctx::edit_menu()
 		{
 			sgnode* const selected = get_selected_sgnode();
 			const s64 i = selected->get_index();
-			reparent_action(selected, selected->parent, i - 1);
+			reparent_action(selected, selected->get_parent(), i - 1);
 		},
 		[&]()
 		{
 			const sgnode* const selected = get_selected_sgnode();
-			return selected && selected->parent && selected->get_index() > 0;
+			return selected && selected->get_parent() && selected->get_index() > 0;
 		},
 		"Ctrl+Up",
 		GLFW_KEY_UP,
@@ -450,12 +443,12 @@ void app_ctx::edit_menu()
 			sgnode* const selected = get_selected_sgnode();
 			assert(selected);
 			const s64 i = selected->get_index();
-			reparent_action(selected, selected->parent, i + 1);
+			reparent_action(selected, selected->get_parent(), i + 1);
 		},
 		[&]()
 		{
 			const sgnode* const selected = get_selected_sgnode();
-			return selected && selected->parent && selected->get_index() < static_cast<s64>(selected->parent->children.size() - 1);
+			return selected && selected->get_parent() && selected->get_index() < static_cast<s64>(selected->get_parent()->get_children().size() - 1);
 		},
 		"Ctrl+Down",
 		GLFW_KEY_DOWN,

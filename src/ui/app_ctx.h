@@ -22,7 +22,6 @@ public:
 	std::vector<shortcut_menu> shortcut_menus;
 	sgnode* clipboard = nullptr;
 	std::unordered_map<sgnode*, sgnode*> frozen;
-	bool clipboard_cut = false;
 	mutable std::string loaded_filename;
 	global_selection_type sel_type = global_selection_type::none;
 public:

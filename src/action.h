@@ -3,7 +3,7 @@
 
 class scene_ctx;
 struct app_ctx;
-struct sgnode;
+class sgnode;
 
 struct action
 {
@@ -93,7 +93,7 @@ public:
 	sgnode* frozen;
 	s64 index;
 public:
-	freeze_action(sgnode* const target);
+	freeze_action(sgnode* const target, scene_ctx* const scene);
 	freeze_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(freeze_action);
 public:

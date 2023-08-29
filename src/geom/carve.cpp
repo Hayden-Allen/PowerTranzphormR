@@ -1,5 +1,36 @@
 #include "pch.h"
 #include "carve.h"
+#include "scene_ctx.h"
+
+mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
+{
+	auto& mtl_id_attr = scene->get_mtl_id_attr();
+	auto& tex_coord_attr = scene->get_tex_coord_attr();
+
+	std::vector<face_t*> faces;
+
+	for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+	{
+		const mesh_t::face_t* f = *i;
+		u32 mtl_id = mtl_id_attr.getAttribute(f, 0);
+
+		std::vector<vertex_t*> verts;
+		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+		{
+			verts.emplace_back(new vertex_t(carve::geom::VECTOR(e->vert->v.x, e->vert->v.y, e->vert->v.z)));
+		}
+		mesh_t::face_t* new_f = new mesh_t::face_t(verts.begin(), verts.end());
+		mtl_id_attr.setAttribute(new_f, mtl_id);
+		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+		{
+			const tex_coord_t tex_coord = tex_coord_attr.getAttribute(f, e.idx());
+			tex_coord_attr.setAttribute(new_f, e.idx(), tex_coord);
+		}
+		faces.emplace_back(new_f);
+	}
+
+	return new mesh_t(faces);
+}
 
 mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options)
 {
@@ -43,7 +74,6 @@ mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_i
 	// bottom
 	faces.push_back(new face_t(&v[6], &v[7], &v[3], &v[2]));
 
-	// sets texcoords for a "cubemap" texture that is 6 times as wide as it is tall
 	for (s32 i = 0; i < 6; ++i)
 	{
 		const f32 top = 1.0f * options.v_scale, bottom = 0.0f;

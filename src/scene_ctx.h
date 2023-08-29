@@ -2,7 +2,7 @@
 #include "geom/carve.h"
 #include "geom/glu_tess.h"
 
-struct sgnode;
+class sgnode;
 class generated_mesh;
 struct scene_material;
 
@@ -22,6 +22,8 @@ public:
 	~scene_ctx();
 public:
 	carve::csg::CSG& get_csg();
+	attr_tex_coord_t& get_tex_coord_attr();
+	attr_material_t& get_mtl_id_attr();
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
 	void update();
 	void clear();

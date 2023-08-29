@@ -4,7 +4,7 @@
 struct action;
 struct app_ctx;
 class scene_ctx;
-struct sgnode;
+class sgnode;
 
 class action_stack
 {

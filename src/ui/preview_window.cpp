@@ -2,7 +2,7 @@
 #include "preview_window.h"
 #include "app_ctx.h"
 #include "preview_layer.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 
 preview_window::preview_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Preview")
@@ -43,7 +43,7 @@ void preview_window::handle_frame()
 		ImGuizmo::SetRect(clip_min.x, clip_min.y, img_dim.x, img_dim.y);
 
 		// make a copy of node's transform so that the gizmo can modify it
-		tmat<space::OBJECT, space::PARENT> current_mat = target->mat;
+		tmat<space::OBJECT, space::PARENT> current_mat = target->get_mat();
 		const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
 		const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
 		ImGuizmo::Manipulate((view * target->accumulate_parent_mats()).e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
@@ -55,11 +55,12 @@ void preview_window::handle_frame()
 			// if this is the first frame it's being used, save initial transform
 			if (!was_using_imguizmo)
 			{
-				imguizmo_undo_mat = target->mat;
+				imguizmo_undo_mat = target->get_mat();
 			}
 			was_using_imguizmo = true;
 			// propagate gizmo's changes to node
-			target->set_transform(current_mat);
+			if (current_mat != target->get_mat())
+				target->set_transform(current_mat);
 		}
 		// ImGuizmo not being used this frame, but was last frame
 		else if (was_using_imguizmo)
@@ -68,7 +69,7 @@ void preview_window::handle_frame()
 			// push result of ImGuizmo onto action stack
 			if (target)
 			{
-				m_app_ctx->transform_action(target, imguizmo_undo_mat, target->mat);
+				m_app_ctx->transform_action(target, imguizmo_undo_mat, target->get_mat());
 			}
 		}
 

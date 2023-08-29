@@ -4,11 +4,12 @@
 
 generated_mesh::generated_mesh(mesh_t* const m) :
 	mesh(m),
-	dirty(true)
+	dirty(false)
+{}
+generated_mesh::~generated_mesh()
 {
-	copy_verts();
+	delete mesh;
 }
-generated_mesh::~generated_mesh() {}
 generated_mesh* generated_mesh::create(const nlohmann::json& obj)
 {
 	const u32 type = obj["type"];
@@ -29,21 +30,9 @@ std::unordered_map<std::string, generated_mesh_param> generated_mesh::get_params
 	return {};
 }
 void generated_mesh::recompute(scene_ctx* const scene) {}
-generated_mesh* generated_mesh::clone() const
+generated_mesh* generated_mesh::clone(scene_ctx* const scene) const
 {
 	return new generated_mesh(nullptr);
-}
-generated_mesh* generated_mesh::clone(const tmat<space::OBJECT, space::WORLD>& old_transform) const
-{
-	const auto& inv = old_transform.invert_copy().cast_copy<space::OBJECT, space::OBJECT>();
-	size_t i = 0;
-	mesh->transform([&](vertex_t::vector_t& v)
-		{
-			const auto& out = hats2carve(src_verts[i].transform_copy(inv));
-			++i;
-			return out;
-		});
-	return new generated_mesh(mesh);
 }
 nlohmann::json generated_mesh::save() const
 {
@@ -64,22 +53,38 @@ primitive_options* generated_mesh::get_options() const
 	assert(false);
 	return nullptr;
 }
-void generated_mesh::copy_verts()
-{
-	src_verts.clear();
-	if (mesh)
-	{
-		for (const auto& v : mesh->vertex_storage)
-		{
-			src_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
-		}
-	}
-}
 void generated_mesh::set_mesh(mesh_t* const m)
 {
+	assert(!mesh);
 	mesh = m;
-	// TODO I think we need to multiply by inverse here too
-	copy_verts();
+}
+void generated_mesh::set_dirty()
+{
+	assert(false);
+}
+bool generated_mesh::is_dirty() const
+{
+	return dirty;
+}
+void generated_mesh::clear()
+{
+	delete mesh;
+	mesh = nullptr;
+}
+void generated_mesh::copy_mesh_from(const generated_mesh* const other, scene_ctx* const scene)
+{
+	assert(!mesh);
+	mesh = carve_clone(other->mesh, scene);
+}
+mesh_t* generated_mesh::clone_mesh_to_local(scene_ctx* const scene, const tmat<space::OBJECT, space::WORLD>& mat) const
+{
+	const auto& inv = mat.invert_copy();
+	mesh_t* const clone = carve_clone(mesh, scene);
+	clone->transform([&](vertex_t::vector_t& v)
+		{
+			return hats2carve(point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv));
+		});
+	return clone;
 }
 
 
@@ -87,7 +92,9 @@ void generated_mesh::set_mesh(mesh_t* const m)
 generated_primitive::generated_primitive(mesh_t* const m, const GLuint material) :
 	generated_mesh(m),
 	m_material(material)
-{}
+{
+	dirty = true;
+}
 generated_primitive::generated_primitive(const nlohmann::json& obj) :
 	generated_mesh(nullptr),
 	m_material(obj["mat"])
@@ -104,7 +111,7 @@ std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_p
 }
 void generated_primitive::recompute(scene_ctx* const scene)
 {
-	copy_verts();
+	delete mesh;
 }
 GLuint generated_primitive::get_material() const
 {
@@ -147,11 +154,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_cuboid::get_para
 }
 void generated_cuboid::recompute(scene_ctx* const scene)
 {
-	// delete mesh;
-	mesh = scene->create_textured_cuboid(m_material, m_options);
 	generated_primitive::recompute(scene);
+	mesh = scene->create_textured_cuboid(m_material, m_options);
 }
-generated_mesh* generated_cuboid::clone() const
+generated_mesh* generated_cuboid::clone(scene_ctx* const scene) const
 {
 	return new generated_cuboid(m_material, m_options);
 }
@@ -200,11 +206,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_ellipsoid::get_p
 }
 void generated_ellipsoid::recompute(scene_ctx* const scene)
 {
-	// delete mesh;
-	mesh = scene->create_textured_ellipsoid(m_material, m_options);
 	generated_primitive::recompute(scene);
+	mesh = scene->create_textured_ellipsoid(m_material, m_options);
 }
-generated_mesh* generated_ellipsoid::clone() const
+generated_mesh* generated_ellipsoid::clone(scene_ctx* const scene) const
 {
 	return new generated_ellipsoid(m_material, m_options);
 }
@@ -257,11 +262,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_cylinder::get_pa
 }
 void generated_cylinder::recompute(scene_ctx* const scene)
 {
-	// delete mesh;
-	mesh = scene->create_textured_cylinder(m_material, m_options);
 	generated_primitive::recompute(scene);
+	mesh = scene->create_textured_cylinder(m_material, m_options);
 }
-generated_mesh* generated_cylinder::clone() const
+generated_mesh* generated_cylinder::clone(scene_ctx* const scene) const
 {
 	return new generated_cylinder(m_material, m_options);
 }
@@ -311,11 +315,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_cone::get_params
 }
 void generated_cone::recompute(scene_ctx* const scene)
 {
-	// delete mesh;
-	mesh = scene->create_textured_cone(m_material, m_options);
 	generated_primitive::recompute(scene);
+	mesh = scene->create_textured_cone(m_material, m_options);
 }
-generated_mesh* generated_cone::clone() const
+generated_mesh* generated_cone::clone(scene_ctx* const scene) const
 {
 	return new generated_cone(m_material, m_options);
 }
@@ -369,11 +372,10 @@ std::unordered_map<std::string, generated_mesh_param> generated_torus::get_param
 }
 void generated_torus::recompute(scene_ctx* const scene)
 {
-	// delete mesh;
-	mesh = scene->create_textured_torus(m_material, m_options);
 	generated_primitive::recompute(scene);
+	mesh = scene->create_textured_torus(m_material, m_options);
 }
-generated_mesh* generated_torus::clone() const
+generated_mesh* generated_torus::clone(scene_ctx* const scene) const
 {
 	return new generated_torus(m_material, m_options);
 }
@@ -423,12 +425,11 @@ std::unordered_map<std::string, generated_mesh_param> generated_heightmap::get_p
 }
 void generated_heightmap::recompute(scene_ctx* const scene)
 {
-	// delete mesh;
+	generated_primitive::recompute(scene);
 	// TODO
 	assert(false);
-	generated_primitive::recompute(scene);
 }
-generated_mesh* generated_heightmap::clone() const
+generated_mesh* generated_heightmap::clone(scene_ctx* const scene) const
 {
 	// TODO
 	assert(false);
@@ -454,3 +455,21 @@ generated_heightmap::generated_heightmap(const GLuint material, const heightmap_
 	generated_primitive(nullptr, material),
 	m_options(opts)
 {}
+
+
+
+generated_static_mesh::generated_static_mesh(mesh_t* const m) :
+	generated_mesh(m)
+{
+	dirty = false;
+}
+generated_mesh* generated_static_mesh::clone(scene_ctx* const scene) const
+{
+	return new generated_static_mesh(carve_clone(mesh, scene));
+}
+nlohmann::json generated_static_mesh::save() const
+{
+	assert(false);
+	return {};
+	// obj["type"] = 6;
+}

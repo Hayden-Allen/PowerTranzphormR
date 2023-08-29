@@ -2,7 +2,7 @@
 #include "action.h"
 #include "ui/app_ctx.h"
 #include "scene_ctx.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 
 action::action(sgnode* const t) :
 	target(t)
@@ -58,7 +58,7 @@ nlohmann::json transform_action::save() const
 {
 	nlohmann::json obj;
 	obj["type"] = 0;
-	obj["t"] = target->id;
+	obj["t"] = target->get_id();
 	obj["i"] = initial.e;
 	obj["m"] = mat.e;
 	return obj;
@@ -68,7 +68,7 @@ nlohmann::json transform_action::save() const
 
 reparent_action::reparent_action(sgnode* const target, sgnode* const _new_parent, const s64 _new_index) :
 	action(target),
-	old_parent(target->parent),
+	old_parent(target->get_parent()),
 	new_parent(_new_parent),
 	new_index(_new_index)
 {}
@@ -93,9 +93,9 @@ nlohmann::json reparent_action::save() const
 {
 	nlohmann::json obj;
 	obj["type"] = 1;
-	obj["t"] = target->id;
-	obj["op"] = old_parent->id;
-	obj["np"] = new_parent->id;
+	obj["t"] = target->get_id();
+	obj["op"] = old_parent->get_id();
+	obj["np"] = new_parent->get_id();
 	obj["oi"] = old_index;
 	obj["ni"] = new_index;
 	return obj;
@@ -131,8 +131,8 @@ nlohmann::json create_action::save() const
 {
 	nlohmann::json obj;
 	obj["type"] = 2;
-	obj["t"] = target->id;
-	obj["p"] = parent->id;
+	obj["t"] = target->get_id();
+	obj["p"] = parent->get_id();
 	return obj;
 }
 
@@ -140,7 +140,7 @@ nlohmann::json create_action::save() const
 
 destroy_action::destroy_action(sgnode* const target) :
 	action(target),
-	parent(target->parent),
+	parent(target->get_parent()),
 	index(-1)
 {
 	// shouldn't be able to destroy root
@@ -178,17 +178,17 @@ nlohmann::json destroy_action::save() const
 {
 	nlohmann::json obj;
 	obj["type"] = 3;
-	obj["t"] = target->id;
-	obj["p"] = parent->id;
+	obj["t"] = target->get_id();
+	obj["p"] = parent->get_id();
 	obj["i"] = index;
 	return obj;
 }
 
 
 
-freeze_action::freeze_action(sgnode* const target) :
+freeze_action::freeze_action(sgnode* const target, scene_ctx* const scene) :
 	action(target),
-	frozen(target->freeze()),
+	frozen(target->freeze(scene)),
 	index(target->get_index())
 {
 	assert(!target->is_root());
@@ -200,22 +200,24 @@ freeze_action::freeze_action(const nlohmann::json& obj, const std::unordered_map
 {}
 void freeze_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
-	target->parent->remove_child(target);
-	target->parent->add_child(frozen, index);
+	sgnode* const parent = target->get_parent();
+	parent->remove_child(target);
+	parent->add_child(frozen, index);
 	a_ctx->set_selected_sgnode(frozen, false);
 }
 void freeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
-	target->parent->remove_child(frozen);
-	target->parent->add_child(target, index);
+	sgnode* const parent = frozen->get_parent();
+	parent->remove_child(frozen);
+	parent->add_child(target, index);
 	a_ctx->set_selected_sgnode(target, false);
 }
 nlohmann::json freeze_action::save() const
 {
 	nlohmann::json obj;
 	obj["type"] = 4;
-	obj["t"] = target->id;
-	obj["f"] = frozen->id;
+	obj["t"] = target->get_id();
+	obj["f"] = frozen->get_id();
 	obj["i"] = index;
 	return obj;
 }
@@ -236,24 +238,26 @@ unfreeze_action::unfreeze_action(const nlohmann::json& obj, const std::unordered
 {}
 void unfreeze_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
-	target->parent->remove_child(target);
-	target->parent->add_child(unfrozen, index);
-	unfrozen->set_transform(target->mat);
+	sgnode* const parent = target->get_parent();
+	parent->remove_child(target);
+	parent->add_child(unfrozen, index);
+	unfrozen->set_transform(target->get_mat());
 	a_ctx->set_selected_sgnode(unfrozen, false);
 }
 void unfreeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
-	target->parent->remove_child(unfrozen);
-	target->parent->add_child(target, index);
-	target->set_transform(unfrozen->mat);
+	sgnode* const parent = unfrozen->get_parent();
+	parent->remove_child(unfrozen);
+	parent->add_child(target, index);
+	target->set_transform(unfrozen->get_mat());
 	a_ctx->set_selected_sgnode(target, false);
 }
 nlohmann::json unfreeze_action::save() const
 {
 	nlohmann::json obj;
 	obj["type"] = 5;
-	obj["t"] = target->id;
-	obj["u"] = unfrozen->id;
+	obj["t"] = target->get_id();
+	obj["u"] = unfrozen->get_id();
 	obj["i"] = index;
 	return obj;
 }

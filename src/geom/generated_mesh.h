@@ -16,7 +16,6 @@ class generated_mesh
 {
 public:
 	mesh_t* mesh;
-	std::vector<point<space::OBJECT>> src_verts;
 	bool dirty;
 public:
 	generated_mesh(mesh_t* const m);
@@ -27,22 +26,24 @@ public:
 public:
 	virtual std::unordered_map<std::string, generated_mesh_param> get_params() const;
 	virtual void recompute(scene_ctx* const scene);
-	virtual generated_mesh* clone() const;
-	virtual generated_mesh* clone(const tmat<space::OBJECT, space::WORLD>& old_transform) const;
+	// for operation nodes
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	virtual nlohmann::json save() const;
 	virtual GLuint get_material() const;
 	virtual void set_material(const GLuint mat);
 	void set_mesh(mesh_t* const m);
+	virtual void set_dirty();
+	bool is_dirty() const;
+	void clear();
+	void copy_mesh_from(const generated_mesh* const other, scene_ctx* const scene);
+	virtual mesh_t* clone_mesh_to_local(scene_ctx* const scene, const tmat<space::OBJECT, space::WORLD>& mat) const;
 protected:
 	virtual primitive_options* get_options() const;
-	void copy_verts();
 };
 
 class generated_primitive : public generated_mesh
 {
 public:
-	generated_primitive(mesh_t* const m, const GLuint material);
-	generated_primitive(const nlohmann::json& obj);
 	MGL_DCM(generated_primitive);
 	virtual ~generated_primitive();
 public:
@@ -51,6 +52,13 @@ public:
 	GLuint get_material() const override;
 	void set_material(const GLuint mat) override;
 	nlohmann::json save() const override;
+	void set_dirty() override
+	{
+		dirty = true;
+	}
+protected:
+	generated_primitive(mesh_t* const m, const GLuint material);
+	generated_primitive(const nlohmann::json& obj);
 protected:
 	GLuint m_material;
 };
@@ -60,10 +68,11 @@ class generated_cuboid : public generated_primitive
 public:
 	generated_cuboid(scene_ctx* const scene, const GLuint material, const cuboid_options& opts);
 	generated_cuboid(const nlohmann::json& obj);
+	MGL_DCM(generated_cuboid);
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save() const override;
 protected:
 	primitive_options* get_options() const override;
@@ -78,10 +87,11 @@ class generated_ellipsoid : public generated_primitive
 public:
 	generated_ellipsoid(scene_ctx* const scene, const GLuint material, const ellipsoid_options& opts);
 	generated_ellipsoid(const nlohmann::json& obj);
+	MGL_DCM(generated_ellipsoid);
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save() const override;
 protected:
 	primitive_options* get_options() const override;
@@ -96,10 +106,11 @@ class generated_cylinder : public generated_primitive
 public:
 	generated_cylinder(scene_ctx* const scene, const GLuint material, const cylinder_options& opts);
 	generated_cylinder(const nlohmann::json& obj);
+	MGL_DCM(generated_cylinder);
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save() const override;
 protected:
 	primitive_options* get_options() const override;
@@ -114,10 +125,11 @@ class generated_cone : public generated_primitive
 public:
 	generated_cone(scene_ctx* const scene, const GLuint material, const cone_options& opts);
 	generated_cone(const nlohmann::json& obj);
+	MGL_DCM(generated_cone);
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save() const override;
 protected:
 	primitive_options* get_options() const override;
@@ -132,10 +144,11 @@ class generated_torus : public generated_primitive
 public:
 	generated_torus(scene_ctx* const scene, const GLuint material, const torus_options& opts);
 	generated_torus(const nlohmann::json& obj);
+	MGL_DCM(generated_torus);
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save() const override;
 protected:
 	primitive_options* get_options() const override;
@@ -150,10 +163,11 @@ class generated_heightmap : public generated_primitive
 public:
 	generated_heightmap(scene_ctx* const scene, const GLuint material, const heightmap_options& opts);
 	generated_heightmap(const nlohmann::json& obj);
+	MGL_DCM(generated_heightmap);
 public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone() const;
+	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save() const override;
 protected:
 	primitive_options* get_options() const override;
@@ -161,4 +175,14 @@ private:
 	generated_heightmap(const GLuint material, const heightmap_options& opts);
 private:
 	heightmap_options m_options;
+};
+
+class generated_static_mesh : public generated_mesh
+{
+public:
+	generated_static_mesh(mesh_t* const m);
+	MGL_DCM(generated_static_mesh);
+public:
+	generated_mesh* clone(scene_ctx* const scene) const override;
+	nlohmann::json save() const override;
 };

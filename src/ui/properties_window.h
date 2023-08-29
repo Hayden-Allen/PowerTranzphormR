@@ -1,7 +1,7 @@
 #pragma once
 #include "imgui_window.h"
 
-struct sgnode;
+class sgnode;
 
 class properties_window : public imgui_window
 {

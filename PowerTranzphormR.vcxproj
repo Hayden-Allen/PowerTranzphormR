@@ -361,7 +361,7 @@
     <ClCompile Include="src\action_stack.cpp" />
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
-    <ClCompile Include="src\scene_graph.cpp" />
+    <ClCompile Include="src\sgnode.cpp" />
     <ClCompile Include="src\ui\app_ctx.cpp" />
     <ClCompile Include="src\ui\imgui_layer.cpp" />
     <ClCompile Include="src\main2.cpp" />
@@ -389,8 +389,8 @@
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
     <ClInclude Include="src\scene_material.h" />
+    <ClInclude Include="src\sgnode.h" />
     <ClInclude Include="src\ui\app_ctx.h" />
-    <ClInclude Include="src\scene_graph.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />
     <ClInclude Include="src\ui\materials_list_window.h" />
     <ClInclude Include="src\ui\properties_window.h" />

@@ -2,7 +2,7 @@
 #include "properties_window.h"
 #include "geom/generated_mesh.h"
 #include "app_ctx.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")
@@ -22,7 +22,7 @@ void properties_window::handle_frame()
 		handle_snapping_angle();
 	}
 	handle_transform(selected);
-	if (selected->is_mesh())
+	if (!selected->is_operation())
 	{
 		handle_mesh(selected);
 	}
@@ -43,7 +43,7 @@ void properties_window::handle_transform(sgnode* const selected)
 {
 	bool dirty = false;
 	float trans[3] = { 0.f }, rot[3] = { 0.f }, scale[3] = { 0.f };
-	ImGuizmo::DecomposeMatrixToComponents(selected->mat.e, trans, rot, scale);
+	ImGuizmo::DecomposeMatrixToComponents(selected->get_mat().e, trans, rot, scale);
 	if (ImGui::DragFloat3("Position", trans, 0.01f))
 	{
 		dirty = true;
@@ -58,14 +58,14 @@ void properties_window::handle_transform(sgnode* const selected)
 	}
 	if (dirty)
 	{
-		ImGuizmo::RecomposeMatrixFromComponents(trans, rot, scale, selected->mat.e);
-		selected->set_transform(selected->mat.e);
+		ImGuizmo::RecomposeMatrixFromComponents(trans, rot, scale, selected->get_mat().e);
+		selected->set_transform(selected->get_mat().e);
 	}
 }
 
 void properties_window::handle_mesh(sgnode* const selected)
 {
-	for (const auto& prop : selected->gen->get_params())
+	for (const auto& prop : selected->get_gen()->get_params())
 	{
 		if (prop.second.is_float)
 		{

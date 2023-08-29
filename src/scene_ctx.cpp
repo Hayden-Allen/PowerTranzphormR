@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "scene_ctx.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 #include "scene_material.h"
 #include "geom/carve.h"
 #include "geom/generated_mesh.h"
@@ -22,6 +22,14 @@ carve::csg::CSG& scene_ctx::get_csg()
 {
 	return m_csg;
 }
+attr_tex_coord_t& scene_ctx::get_tex_coord_attr()
+{
+	return m_tex_coord_attr;
+}
+attr_material_t& scene_ctx::get_mtl_id_attr()
+{
+	return m_mtl_id_attr;
+}
 void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
 	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
@@ -29,7 +37,7 @@ void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 }
 void scene_ctx::update()
 {
-	if (m_sg_root->dirty)
+	if (m_sg_root->is_dirty())
 	{
 		m_sg_root->recompute(this);
 		m_build_sg_vaos();
@@ -62,7 +70,7 @@ void scene_ctx::clear()
 
 	m_tex_coord_attr.installHooks(m_csg);
 	m_mtl_id_attr.installHooks(m_csg);
-	m_sg_root = new sgnode(m_csg, nullptr, carve::csg::CSG::OP::UNION);
+	m_sg_root = new sgnode(nullptr, carve::csg::CSG::OP::UNION);
 
 	for (const auto& pair : m_mtls)
 		delete pair.second;
@@ -171,9 +179,10 @@ void scene_ctx::m_build_sg_vaos()
 		verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
 	}
 
-	if (m_sg_root->gen)
+	const generated_mesh* gen = m_sg_root->get_gen();
+	if (gen)
 	{
-		m_tesselate(m_sg_root->gen->mesh, verts_for_mtl);
+		m_tesselate(gen->mesh, verts_for_mtl);
 	}
 
 	m_sg_vaos_for_mtl.clear();

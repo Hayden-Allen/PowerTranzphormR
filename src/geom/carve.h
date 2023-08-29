@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 
+class scene_ctx;
+
 struct tex_coord_t
 {
 	f32 u, v;
@@ -31,6 +33,7 @@ static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
 {
 	return carve::geom::VECTOR(p.x, p.y, p.z);
 }
+mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene);
 
 struct primitive_options
 {

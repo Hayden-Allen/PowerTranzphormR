@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "scene_graph_window.h"
 #include "app_ctx.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 
 scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Phorms")
@@ -10,41 +10,36 @@ scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
-	handle_node(root, false);
+	handle_node(root);
 }
 
-scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, const bool parent_cutted_to_clipboard)
+scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 {
-	bool cutted_to_clipboard = parent_cutted_to_clipboard || (m_app_ctx->clipboard == node && m_app_ctx->clipboard_cut);
 	// draw current node
-	std::string display_name = node->name;
-	if (!node->is_mesh())
+	std::string display_name = node->get_name();
+	if (node->is_operation())
 	{
 		if (display_name.empty())
 		{
-			display_name = operation_to_string(node->operation);
+			display_name = operation_to_string(node->get_operation());
 		}
 		else
 		{
-			display_name += " [" + operation_to_string(node->operation) + "]";
+			display_name += " [" + operation_to_string(node->get_operation()) + "]";
 		}
-	}
-	if (cutted_to_clipboard)
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
 	}
 
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
 	bool open = false;
-	if (node->is_renaming)
+	if (/* node->is_renaming */ false)
 	{
 		const f32 x = ImGui::GetCursorPosX();
-		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
-		memcpy_s(buf, BUF_SIZE, node->name.c_str(), node->name.size());
+		memcpy_s(buf, BUF_SIZE, node->get_name().c_str(), node->get_name().size());
 
 		// FIXME kind of hacky?
 		ImGui::SameLine();
@@ -56,7 +51,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 			std::string new_name(buf);
 			if (!new_name.empty())
 				node->set_name(new_name);
-			node->set_renaming(false);
+			// node->set_renaming(false); // FIXME
 		}
 		if (m_rename_needs_focus)
 		{
@@ -65,28 +60,24 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 		}
 		else if (!ImGui::IsItemActive())
 		{
-			node->set_renaming(false);
+			// node->set_renaming(false); // FIXME
 		}
 	}
 	else
 	{
-		open = ImGui::TreeNodeEx(node->id.c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->is_leaf() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
 	ImGui::PopStyleVar();
-	if (cutted_to_clipboard)
-	{
-		ImGui::PopStyleVar();
-	}
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
 
 	// handle controls
-	ImGui::PushID(node->id.c_str());
+	ImGui::PushID(node->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
 		m_app_ctx->set_selected_sgnode(node, true);
 
-		if (!node->is_mesh())
+		if (node->is_operation())
 		{
 			if (ImGui::MenuItem("Add Cube"))
 				m_app_ctx->create_cube_action();
@@ -123,7 +114,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 		if (ImGui::MenuItem("Rename"))
 		{
 			m_rename_needs_focus = true;
-			node->set_renaming(true);
+			// node->set_renaming(true); // FIXME
 		}
 		if (ImGui::MenuItem("Destroy"))
 			m_app_ctx->destroy_selected_action();
@@ -140,7 +131,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 	if (open)
 	{
 		// draw children if it has any
-		if (!node->is_leaf())
+		if (node->get_children().size())
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			const ImColor line_color(128, 128, 128);
@@ -149,11 +140,11 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node, con
 			vertical_start.x -= 8.f;
 			vertical_start.y -= 8.f;
 			ImVec2 vertical_end = vertical_start;
-			for (sgnode* child : node->children)
+			for (sgnode* child : node->get_children())
 			{
-				const Rect& child_rect = handle_node(child, cutted_to_clipboard);
+				const Rect& child_rect = handle_node(child);
 				// draw horizontal line from vertical line to current child
-				const f32 horizontal_size = child->is_leaf() ? 24.f : 12.f;
+				const f32 horizontal_size = child->get_children().size() > 0 ? 24.f : 12.f;
 				const f32 midpoint = (child_rect.first.y + child_rect.second.y) / 2.f;
 				draw_list->AddLine(ImVec2(vertical_start.x, midpoint), ImVec2(vertical_start.x + horizontal_size, midpoint), line_color);
 				// end vertical line at position of current child

@@ -3,13 +3,13 @@
 #include "action.h"
 #include "ui/app_ctx.h"
 #include "scene_ctx.h"
-#include "scene_graph.h"
+#include "sgnode.h"
 
 
 static void all_nodes(const sgnode* const cur, std::unordered_set<const sgnode*>& nodes)
 {
 	nodes.insert(cur);
-	for (const sgnode* const child : cur->children)
+	for (const sgnode* const child : cur->get_children())
 		all_nodes(child, nodes);
 }
 
@@ -47,7 +47,7 @@ void action_stack::destroy(sgnode* const target)
 }
 sgnode* action_stack::freeze(sgnode* const target)
 {
-	freeze_action* const a = new freeze_action(target);
+	freeze_action* const a = new freeze_action(target, m_ctx);
 	new_action(a, true);
 	return a->frozen;
 }
@@ -169,7 +169,7 @@ sgnode* action_stack::load(std::ifstream& in)
 
 	// return the parent
 	for (const auto& pair : nodes)
-		if (!pair.second->parent)
+		if (!pair.second->get_parent())
 			return pair.second;
 	// no parent found, something broke
 	assert(false);
@@ -210,7 +210,7 @@ void action_stack::new_action(action* const a, const bool apply)
 }
 void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*>& freed)
 {
-	for (sgnode* const child : node->children)
+	for (sgnode* const child : node->get_children())
 		clear(child, freed);
 	if (!freed.contains(node))
 	{
