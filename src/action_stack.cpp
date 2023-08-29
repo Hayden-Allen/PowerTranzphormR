@@ -55,6 +55,10 @@ void action_stack::unfreeze(sgnode* const target, sgnode* const unfrozen)
 {
 	new_action(new unfreeze_action(target, unfrozen), true);
 }
+void action_stack::rename(sgnode* const target, const std::string& new_name)
+{
+	new_action(new rename_action(target, new_name), true);
+}
 bool action_stack::can_undo()
 {
 	return m_past.size() > 0;

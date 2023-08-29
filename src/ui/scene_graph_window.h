@@ -10,9 +10,12 @@ public:
 	virtual ~scene_graph_window() {}
 public:
 	virtual void handle_frame() override;
+	void set_renaming(sgnode* const node);
+	const sgnode* get_renaming() const;
 private:
 	Rect handle_node(sgnode* const node);
 private:
 	sgnode* m_show_add_child = nullptr;
+	sgnode* m_renaming = nullptr;
 	bool m_rename_needs_focus = false;
 };

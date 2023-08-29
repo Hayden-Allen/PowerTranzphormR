@@ -8,12 +8,23 @@ scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Phorms")
 {}
 
+
+
 void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 }
-
+void scene_graph_window::set_renaming(sgnode* const node)
+{
+	assert(!m_renaming);
+	m_renaming = node;
+	m_rename_needs_focus = true;
+}
+const sgnode* scene_graph_window::get_renaming() const
+{
+	return m_renaming;
+}
 scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 {
 	// draw current node
@@ -33,7 +44,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
 	bool open = false;
-	if (/* node->is_renaming */ false)
+	if (node == m_renaming)
 	{
 		const f32 x = ImGui::GetCursorPosX();
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
@@ -51,9 +62,12 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		{
 			std::string new_name(buf);
 			if (!new_name.empty())
-				node->set_name(new_name);
-			// node->set_renaming(false); // FIXME
+			{
+				m_app_ctx->rename_action(node, new_name);
+			}
+			m_renaming = nullptr;
 		}
+
 		if (m_rename_needs_focus)
 		{
 			ImGui::SetKeyboardFocusHere(-1);
@@ -61,7 +75,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		}
 		else if (!ImGui::IsItemActive())
 		{
-			// node->set_renaming(false); // FIXME
+			m_renaming = nullptr;
 		}
 	}
 	else
@@ -127,8 +141,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		}
 		if (ImGui::MenuItem("Rename"))
 		{
-			m_rename_needs_focus = true;
-			// node->set_renaming(true); // FIXME
+			set_renaming(node);
 		}
 		if (ImGui::MenuItem("Destroy"))
 			m_app_ctx->destroy_selected_action();

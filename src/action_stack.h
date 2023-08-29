@@ -19,6 +19,7 @@ public:
 	void destroy(sgnode* const target);
 	sgnode* freeze(sgnode* const target);
 	void unfreeze(sgnode* const target, sgnode* const unfrozen);
+	void rename(sgnode* const target, const std::string& new_name);
 	bool can_undo();
 	bool can_redo();
 	// undo last action made and move it to the redo stack

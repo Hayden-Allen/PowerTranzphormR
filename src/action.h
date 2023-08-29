@@ -116,3 +116,17 @@ public:
 	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
 };
+
+struct rename_action : public action
+{
+public:
+	std::string old_name, new_name;
+public:
+	rename_action(sgnode* const target, const std::string& name);
+	rename_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
+	MGL_DCM(rename_action);
+public:
+	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
+	nlohmann::json save() const override;
+};

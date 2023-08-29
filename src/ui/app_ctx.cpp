@@ -3,6 +3,7 @@
 #include "geom/generated_mesh.h"
 #include "sgnode.h"
 #include "action.h"
+#include "scene_graph_window.h"
 
 app_ctx::app_ctx() :
 	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
@@ -113,7 +114,6 @@ bool app_ctx::is_node_frozen(const sgnode* const node) const
 {
 	return frozen.contains(node);
 }
-
 void app_ctx::set_selected_sgnode(sgnode* const node, bool update_sel_type)
 {
 	m_selected_sgnode = node;
@@ -122,12 +122,10 @@ void app_ctx::set_selected_sgnode(sgnode* const node, bool update_sel_type)
 		sel_type = global_selection_type::sgnode;
 	}
 }
-
 sgnode* app_ctx::get_selected_sgnode()
 {
 	return sel_type == global_selection_type::sgnode ? m_selected_sgnode : nullptr;
 }
-
 void app_ctx::set_selected_material(scene_material* const mtl, bool update_sel_type)
 {
 	m_selected_mtl = mtl;
@@ -136,10 +134,14 @@ void app_ctx::set_selected_material(scene_material* const mtl, bool update_sel_t
 		sel_type = global_selection_type::material;
 	}
 }
-
 scene_material* app_ctx::get_selected_material()
 {
 	return sel_type == global_selection_type::material ? m_selected_mtl : nullptr;
+}
+void app_ctx::set_sg_window(scene_graph_window* const window)
+{
+	assert(!m_sg_window);
+	m_sg_window = window;
 }
 
 
@@ -224,6 +226,10 @@ void app_ctx::unfreeze_action(sgnode* const target)
 	assert(it != frozen.end());
 	actions.unfreeze(target, it->second);
 	frozen.erase(it);
+}
+void app_ctx::rename_action(sgnode* const target, const std::string& new_name)
+{
+	actions.rename(target, new_name);
 }
 
 
@@ -680,7 +686,9 @@ void app_ctx::phorm_menu()
 		"Rename",
 		[&]()
 		{
-			assert(false);
+			assert(m_sg_window);
+			assert(!m_sg_window->get_renaming());
+			m_sg_window->set_renaming(get_selected_sgnode());
 		},
 		[&]()
 		{

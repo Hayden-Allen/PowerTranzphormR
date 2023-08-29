@@ -261,3 +261,33 @@ nlohmann::json unfreeze_action::save() const
 	obj["i"] = index;
 	return obj;
 }
+
+
+
+rename_action::rename_action(sgnode* const target, const std::string& name) :
+	action(target),
+	old_name(target->get_name()),
+	new_name(name)
+{}
+rename_action::rename_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+	action(obj, nodes),
+	old_name(obj["o"]),
+	new_name(obj["n"])
+{}
+void rename_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
+{
+	target->set_name(new_name);
+}
+void rename_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
+{
+	target->set_name(old_name);
+}
+nlohmann::json rename_action::save() const
+{
+	nlohmann::json obj;
+	obj["type"] = 6;
+	obj["t"] = target->get_id();
+	obj["o"] = old_name;
+	obj["n"] = new_name;
+	return obj;
+}

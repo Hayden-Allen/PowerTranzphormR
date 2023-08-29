@@ -3,6 +3,8 @@
 #include "action_stack.h"
 #include "shortcut_menu.h"
 
+class scene_graph_window;
+
 enum class global_selection_type
 {
 	none = 0,
@@ -40,6 +42,7 @@ public:
 	sgnode* get_selected_sgnode();
 	void set_selected_material(scene_material* const mtl, bool update_sel_type);
 	scene_material* get_selected_material();
+	void set_sg_window(scene_graph_window* const window);
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -57,6 +60,7 @@ public:
 	void create_intersect_action();
 	void freeze_action(sgnode* const target);
 	void unfreeze_action(sgnode* const target);
+	void rename_action(sgnode* const target, const std::string& new_name);
 private:
 	void create_operation_action(const carve::csg::CSG::OP op);
 	template<typename FN>
@@ -69,4 +73,5 @@ private:
 private:
 	sgnode* m_selected_sgnode = nullptr;
 	scene_material* m_selected_mtl = nullptr;
+	scene_graph_window* m_sg_window = nullptr;
 };

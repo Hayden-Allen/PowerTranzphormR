@@ -155,6 +155,7 @@ int main(int argc, char** argv)
 
 	scene_graph_window sg_window(&a_ctx);
 	il.add_window(&sg_window);
+	a_ctx.set_sg_window(&sg_window);
 
 	properties_window prop_window(&a_ctx);
 	il.add_window(&prop_window);
