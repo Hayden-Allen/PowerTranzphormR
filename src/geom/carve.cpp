@@ -7,25 +7,26 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& tex_coord_attr = scene->get_tex_coord_attr();
 
-	std::unordered_map<const vertex_t*, vertex_t*> verts_map;
+	std::unordered_map<const vertex_t*, vertex_t> verts_map;
+	verts_map.reserve(mesh->vertex_storage.size());
 	for (size_t i = 0; i < mesh->vertex_storage.size(); ++i)
 	{
 		const auto& v = mesh->vertex_storage[i];
-		verts_map.insert({ &mesh->vertex_storage[i], new vertex_t(carve::geom::VECTOR(v.v.x, v.v.y, v.v.z)) });
+		verts_map.insert({ &mesh->vertex_storage[i], vertex_t(carve::geom::VECTOR(v.v.x, v.v.y, v.v.z)) });
 	}
-	std::vector<face_t*> faces;
 
+	std::vector<face_t*> faces;
 	for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 	{
-		const mesh_t::face_t* f = *i;
-		u32 mtl_id = mtl_id_attr.getAttribute(f, 0);
+		const mesh_t::face_t* const f = *i;
+		const u32 mtl_id = mtl_id_attr.getAttribute(f, 0);
 
 		std::vector<vertex_t*> verts;
 		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 		{
-			verts.emplace_back(verts_map[e->vert]);
+			verts.emplace_back(&verts_map[e->vert]);
 		}
-		mesh_t::face_t* new_f = new mesh_t::face_t(verts.begin(), verts.end());
+		mesh_t::face_t* const new_f = new mesh_t::face_t(verts.begin(), verts.end());
 		mtl_id_attr.setAttribute(new_f, mtl_id);
 		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 		{
@@ -35,7 +36,8 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 		faces.emplace_back(new_f);
 	}
 
-	return new mesh_t(faces);
+	mesh_t* const clone = new mesh_t(faces);
+	return clone;
 }
 
 mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options)
@@ -107,6 +109,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 	// angular resolution of each vertical strip
 	const f32 DTHETA = c::TWO_PI / STEPS;
 	const f32 radii[2] = { options.bottom_radius, options.top_radius };
+	std::vector<vertex_t> raw_vertices;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(2 * STEPS);
 	// vertices are the circles defining the cylinder
@@ -121,9 +124,11 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 			const f32 x = r * cosf(j * DTHETA), z = r * sinf(j * DTHETA);
 			// make cylinder vertically centered on the local origin
 			const f32 y = (i * 2.f - 1.f) * .5f;
-			vertices.push_back(new vertex_t(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
+			raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 		}
 	}
+	for (u64 i = 0; i < raw_vertices.size(); i++)
+		vertices.push_back(raw_vertices.data() + i);
 
 	std::vector<face_t*> faces;
 	faces.reserve(STEPS + 2);
@@ -171,6 +176,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	// generate circular base of the cone
 	const u32 STEPS = options.num_steps;
 	const f32 DTHETA = c::TWO_PI / STEPS;
+	std::vector<vertex_t> raw_vertices;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(STEPS + 1);
 	for (u32 j = 0; j < STEPS; j++)
@@ -178,10 +184,12 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 		const f32 x = .5f * cosf(j * DTHETA), z = .5f * sinf(j * DTHETA);
 		// make cone vertically centered on the origin
 		const f32 y = -.5f;
-		vertices.push_back(new vertex_t(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
+		raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 	}
 	// top point of cone
-	vertices.push_back(new vertex_t(hats2carve(point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform))));
+	raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform)));
+	for (u64 i = 0; i < raw_vertices.size(); i++)
+		vertices.push_back(raw_vertices.data() + i);
 
 	std::vector<face_t*> faces;
 	faces.reserve(STEPS + 1);
@@ -228,6 +236,7 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 	const f32 DTHETA = c::TWO_PI / CENTER_STEPS;
 	// resolution of each circle
 	const f32 DPHI = c::TWO_PI / TUBE_STEPS;
+	std::vector<vertex_t> raw_vertices;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(TUBE_STEPS * CENTER_STEPS);
 	for (u32 i = 0; i < CENTER_STEPS; i++)
@@ -241,9 +250,11 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 			const f32 x = (options.center_radius + options.tube_radius * cp) * ct;
 			const f32 y = options.tube_radius * sp;
 			const f32 z = (options.center_radius + options.tube_radius * cp) * st;
-			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
+			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 		}
 	}
+	for (u64 i = 0; i < raw_vertices.size(); i++)
+		vertices.push_back(raw_vertices.data() + i);
 
 	std::vector<face_t*> faces;
 	// treat each pair of circles (each step of the tube) as a cylinder, and generate `TUBE_STEPS` vertical strips
@@ -278,6 +289,7 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 
 	const u32 nv = options.num_vertical_steps, nh = options.num_horizontal_steps;
 	const f32 DPHI = c::PI / nv, DTHETA = c::TWO_PI / nh;
+	std::vector<vertex_t> raw_vertices;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(nh * nv + 2);
 	// [1, nv-1] because poles are added separately
@@ -304,12 +316,14 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 				const f32 rad = 1 - ct2 * sp2 - tmp;
 				z = .5f * sign(st) * sqrt(rad);
 			}
-			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform))));
+			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 		}
 	}
 	// poles
-	vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(0, -.5f, 0).transform_copy(options.transform))));
-	vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform))));
+	raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(0, -.5f, 0).transform_copy(options.transform)));
+	raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform)));
+	for (u64 i = 0; i < raw_vertices.size(); i++)
+		vertices.push_back(raw_vertices.data() + i);
 
 	std::vector<face_t*> faces;
 	// poles are comprised of triangles from each vertical strip
@@ -372,6 +386,7 @@ mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	const u32 z_steps = options.depth_steps == 0 ? mh : options.depth_steps;
 	const f32 x_step = 1.f / (x_steps - 1);
 	const f32 z_step = 1.f / (z_steps - 1);
+	std::vector<vertex_t> raw_vertices;
 	std::vector<vertex_t*> vertices;
 	vertices.reserve(x_steps * z_steps);
 	// generate plane with one vertex for each pixel in `map`
@@ -383,9 +398,11 @@ mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 		for (u32 ix = 0; ix < x_steps; ix++)
 		{
 			const f32 x = ix * x_step - .5f;
-			vertices.push_back(new vertex_t(hats2carve(hats::point<space::OBJECT>(x, 0, z).transform_copy(options.transform))));
+			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, 0, z).transform_copy(options.transform)));
 		}
 	}
+	for (u64 i = 0; i < raw_vertices.size(); i++)
+		vertices.push_back(raw_vertices.data() + i);
 
 	std::vector<face_t*> faces;
 	for (u32 iz = 0; iz < z_steps - 1; iz++)

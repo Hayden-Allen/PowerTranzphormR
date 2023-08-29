@@ -121,10 +121,10 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 				m_app_ctx->create_intersect_action();
 			ImGui::Separator();
 		}
-		const bool has_unfrozen = m_app_ctx->is_node_frozen(node);
-		if ((!node->is_root() || has_unfrozen) && node->get_gen()->mesh)
+		if (node->get_gen()->mesh)
 		{
 			// if the current node is the original frozen version of a subtree
+			const bool has_unfrozen = m_app_ctx->is_node_frozen(node);
 			if (has_unfrozen)
 			{
 				if (ImGui::MenuItem("Unphreeze!"))

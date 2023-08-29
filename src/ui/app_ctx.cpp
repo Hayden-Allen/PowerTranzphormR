@@ -660,7 +660,7 @@ void app_ctx::phorm_menu()
 		[&]()
 		{
 			const sgnode* const node = get_selected_sgnode();
-			return node && !node->is_root() && node->get_gen()->mesh && !node->is_frozen();
+			return node && node->get_gen()->mesh && !node->is_frozen();
 		},
 		"Ctrl+P",
 		GLFW_KEY_P,
@@ -675,7 +675,7 @@ void app_ctx::phorm_menu()
 		[&]()
 		{
 			const sgnode* const node = get_selected_sgnode();
-			return node && is_node_frozen(node) && node->get_gen()->mesh;
+			return node && node->get_gen()->mesh && is_node_frozen(node);
 		},
 		"Ctrl+P",
 		GLFW_KEY_P,
