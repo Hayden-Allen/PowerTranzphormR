@@ -2,6 +2,7 @@
 #include "scene_graph_window.h"
 #include "app_ctx.h"
 #include "sgnode.h"
+#include "geom/generated_mesh.h"
 
 scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Phorms")
@@ -103,13 +104,20 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		if (!node->is_root() || m_app_ctx->is_node_frozen(node))
 		{
 			const bool is_frozen = m_app_ctx->is_node_frozen(node);
-			if (!node->is_root() && !is_frozen)
-				if (ImGui::MenuItem("Phreeze!"))
-					m_app_ctx->freeze_action(node);
-			if (is_frozen)
-				if (ImGui::MenuItem("Unphreeze!"))
-					m_app_ctx->unfreeze_action(node);
-			ImGui::Separator();
+			if (!node->is_root() && node->get_gen()->mesh)
+			{
+				if (is_frozen)
+				{
+					if (ImGui::MenuItem("Unphreeze!"))
+						m_app_ctx->unfreeze_action(node);
+				}
+				else
+				{
+					if (ImGui::MenuItem("Phreeze!"))
+						m_app_ctx->freeze_action(node);
+				}
+				ImGui::Separator();
+			}
 		}
 		if (ImGui::MenuItem("Rename"))
 		{

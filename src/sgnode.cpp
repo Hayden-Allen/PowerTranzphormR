@@ -223,6 +223,7 @@ sgnode* sgnode::clone_self_and_insert(app_ctx* const app, sgnode* const parent) 
 sgnode* sgnode::freeze(scene_ctx* const scene) const
 {
 	sgnode* ret = new sgnode(this);
+	ret->set_name("Phrozen " + get_name());
 	ret->m_gen = new generated_static_mesh(m_gen->clone_mesh_to_local(scene, accumulate_mats()));
 	ret->set_operation(carve::csg::CSG::OP::ALL);
 	ret->copy_local_verts();
