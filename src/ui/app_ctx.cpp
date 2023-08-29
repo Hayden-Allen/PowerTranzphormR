@@ -116,6 +116,10 @@ bool app_ctx::is_node_frozen(const sgnode* const node) const
 }
 void app_ctx::set_selected_sgnode(sgnode* const node, bool update_sel_type)
 {
+	if (m_selected_sgnode != node)
+	{
+		m_imgui_needs_select_unfocused_sgnode = node;
+	}
 	m_selected_sgnode = node;
 	if (update_sel_type)
 	{
@@ -125,6 +129,14 @@ void app_ctx::set_selected_sgnode(sgnode* const node, bool update_sel_type)
 sgnode* app_ctx::get_selected_sgnode()
 {
 	return sel_type == global_selection_type::sgnode ? m_selected_sgnode : nullptr;
+}
+sgnode* app_ctx::get_imgui_needs_select_unfocused_sgnode()
+{
+	return m_imgui_needs_select_unfocused_sgnode;
+}
+void app_ctx::unset_imgui_needs_select_unfocused_sgnode()
+{
+	m_imgui_needs_select_unfocused_sgnode = nullptr;
 }
 void app_ctx::set_selected_material(scene_material* const mtl, bool update_sel_type)
 {
@@ -376,6 +388,7 @@ void app_ctx::edit_menu()
 		GLFW_MOD_CONTROL,
 	};
 	edit_menu.groups.push_back({ edit_undo, edit_redo });
+
 	shortcut_menu_item edit_cut = {
 		"Cut",
 		[&]()
@@ -413,18 +426,29 @@ void app_ctx::edit_menu()
 		[&]()
 		{
 			sgnode* const selected = get_selected_sgnode();
-			sgnode* const clone = clipboard->clone_self_and_insert(this, selected);
+			if (selected->is_operation())
+			{
+				sgnode* const clone = clipboard->clone_self_and_insert(this, selected);
+				set_selected_sgnode(clone, false);
+			}
+			else
+			{
+				assert(selected->get_parent());
+				sgnode* const clone = clipboard->clone_self_and_insert(this, selected->get_parent());
+				set_selected_sgnode(clone, false);
+			}
 		},
 		[&]()
 		{
 			sgnode* const selected = get_selected_sgnode();
-			return clipboard && selected && selected->is_operation();
+			return clipboard && selected;
 		},
 		"Ctrl+V",
 		GLFW_KEY_V,
 		GLFW_MOD_CONTROL,
 	};
 	edit_menu.groups.push_back({ edit_cut, edit_copy, edit_paste });
+
 	shortcut_menu_item edit_move_up = {
 		"Move Up",
 		[&]()
@@ -461,6 +485,7 @@ void app_ctx::edit_menu()
 		GLFW_MOD_CONTROL,
 	};
 	edit_menu.groups.push_back({ edit_move_up, edit_move_down });
+
 	shortcut_menu_item gizmodes = {
 		"Gizmodes",
 		[]() {
@@ -517,6 +542,7 @@ void app_ctx::edit_menu()
 	};
 	gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate, gizmo_scale });
 	edit_menu.groups.push_back({ gizmodes });
+
 	shortcut_menus.push_back(edit_menu);
 }
 void app_ctx::phorm_menu()

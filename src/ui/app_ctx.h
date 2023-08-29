@@ -40,6 +40,8 @@ public:
 	bool is_node_frozen(const sgnode* const node) const;
 	void set_selected_sgnode(sgnode* const node, bool update_sel_type);
 	sgnode* get_selected_sgnode();
+	sgnode* get_imgui_needs_select_unfocused_sgnode();
+	void unset_imgui_needs_select_unfocused_sgnode();
 	void set_selected_material(scene_material* const mtl, bool update_sel_type);
 	scene_material* get_selected_material();
 	void set_sg_window(scene_graph_window* const window);
@@ -72,6 +74,7 @@ private:
 	void phorm_menu();
 private:
 	sgnode* m_selected_sgnode = nullptr;
+	sgnode* m_imgui_needs_select_unfocused_sgnode = nullptr;
 	scene_material* m_selected_mtl = nullptr;
 	scene_graph_window* m_sg_window = nullptr;
 };

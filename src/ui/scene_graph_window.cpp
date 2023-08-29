@@ -14,6 +14,7 @@ void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
+	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -83,7 +84,15 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
 
-	if (ImGui::IsItemFocused())
+	sgnode* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_sgnode();
+	if (needs_select)
+	{
+		if (node == needs_select)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+		}
+	}
+	else if (ImGui::IsItemFocused())
 	{
 		m_app_ctx->set_selected_sgnode(node, true);
 	}
@@ -166,7 +175,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 			{
 				const Rect& child_rect = handle_node(child);
 				// draw horizontal line from vertical line to current child
-				const f32 horizontal_size = child->get_children().size() > 0 ? 24.f : 12.f;
+				const f32 horizontal_size = child->get_children().size() > 0 ? 12.f : 24.f;
 				const f32 midpoint = (child_rect.first.y + child_rect.second.y) / 2.f;
 				draw_list->AddLine(ImVec2(vertical_start.x, midpoint), ImVec2(vertical_start.x + horizontal_size, midpoint), line_color);
 				// end vertical line at position of current child
