@@ -203,14 +203,14 @@ void freeze_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 	sgnode* const parent = target->get_parent();
 	parent->remove_child(target);
 	parent->add_child(frozen, index);
-	a_ctx->set_selected_sgnode(frozen, false);
+	a_ctx->set_selected_sgnode(frozen);
 }
 void freeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
 	sgnode* const parent = frozen->get_parent();
 	parent->remove_child(frozen);
 	parent->add_child(target, index);
-	a_ctx->set_selected_sgnode(target, false);
+	a_ctx->set_selected_sgnode(target);
 }
 nlohmann::json freeze_action::save() const
 {
@@ -242,7 +242,7 @@ void unfreeze_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 	parent->remove_child(target);
 	parent->add_child(unfrozen, index);
 	unfrozen->set_transform(target->get_mat());
-	a_ctx->set_selected_sgnode(unfrozen, false);
+	a_ctx->set_selected_sgnode(unfrozen);
 }
 void unfreeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
@@ -250,7 +250,7 @@ void unfreeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 	parent->remove_child(unfrozen);
 	parent->add_child(target, index);
 	target->set_transform(unfrozen->get_mat());
-	a_ctx->set_selected_sgnode(target, false);
+	a_ctx->set_selected_sgnode(target);
 }
 nlohmann::json unfreeze_action::save() const
 {

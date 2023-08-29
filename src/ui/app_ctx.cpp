@@ -97,7 +97,7 @@ void app_ctx::undo()
 	if (a)
 	{
 		if (selected && a->undo_conflict(selected))
-			set_selected_sgnode(nullptr, false);
+			set_selected_sgnode(nullptr);
 	}
 }
 void app_ctx::redo()
@@ -107,23 +107,19 @@ void app_ctx::redo()
 	if (a)
 	{
 		if (selected && a->redo_conflict(selected))
-			set_selected_sgnode(nullptr, false);
+			set_selected_sgnode(nullptr);
 	}
 }
 bool app_ctx::is_node_frozen(const sgnode* const node) const
 {
 	return frozen.contains(node);
 }
-void app_ctx::set_selected_sgnode(sgnode* const node, bool update_sel_type)
+void app_ctx::set_selected_sgnode(sgnode* const node)
 {
 	if (m_selected_sgnode != node)
 	{
-		m_imgui_needs_select_unfocused_sgnode = node;
-	}
-	m_selected_sgnode = node;
-	if (update_sel_type)
-	{
-		sel_type = global_selection_type::sgnode;
+		m_selected_sgnode = node;
+		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
 	}
 }
 sgnode* app_ctx::get_selected_sgnode()
@@ -138,17 +134,25 @@ void app_ctx::unset_imgui_needs_select_unfocused_sgnode()
 {
 	m_imgui_needs_select_unfocused_sgnode = nullptr;
 }
-void app_ctx::set_selected_material(scene_material* const mtl, bool update_sel_type)
+void app_ctx::set_selected_material(scene_material* const mtl)
 {
-	m_selected_mtl = mtl;
-	if (update_sel_type)
+	if (m_selected_mtl != mtl)
 	{
-		sel_type = global_selection_type::material;
+		m_selected_mtl = mtl;
+		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
 	}
 }
 scene_material* app_ctx::get_selected_material()
 {
 	return sel_type == global_selection_type::material ? m_selected_mtl : nullptr;
+}
+scene_material* app_ctx::get_imgui_needs_select_unfocused_mtl()
+{
+	return m_imgui_needs_select_unfocused_mtl;
+}
+void app_ctx::unset_imgui_needs_select_unfocused_mtl()
+{
+	m_imgui_needs_select_unfocused_mtl = nullptr;
 }
 void app_ctx::set_sg_window(scene_graph_window* const window)
 {
@@ -179,7 +183,7 @@ void app_ctx::destroy_selected_action()
 	sgnode* const selected = get_selected_sgnode();
 	assert(selected && selected->get_parent());
 	actions.destroy(selected);
-	set_selected_sgnode(nullptr, false);
+	set_selected_sgnode(nullptr);
 }
 void app_ctx::create_cube_action()
 {
@@ -211,7 +215,7 @@ void app_ctx::create_heightmap_action()
 	mesh_t* m = textured_heightmap(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
 	sgnode* n = new sgnode(nullptr, m, "Heightmap");
 	create_action(n, selected);
-	set_selected_sgnode(n, true);
+	set_selected_sgnode(n);
 	*/
 }
 void app_ctx::create_union_action()
@@ -269,13 +273,13 @@ void app_ctx::create(sgnode* const node)
 		assert(!selected->is_root());
 		actions.create(node, selected->get_parent());
 	}
-	set_selected_sgnode(node, true);
+	set_selected_sgnode(node);
 }
 void app_ctx::init_menus()
 {
 	file_menu();
-	edit_menu();
 	phorm_menu();
+	material_menu();
 }
 void app_ctx::file_menu()
 {
@@ -355,200 +359,8 @@ void app_ctx::file_menu()
 	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
 	shortcut_menus.push_back(file_menu);
 }
-void app_ctx::edit_menu()
-{
-	shortcut_menu edit_menu;
-	edit_menu.name = "Edit";
-	shortcut_menu_item edit_undo = {
-		"Undo",
-		[&]()
-		{
-			undo();
-		},
-		[&]()
-		{
-			return actions.can_undo();
-		},
-		"Ctrl+Z",
-		GLFW_KEY_Z,
-		GLFW_MOD_CONTROL,
-	};
-	shortcut_menu_item edit_redo = {
-		"Redo",
-		[&]()
-		{
-			redo();
-		},
-		[&]()
-		{
-			return actions.can_redo();
-		},
-		"Ctrl+Y",
-		GLFW_KEY_Y,
-		GLFW_MOD_CONTROL,
-	};
-	edit_menu.groups.push_back({ edit_undo, edit_redo });
-
-	shortcut_menu_item edit_cut = {
-		"Cut",
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			clipboard = selected->clone(this);
-			destroy_action(selected);
-		},
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			return selected && !selected->is_root();
-		},
-		"Ctrl+X",
-		GLFW_KEY_X,
-		GLFW_MOD_CONTROL,
-	};
-	shortcut_menu_item edit_copy = {
-		"Copy",
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			clipboard = selected->clone(this);
-		},
-		[&]()
-		{
-			return get_selected_sgnode();
-		},
-		"Ctrl+C",
-		GLFW_KEY_C,
-		GLFW_MOD_CONTROL,
-	};
-	shortcut_menu_item edit_paste = {
-		"Paste",
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			if (selected->is_operation())
-			{
-				sgnode* const clone = clipboard->clone_self_and_insert(this, selected);
-				set_selected_sgnode(clone, false);
-			}
-			else
-			{
-				assert(selected->get_parent());
-				sgnode* const clone = clipboard->clone_self_and_insert(this, selected->get_parent());
-				set_selected_sgnode(clone, false);
-			}
-		},
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			return clipboard && selected;
-		},
-		"Ctrl+V",
-		GLFW_KEY_V,
-		GLFW_MOD_CONTROL,
-	};
-	edit_menu.groups.push_back({ edit_cut, edit_copy, edit_paste });
-
-	shortcut_menu_item edit_move_up = {
-		"Move Up",
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			const s64 i = selected->get_index();
-			reparent_action(selected, selected->get_parent(), i - 1);
-		},
-		[&]()
-		{
-			const sgnode* const selected = get_selected_sgnode();
-			return selected && selected->get_parent() && selected->get_index() > 0;
-		},
-		"Ctrl+Up",
-		GLFW_KEY_UP,
-		GLFW_MOD_CONTROL,
-	};
-	shortcut_menu_item edit_move_down = {
-		"Move Down",
-		[&]()
-		{
-			sgnode* const selected = get_selected_sgnode();
-			assert(selected);
-			const s64 i = selected->get_index();
-			reparent_action(selected, selected->get_parent(), i + 1);
-		},
-		[&]()
-		{
-			const sgnode* const selected = get_selected_sgnode();
-			return selected && selected->get_parent() && selected->get_index() < static_cast<s64>(selected->get_parent()->get_children().size() - 1);
-		},
-		"Ctrl+Down",
-		GLFW_KEY_DOWN,
-		GLFW_MOD_CONTROL,
-	};
-	edit_menu.groups.push_back({ edit_move_up, edit_move_down });
-
-	shortcut_menu_item gizmodes = {
-		"Gizmodes",
-		[]() {
-		},
-		[&]()
-		{
-			return !mgl_ctx.is_cursor_locked();
-		},
-		"",
-		0,
-		0,
-	};
-	shortcut_menu_item gizmo_translate = {
-		"Translate",
-		[&]()
-		{
-			gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
-		},
-		[&]()
-		{
-			return true;
-		},
-		"T",
-		GLFW_KEY_T,
-		0,
-	};
-	shortcut_menu_item gizmo_rotate = {
-		"Rotate",
-		[&]()
-		{
-			gizmo_op = ImGuizmo::OPERATION::ROTATE;
-		},
-		[&]()
-		{
-			return true;
-		},
-		"R",
-		GLFW_KEY_R,
-		0,
-	};
-	shortcut_menu_item gizmo_scale = {
-		"Scale",
-		[&]()
-		{
-			gizmo_op = ImGuizmo::OPERATION::SCALE;
-		},
-		[&]()
-		{
-			return true;
-		},
-		"E",
-		GLFW_KEY_E,
-		0,
-	};
-	gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate, gizmo_scale });
-	edit_menu.groups.push_back({ gizmodes });
-
-	shortcut_menus.push_back(edit_menu);
-}
 void app_ctx::phorm_menu()
 {
-	shortcut_menu phorm_menu;
-	phorm_menu.name = "Phorm";
 	shortcut_menu_item phorm_create_cube = {
 		"Cube",
 		[&]()
@@ -677,6 +489,130 @@ void app_ctx::phorm_menu()
 		}
 	};
 
+	shortcut_menu_item phorm_undo = {
+		"Undo",
+		[&]()
+		{
+			undo();
+		},
+		[&]()
+		{
+			return actions.can_undo();
+		},
+		"Ctrl+Z",
+		GLFW_KEY_Z,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_redo = {
+		"Redo",
+		[&]()
+		{
+			redo();
+		},
+		[&]()
+		{
+			return actions.can_redo();
+		},
+		"Ctrl+Y",
+		GLFW_KEY_Y,
+		GLFW_MOD_CONTROL,
+	};
+
+	shortcut_menu_item phorm_cut = {
+		"Cut",
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			clipboard = selected->clone(this);
+			destroy_action(selected);
+		},
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root();
+		},
+		"Ctrl+X",
+		GLFW_KEY_X,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_copy = {
+		"Copy",
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			clipboard = selected->clone(this);
+		},
+		[&]()
+		{
+			return get_selected_sgnode();
+		},
+		"Ctrl+C",
+		GLFW_KEY_C,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_paste = {
+		"Paste",
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			if (selected->is_operation())
+			{
+				sgnode* const clone = clipboard->clone_self_and_insert(this, selected);
+				set_selected_sgnode(clone);
+			}
+			else
+			{
+				assert(selected->get_parent());
+				sgnode* const clone = clipboard->clone_self_and_insert(this, selected->get_parent());
+				set_selected_sgnode(clone);
+			}
+		},
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			return clipboard && selected;
+		},
+		"Ctrl+V",
+		GLFW_KEY_V,
+		GLFW_MOD_CONTROL,
+	};
+
+	shortcut_menu_item phorm_move_up = {
+		"Move Up",
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			const s64 i = selected->get_index();
+			reparent_action(selected, selected->get_parent(), i - 1);
+		},
+		[&]()
+		{
+			const sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root() && selected->get_index() > 0;
+		},
+		"Ctrl+Up",
+		GLFW_KEY_UP,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_move_down = {
+		"Move Down",
+		[&]()
+		{
+			sgnode* const selected = get_selected_sgnode();
+			assert(selected);
+			const s64 i = selected->get_index();
+			reparent_action(selected, selected->get_parent(), i + 1);
+		},
+		[&]()
+		{
+			const sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root() && selected->get_index() < static_cast<s64>(selected->get_parent()->get_children().size() - 1);
+		},
+		"Ctrl+Down",
+		GLFW_KEY_DOWN,
+		GLFW_MOD_CONTROL,
+	};
+
 	shortcut_menu_item phorm_phreeze = {
 		"Phreeze!",
 		[&]()
@@ -686,7 +622,7 @@ void app_ctx::phorm_menu()
 		[&]()
 		{
 			const sgnode* const node = get_selected_sgnode();
-			return node && node->get_gen()->mesh && !node->is_frozen();
+			return node && !node->is_root() && node->get_gen()->mesh && !node->is_frozen();
 		},
 		"Ctrl+P",
 		GLFW_KEY_P,
@@ -701,7 +637,7 @@ void app_ctx::phorm_menu()
 		[&]()
 		{
 			const sgnode* const node = get_selected_sgnode();
-			return node && node->get_gen()->mesh && is_node_frozen(node);
+			return node && !node->is_root() && node->get_gen()->mesh && is_node_frozen(node);
 		},
 		"Ctrl+P",
 		GLFW_KEY_P,
@@ -735,15 +671,135 @@ void app_ctx::phorm_menu()
 		},
 		[&]()
 		{
-			return get_selected_sgnode();
+			sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root();
 		},
 		"Delete",
 		GLFW_KEY_DELETE,
 		0,
 	};
 
+	shortcut_menu_item gizmodes = {
+		"Gizmodes",
+		[]() {
+		},
+		[&]()
+		{
+			return !mgl_ctx.is_cursor_locked();
+		},
+		"",
+		0,
+		0,
+	};
+	shortcut_menu_item gizmo_translate = {
+		"Translate",
+		[&]()
+		{
+			gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
+		},
+		[&]()
+		{
+			return true;
+		},
+		"T",
+		GLFW_KEY_T,
+		0,
+	};
+	shortcut_menu_item gizmo_rotate = {
+		"Rotate",
+		[&]()
+		{
+			gizmo_op = ImGuizmo::OPERATION::ROTATE;
+		},
+		[&]()
+		{
+			return true;
+		},
+		"R",
+		GLFW_KEY_R,
+		0,
+	};
+	shortcut_menu_item gizmo_scale = {
+		"Scale",
+		[&]()
+		{
+			gizmo_op = ImGuizmo::OPERATION::SCALE;
+		},
+		[&]()
+		{
+			return true;
+		},
+		"E",
+		GLFW_KEY_E,
+		0,
+	};
+	gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate, gizmo_scale });
+
+	shortcut_menu phorm_menu;
+	phorm_menu.name = "Phorm";
 	phorm_menu.groups.push_back({ phorm_create });
+	phorm_menu.groups.push_back({ phorm_undo, phorm_redo });
+	phorm_menu.groups.push_back({ phorm_cut, phorm_copy, phorm_paste });
+	phorm_menu.groups.push_back({ phorm_move_up, phorm_move_down });
 	phorm_menu.groups.push_back({ phorm_phreeze, phorm_unphreeze });
 	phorm_menu.groups.push_back({ phorm_rename, phorm_destroy });
+	phorm_menu.groups.push_back({ gizmodes });
 	shortcut_menus.push_back(phorm_menu);
+}
+
+void app_ctx::material_menu()
+{
+	shortcut_menu_item material_create = {
+		"Create",
+		[&]()
+		{
+			//
+			// TODO
+			//
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+Shift+=",
+		GLFW_KEY_EQUAL,
+		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item material_rename = {
+		"Rename",
+		[&]()
+		{
+			//
+			// TODO
+			//
+		},
+		[&]()
+		{
+			return get_selected_material();
+		},
+		"Ctrl+R",
+		GLFW_KEY_R,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item material_destroy = {
+		"Destroy",
+		[&]()
+		{
+			//
+			// TODO
+			//
+		},
+		[&]()
+		{
+			return get_selected_material();
+		},
+		"Delete",
+		GLFW_KEY_DELETE,
+		0,
+	};
+
+	shortcut_menu material_menu;
+	material_menu.name = "Material";
+	material_menu.groups.push_back({ material_create, material_rename, material_destroy });
+	shortcut_menus.push_back(material_menu);
 }

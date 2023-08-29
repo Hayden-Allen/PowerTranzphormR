@@ -12,6 +12,10 @@ scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 
 void scene_graph_window::handle_frame()
 {
+	if (ImGui::IsWindowFocused())
+	{
+		m_app_ctx->sel_type = global_selection_type::sgnode;
+	}
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
@@ -88,7 +92,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 	}
 	else if (ImGui::IsItemFocused())
 	{
-		m_app_ctx->set_selected_sgnode(node, true);
+		m_app_ctx->set_selected_sgnode(node);
 	}
 
 	ImGui::PopStyleVar();
@@ -99,7 +103,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 	ImGui::PushID(node->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		m_app_ctx->set_selected_sgnode(node, true);
+		m_app_ctx->set_selected_sgnode(node);
 
 		if (node->is_operation())
 		{
@@ -124,7 +128,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 				m_app_ctx->create_intersect_action();
 			ImGui::Separator();
 		}
-		if (node->get_gen()->mesh)
+		if (!node->is_root() && node->get_gen()->mesh)
 		{
 			// if the current node is the original frozen version of a subtree
 			const bool has_unfrozen = m_app_ctx->is_node_frozen(node);
@@ -146,7 +150,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		{
 			set_renaming(node);
 		}
-		if (ImGui::MenuItem("Destroy"))
+		if (!node->is_root() && ImGui::MenuItem("Destroy"))
 			m_app_ctx->destroy_selected_action();
 
 		ImGui::EndPopup();

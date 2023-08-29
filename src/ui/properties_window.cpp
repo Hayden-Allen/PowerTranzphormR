@@ -11,24 +11,33 @@ properties_window::properties_window(app_ctx* const a_ctx) :
 
 void properties_window::handle_frame()
 {
-	sgnode* const selected = m_app_ctx->get_selected_sgnode();
-	if (!selected)
+	sgnode* const selected_sgnode = m_app_ctx->get_selected_sgnode();
+	if (selected_sgnode)
 	{
-		return;
+		handle_sgnode_frame(selected_sgnode);
 	}
 
-	if (selected->is_root())
+	scene_material* const selected_material = m_app_ctx->get_selected_material();
+	if (selected_material)
 	{
-		handle_snapping_angle();
-	}
-	handle_transform(selected);
-	if (!selected->is_operation())
-	{
-		handle_mesh(selected);
+		handle_material_frame(selected_material);
 	}
 }
 
-void properties_window::handle_snapping_angle()
+void properties_window::handle_sgnode_frame(sgnode* const selected)
+{
+	if (selected->is_root())
+	{
+		handle_sgnode_snapping_angle();
+	}
+	handle_sgnode_transform(selected);
+	if (!selected->is_operation())
+	{
+		handle_sgnode_mesh(selected);
+	}
+}
+
+void properties_window::handle_sgnode_snapping_angle()
 {
 	const bool start_all = scene_ctx::s_snap_all;
 	ImGui::Checkbox("Snap All", &scene_ctx::s_snap_all);
@@ -39,7 +48,7 @@ void properties_window::handle_snapping_angle()
 		m_app_ctx->scene.get_sg_root()->set_dirty();
 }
 
-void properties_window::handle_transform(sgnode* const selected)
+void properties_window::handle_sgnode_transform(sgnode* const selected)
 {
 	bool dirty = false;
 	float trans[3] = { 0.f }, rot[3] = { 0.f }, scale[3] = { 0.f };
@@ -63,7 +72,7 @@ void properties_window::handle_transform(sgnode* const selected)
 	}
 }
 
-void properties_window::handle_mesh(sgnode* const selected)
+void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
 	for (const auto& prop : selected->get_gen()->get_params())
 	{
@@ -82,4 +91,11 @@ void properties_window::handle_mesh(sgnode* const selected)
 			}
 		}
 	}
+}
+
+void properties_window::handle_material_frame(scene_material* const selected)
+{
+	//
+	// TODO
+	//
 }
