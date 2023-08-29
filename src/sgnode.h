@@ -33,6 +33,7 @@ public:
 	bool is_root() const;
 	bool is_operation() const;
 	bool is_dirty() const;
+	bool is_frozen() const;
 	void set_transform(const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void transform(const tmat<space::OBJECT, space::OBJECT>& m);
 	void set_operation(const carve::csg::CSG::OP op);
@@ -57,7 +58,7 @@ private:
 	generated_mesh* m_gen = nullptr;
 	carve::csg::CSG::OP m_operation = carve::csg::CSG::OP::ALL;
 	std::string m_id, m_name;
-	bool m_dirty = false;
+	bool m_dirty = false, m_frozen = false;
 	tmat<space::OBJECT, space::PARENT> m_mat;
 	std::vector<point<space::OBJECT>> m_local_verts;
 private:

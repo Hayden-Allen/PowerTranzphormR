@@ -107,21 +107,21 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 				m_app_ctx->create_intersect_action();
 			ImGui::Separator();
 		}
-		if (!node->is_root() || m_app_ctx->is_node_frozen(node))
+		const bool has_unfrozen = m_app_ctx->is_node_frozen(node);
+		if ((!node->is_root() || has_unfrozen) && node->get_gen()->mesh)
 		{
-			const bool is_frozen = m_app_ctx->is_node_frozen(node);
-			if (!node->is_root() && node->get_gen()->mesh)
+			// if the current node is the original frozen version of a subtree
+			if (has_unfrozen)
 			{
-				if (is_frozen)
-				{
-					if (ImGui::MenuItem("Unphreeze!"))
-						m_app_ctx->unfreeze_action(node);
-				}
-				else
-				{
-					if (ImGui::MenuItem("Phreeze!"))
-						m_app_ctx->freeze_action(node);
-				}
+				if (ImGui::MenuItem("Unphreeze!"))
+					m_app_ctx->unfreeze_action(node);
+				ImGui::Separator();
+			}
+			// if the current node is NOT a clone of an original frozen node
+			else if (!node->is_frozen())
+			{
+				if (ImGui::MenuItem("Phreeze!"))
+					m_app_ctx->freeze_action(node);
 				ImGui::Separator();
 			}
 		}

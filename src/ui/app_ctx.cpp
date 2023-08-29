@@ -109,7 +109,7 @@ void app_ctx::redo()
 			set_selected_sgnode(nullptr, false);
 	}
 }
-bool app_ctx::is_node_frozen(sgnode* const node) const
+bool app_ctx::is_node_frozen(const sgnode* const node) const
 {
 	return frozen.contains(node);
 }
@@ -644,6 +644,52 @@ void app_ctx::phorm_menu()
 			{ phorm_create_union, phorm_create_subtract, phorm_create_intersect },
 		}
 	};
+
+	shortcut_menu_item phorm_phreeze = {
+		"Phreeze!",
+		[&]()
+		{
+			freeze_action(get_selected_sgnode());
+		},
+		[&]()
+		{
+			const sgnode* const node = get_selected_sgnode();
+			return node && !node->is_root() && node->get_gen()->mesh && !node->is_frozen();
+		},
+		"Ctrl+P",
+		GLFW_KEY_P,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_unphreeze = {
+		"Unphreeze!",
+		[&]()
+		{
+			unfreeze_action(get_selected_sgnode());
+		},
+		[&]()
+		{
+			const sgnode* const node = get_selected_sgnode();
+			return node && is_node_frozen(node) && node->get_gen()->mesh;
+		},
+		"Ctrl+P",
+		GLFW_KEY_P,
+		GLFW_MOD_CONTROL,
+	};
+
+	shortcut_menu_item phorm_rename = {
+		"Rename",
+		[&]()
+		{
+			assert(false);
+		},
+		[&]()
+		{
+			return get_selected_sgnode();
+		},
+		"Ctrl+R",
+		GLFW_KEY_R,
+		GLFW_MOD_CONTROL,
+	};
 	shortcut_menu_item phorm_destroy = {
 		"Destroy",
 		[&]()
@@ -661,6 +707,9 @@ void app_ctx::phorm_menu()
 		GLFW_KEY_DELETE,
 		0,
 	};
-	phorm_menu.groups.push_back({ phorm_create, phorm_destroy });
+
+	phorm_menu.groups.push_back({ phorm_create });
+	phorm_menu.groups.push_back({ phorm_phreeze, phorm_unphreeze });
+	phorm_menu.groups.push_back({ phorm_rename, phorm_destroy });
 	shortcut_menus.push_back(phorm_menu);
 }

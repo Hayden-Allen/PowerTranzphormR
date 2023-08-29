@@ -21,7 +21,7 @@ public:
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::OPERATION::TRANSLATE;
 	std::vector<shortcut_menu> shortcut_menus;
 	sgnode* clipboard = nullptr;
-	std::unordered_map<sgnode*, sgnode*> frozen;
+	std::unordered_map<const sgnode*, sgnode*> frozen;
 	mutable std::string loaded_filename;
 	global_selection_type sel_type = global_selection_type::none;
 public:
@@ -35,7 +35,7 @@ public:
 	void load(const std::string& fp);
 	void undo();
 	void redo();
-	bool is_node_frozen(sgnode* const node) const;
+	bool is_node_frozen(const sgnode* const node) const;
 	void set_selected_sgnode(sgnode* const node, bool update_sel_type);
 	sgnode* get_selected_sgnode();
 	void set_selected_material(scene_material* const mtl, bool update_sel_type);

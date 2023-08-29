@@ -126,6 +126,10 @@ bool sgnode::is_dirty() const
 {
 	return m_dirty;
 }
+bool sgnode::is_frozen() const
+{
+	return m_frozen;
+}
 void sgnode::set_transform(const tmat<space::OBJECT, space::PARENT>& new_mat)
 {
 	m_mat = new_mat;
@@ -207,6 +211,8 @@ sgnode* sgnode::clone(app_ctx* const app) const
 {
 	sgnode* ret = new sgnode(this);
 	ret->m_gen = m_gen->clone(&app->scene);
+	if (m_frozen)
+		ret->copy_local_verts();
 	for (const sgnode* const child : m_children)
 		ret->add_child(child->clone(app));
 	return ret;
@@ -215,6 +221,8 @@ sgnode* sgnode::clone_self_and_insert(app_ctx* const app, sgnode* const parent) 
 {
 	sgnode* ret = new sgnode(this);
 	ret->m_gen = m_gen->clone(&app->scene);
+	if (m_frozen)
+		ret->copy_local_verts();
 	app->create_action(ret, parent);
 	for (const sgnode* const child : m_children)
 		child->clone_self_and_insert(app, ret);
@@ -223,6 +231,7 @@ sgnode* sgnode::clone_self_and_insert(app_ctx* const app, sgnode* const parent) 
 sgnode* sgnode::freeze(scene_ctx* const scene) const
 {
 	sgnode* ret = new sgnode(this);
+	ret->m_frozen = true;
 	ret->set_name("Phrozen " + get_name());
 	ret->m_gen = new generated_static_mesh(m_gen->clone_mesh_to_local(scene, accumulate_mats()));
 	ret->set_operation(carve::csg::CSG::OP::ALL);
@@ -298,6 +307,7 @@ sgnode::sgnode(const sgnode* const original) :
 	m_operation(original->m_operation),
 	m_id(std::string("sgn") + std::to_string(s_next_id++)),
 	m_name(original->m_name),
+	m_frozen(original->m_frozen),
 	m_mat(original->m_mat)
 {}
 
