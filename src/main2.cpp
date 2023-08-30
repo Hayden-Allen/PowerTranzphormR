@@ -9,42 +9,6 @@
 #include "ui/app_ctx.h"
 #include "scene_material.h"
 
-static mgl::texture2d_rgb_u8* load_texture_rgb_u8(const std::string& fp)
-{
-	std::ifstream test(fp);
-	if (!test.is_open())
-	{
-		LOG_FATAL("Invalid texture filepath {}", fp.c_str());
-		MGL_ASSERT(false);
-		return nullptr;
-	}
-	test.close();
-
-	stbi_set_flip_vertically_on_load(true);
-	int w = -1, h = -1, c = -1;
-	stbi_uc* tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
-	mgl::texture2d_rgb_u8* tex = new mgl::texture2d_rgb_u8(GL_RGB, w, h, tex_data);
-	stbi_image_free(tex_data);
-	return tex;
-}
-static mgl::retained_texture2d_rgb_u8* load_retained_texture_rgb_u8(const std::string& fp)
-{
-	std::ifstream test(fp);
-	if (!test.is_open())
-	{
-		LOG_FATAL("Invalid texture filepath {}", fp.c_str());
-		MGL_ASSERT(false);
-		return nullptr;
-	}
-	test.close();
-
-	stbi_set_flip_vertically_on_load(true);
-	int w = -1, h = -1, c = -1;
-	stbi_uc* tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
-	mgl::retained_texture2d_rgb_u8* tex = new mgl::retained_texture2d_rgb_u8(GL_RGB, w, h, tex_data);
-	stbi_image_free(tex_data);
-	return tex;
-}
 
 // static sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})
 //{
@@ -121,6 +85,8 @@ void make_scene(scene_ctx* const out_scene)
 
 int main(int argc, char** argv)
 {
+	g::init();
+
 	app_ctx a_ctx;
 
 	shortcut_menus_layer sl(&a_ctx);
@@ -184,5 +150,6 @@ int main(int argc, char** argv)
 		a_ctx.mgl_ctx.end_frame();
 	}
 
+	g::destroy();
 	return 0;
 }

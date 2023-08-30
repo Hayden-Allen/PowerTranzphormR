@@ -39,18 +39,18 @@ public:
 	u32 get_id_for_material(scene_material* mat);
 	scene_material* get_material(GLuint id);
 public:
-	mesh_t* create_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {});
-	mesh_t* create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {});
-	mesh_t* create_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {});
-	mesh_t* create_textured_cone(GLuint mtl_id, const cone_options& options = {});
-	mesh_t* create_textured_torus(GLuint mtl_id, const torus_options& options = {});
-	mesh_t* create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {});
-	generated_mesh* generated_textured_cuboid(GLuint mtl_id, const cuboid_options& options = {});
-	generated_mesh* generated_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options = {});
-	generated_mesh* generated_textured_cylinder(GLuint mtl_id, const cylinder_options& options = {});
-	generated_mesh* generated_textured_cone(GLuint mtl_id, const cone_options& options = {});
-	generated_mesh* generated_textured_torus(GLuint mtl_id, const torus_options& options = {});
-	generated_mesh* generated_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options = {});
+	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
+	mesh_t* create_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options = {});
+	mesh_t* create_textured_cylinder(const GLuint mtl_id, const cylinder_options& options = {});
+	mesh_t* create_textured_cone(const GLuint mtl_id, const cone_options& options = {});
+	mesh_t* create_textured_torus(const GLuint mtl_id, const torus_options& options = {});
+	mesh_t* create_textured_heightmap(const GLuint mtl_id, const heightmap_options& options = {});
+	generated_mesh* generated_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
+	generated_mesh* generated_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options = {});
+	generated_mesh* generated_textured_cylinder(const GLuint mtl_id, const cylinder_options& options = {});
+	generated_mesh* generated_textured_cone(const GLuint mtl_id, const cone_options& options = {});
+	generated_mesh* generated_textured_torus(const GLuint mtl_id, const torus_options& options = {});
+	generated_mesh* generated_textured_heightmap(const GLuint mtl_id, const heightmap_options& options = {});
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_vert_size = 8;

@@ -40,3 +40,4 @@
 #include "hats/hats.h"
 #include "mingl/mingl.h"
 #include "util.h"
+#include "globals.h"

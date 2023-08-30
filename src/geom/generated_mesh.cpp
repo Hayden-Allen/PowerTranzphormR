@@ -412,40 +412,34 @@ generated_heightmap::generated_heightmap(scene_ctx* const scene, const GLuint ma
 generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
 	generated_primitive(obj)
 {
-	assert(false);
 	const auto& opts = obj["opts"];
 	m_options.width_steps = opts["nw"];
 	m_options.depth_steps = opts["nd"];
+	m_options.map_path = opts["path"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::unordered_map<std::string, generated_mesh_param> generated_heightmap::get_params() const
 {
-	// TODO
-	assert(false);
 	return generated_primitive::get_params();
 }
 void generated_heightmap::recompute(scene_ctx* const scene)
 {
 	generated_primitive::recompute(scene);
-	// TODO
-	assert(false);
+	mesh = scene->create_textured_heightmap(m_material, m_options);
 }
 generated_mesh* generated_heightmap::clone(scene_ctx* const scene) const
 {
-	// TODO
-	assert(false);
 	return new generated_heightmap(m_material, m_options);
 }
 nlohmann::json generated_heightmap::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
-	// TODO
-	assert(false);
 	nlohmann::json obj;
 	obj["type"] = 5;
 	obj["mat"] = m_material;
 	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["nw"] = m_options.width_steps;
 	obj["opts"]["nd"] = m_options.depth_steps;
+	obj["opts"]["path"] = m_options.map_path;
 	return obj;
 }
 primitive_options* generated_heightmap::get_options() const

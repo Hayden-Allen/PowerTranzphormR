@@ -40,7 +40,7 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 	return clone;
 }
 
-mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cuboid_options& options)
+mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
@@ -96,7 +96,7 @@ mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_i
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cylinder_options& options)
+mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cylinder_options& options)
 {
 	assert(options.num_steps > 0);
 	assert(options.top_radius > 0.f);
@@ -167,7 +167,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const cone_options& options)
+mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cone_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
@@ -219,7 +219,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const torus_options& options)
+mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const torus_options& options)
 {
 	assert(options.center_radius > 0.f);
 	assert(options.tube_radius > 0.f);
@@ -280,7 +280,7 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const ellipsoid_options& options)
+mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
@@ -376,11 +376,14 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options)
+mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
+	assert(options.width_steps > 0.f);
+	assert(options.depth_steps > 0.f);
 
+	const mgl::texture2d_rgb_u8* const map = g::texlib->get_or_load(options.map_path);
 	const u32 mw = map->get_width(), mh = map->get_height();
 	const u32 x_steps = options.width_steps == 0 ? mw : options.width_steps;
 	const u32 z_steps = options.depth_steps == 0 ? mh : options.depth_steps;

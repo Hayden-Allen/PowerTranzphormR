@@ -145,51 +145,51 @@ scene_material* scene_ctx::get_material(GLuint id)
 
 
 
-mesh_t* scene_ctx::create_textured_cuboid(GLuint mtl_id, const cuboid_options& options)
+mesh_t* scene_ctx::create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options)
 {
 	return textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
 }
-mesh_t* scene_ctx::create_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options)
+mesh_t* scene_ctx::create_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options)
 {
 	return textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
 }
-mesh_t* scene_ctx::create_textured_cylinder(GLuint mtl_id, const cylinder_options& options)
+mesh_t* scene_ctx::create_textured_cylinder(const GLuint mtl_id, const cylinder_options& options)
 {
 	return textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
 }
-mesh_t* scene_ctx::create_textured_cone(GLuint mtl_id, const cone_options& options)
+mesh_t* scene_ctx::create_textured_cone(const GLuint mtl_id, const cone_options& options)
 {
 	return textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
 }
-mesh_t* scene_ctx::create_textured_torus(GLuint mtl_id, const torus_options& options)
+mesh_t* scene_ctx::create_textured_torus(const GLuint mtl_id, const torus_options& options)
 {
 	return textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
 }
-mesh_t* scene_ctx::create_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options)
+mesh_t* scene_ctx::create_textured_heightmap(const GLuint mtl_id, const heightmap_options& options)
 {
-	return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, map, options);
+	return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
 }
-generated_mesh* scene_ctx::generated_textured_cuboid(GLuint mtl_id, const cuboid_options& options)
+generated_mesh* scene_ctx::generated_textured_cuboid(const GLuint mtl_id, const cuboid_options& options)
 {
 	return new generated_cuboid(this, mtl_id, options);
 }
-generated_mesh* scene_ctx::generated_textured_ellipsoid(GLuint mtl_id, const ellipsoid_options& options)
+generated_mesh* scene_ctx::generated_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options)
 {
 	return new generated_ellipsoid(this, mtl_id, options);
 }
-generated_mesh* scene_ctx::generated_textured_cylinder(GLuint mtl_id, const cylinder_options& options)
+generated_mesh* scene_ctx::generated_textured_cylinder(const GLuint mtl_id, const cylinder_options& options)
 {
 	return new generated_cylinder(this, mtl_id, options);
 }
-generated_mesh* scene_ctx::generated_textured_cone(GLuint mtl_id, const cone_options& options)
+generated_mesh* scene_ctx::generated_textured_cone(const GLuint mtl_id, const cone_options& options)
 {
 	return new generated_cone(this, mtl_id, options);
 }
-generated_mesh* scene_ctx::generated_textured_torus(GLuint mtl_id, const torus_options& options)
+generated_mesh* scene_ctx::generated_textured_torus(const GLuint mtl_id, const torus_options& options)
 {
 	return new generated_torus(this, mtl_id, options);
 }
-generated_mesh* scene_ctx::generated_textured_heightmap(GLuint mtl_id, const mgl::retained_texture2d_rgb_u8* const map, const heightmap_options& options)
+generated_mesh* scene_ctx::generated_textured_heightmap(const GLuint mtl_id, const heightmap_options& options)
 {
 	return new generated_heightmap(this, mtl_id, options);
 }
