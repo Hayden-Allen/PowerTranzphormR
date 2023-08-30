@@ -2,6 +2,7 @@
 #include "imgui_window.h"
 
 class sgnode;
+struct scene_material;
 
 class properties_window : public imgui_window
 {
@@ -11,7 +12,10 @@ public:
 public:
 	virtual void handle_frame() override;
 private:
-	void handle_snapping_angle();
-	void handle_transform(sgnode* const selected);
-	void handle_mesh(sgnode* const selected);
+	void handle_sgnode_frame(sgnode* const selected);
+	void handle_sgnode_snapping_angle();
+	void handle_sgnode_transform(sgnode* const selected);
+	void handle_sgnode_mesh(sgnode* const selected);
+private:
+	void handle_material_frame(scene_material* const selected);
 };

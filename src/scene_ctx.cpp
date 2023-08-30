@@ -75,11 +75,8 @@ void scene_ctx::clear()
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
-	scene_material* null_mtl = new scene_material();
-	null_mtl->shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	scene_material* null_mtl = create_default_material();
 	null_mtl->name = "<NULL>";
-	u8 pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };
-	null_mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
 	m_mtls.insert(std::make_pair(0, null_mtl));
 }
 
@@ -106,6 +103,15 @@ const std::unordered_map<u32, scene_material*>& scene_ctx::get_materials()
 {
 	return m_mtls;
 }
+scene_material* scene_ctx::create_default_material()
+{
+	scene_material* mtl = new scene_material;
+	mtl->shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	mtl->name = "Untitled Material";
+	u8 pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };
+	mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
+	return mtl;
+}
 u32 scene_ctx::add_material(scene_material* mtl)
 {
 	const u32 id = s_next_mtl_id;
@@ -116,6 +122,25 @@ u32 scene_ctx::add_material(scene_material* mtl)
 void scene_ctx::remove_material(const u32 id)
 {
 	m_mtls.erase(id);
+	m_sg_root->remove_material(id);
+}
+
+u32 scene_ctx::get_id_for_material(scene_material* mat)
+{
+	for (const auto& pair : m_mtls)
+	{
+		if (pair.second == mat)
+		{
+			return pair.first;
+		}
+	}
+	assert(false);
+	return 0;
+}
+
+scene_material* scene_ctx::get_material(GLuint id)
+{
+	return m_mtls[id];
 }
 
 
