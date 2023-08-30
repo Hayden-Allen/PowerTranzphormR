@@ -131,7 +131,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 		if (!node->is_root() && node->get_gen()->mesh)
 		{
 			// if the current node is the original frozen version of a subtree
-			const bool has_unfrozen = m_app_ctx->is_node_frozen(node);
+			const bool has_unfrozen = m_app_ctx->has_unfrozen(node);
 			if (has_unfrozen)
 			{
 				if (ImGui::MenuItem("Unphreeze!"))

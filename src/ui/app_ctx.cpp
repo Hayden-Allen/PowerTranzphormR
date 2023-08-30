@@ -42,10 +42,15 @@ void app_ctx::save(const std::string& fp) const
 {
 	std::ofstream out(fp);
 	assert(out.is_open());
-	const auto& cp = preview_cam.get_pos();
-	out << cp.x << " " << cp.y << " " << cp.z << "\n";
-	actions.save(out, scene.get_sg_root());
 	loaded_filename = fp;
+
+	actions.save(out, scene.get_sg_root());
+
+	out << frozen2unfrozen.size();
+	for (const auto& pair : frozen2unfrozen)
+	{
+		out << pair.first->get_id() << " " << pair.second->get_id() << "\n";
+	}
 }
 bool app_ctx::save_as() const
 {
@@ -85,11 +90,23 @@ void app_ctx::load(const std::string& fp)
 	clear();
 	std::ifstream in(fp);
 	assert(in.is_open());
-	f32 x, y, z;
-	in >> x >> y >> z;
-	preview_cam.set_pos(point<space::WORLD>(x, y, z));
-	scene.set_sg_root(actions.load(in));
 	loaded_filename = fp;
+
+	const auto& nodes = actions.load(in);
+	// should always be the id of the root
+	assert(nodes.contains("sgn0"));
+	scene.set_sg_root(nodes.at("sgn0"));
+
+	u64 f2u_count;
+	in >> f2u_count;
+	frozen2unfrozen.reserve(f2u_count);
+	for (u64 i = 0; i < f2u_count; i++)
+	{
+		std::string fid = "", uid = "";
+		in >> fid >> uid;
+		assert(nodes.contains(fid) && nodes.contains(uid));
+		frozen2unfrozen.insert({ nodes.at(fid), nodes.at(uid) });
+	}
 }
 void app_ctx::undo()
 {
@@ -111,9 +128,9 @@ void app_ctx::redo()
 			set_selected_sgnode(nullptr);
 	}
 }
-bool app_ctx::is_node_frozen(const sgnode* const node) const
+bool app_ctx::has_unfrozen(const sgnode* const node) const
 {
-	return frozen.contains(node);
+	return frozen2unfrozen.contains(node);
 }
 void app_ctx::set_selected_sgnode(sgnode* const node)
 {
@@ -160,7 +177,6 @@ void app_ctx::set_sg_window(scene_graph_window* const window)
 	assert(!m_sg_window);
 	m_sg_window = window;
 }
-
 std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
 {
 	const auto& unordered_mtls = scene.get_materials();
@@ -254,14 +270,14 @@ void app_ctx::freeze_action(sgnode* const target)
 {
 	assert(!target->is_root());
 	sgnode* const new_node = actions.freeze(target);
-	frozen.insert({ new_node, target });
+	frozen2unfrozen.insert({ new_node, target });
 }
 void app_ctx::unfreeze_action(sgnode* const target)
 {
-	const auto& it = frozen.find(target);
-	assert(it != frozen.end());
+	const auto& it = frozen2unfrozen.find(target);
+	assert(it != frozen2unfrozen.end());
 	actions.unfreeze(target, it->second);
-	frozen.erase(it);
+	frozen2unfrozen.erase(it);
 }
 void app_ctx::rename_action(sgnode* const target, const std::string& new_name)
 {
@@ -657,7 +673,7 @@ void app_ctx::phorm_menu()
 		[&]()
 		{
 			const sgnode* const node = get_selected_sgnode();
-			return node && !node->is_root() && node->get_gen()->mesh && is_node_frozen(node);
+			return node && !node->is_root() && node->get_gen()->mesh && has_unfrozen(node);
 		},
 		"Ctrl+P",
 		GLFW_KEY_P,
@@ -766,7 +782,6 @@ void app_ctx::phorm_menu()
 	phorm_menu.groups.push_back({ gizmodes });
 	shortcut_menus.push_back(phorm_menu);
 }
-
 void app_ctx::material_menu()
 {
 	shortcut_menu_item material_create = {

@@ -123,7 +123,7 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 
 	m_modified = false;
 }
-sgnode* action_stack::load(std::ifstream& in)
+std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 {
 	clear();
 
@@ -172,13 +172,7 @@ sgnode* action_stack::load(std::ifstream& in)
 	in >> next_id;
 	sgnode::set_next_id(next_id);
 
-	// return the parent
-	for (const auto& pair : nodes)
-		if (!pair.second->get_parent())
-			return pair.second;
-	// no parent found, something broke
-	assert(false);
-	return nullptr;
+	return nodes;
 }
 void action_stack::clear()
 {

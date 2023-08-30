@@ -22,12 +22,10 @@ public:
 	void rename(sgnode* const target, const std::string& new_name);
 	bool can_undo();
 	bool can_redo();
-	// undo last action made and move it to the redo stack
 	action* undo();
-	// redo last action undone and move it to the undo stack
 	action* redo();
 	void save(std::ofstream& out, const sgnode* const root) const;
-	sgnode* load(std::ifstream& in);
+	std::unordered_map<std::string, sgnode*> load(std::ifstream& in);
 	void clear();
 	bool get_modified() const;
 private:
