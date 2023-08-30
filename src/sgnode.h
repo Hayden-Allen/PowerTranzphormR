@@ -12,7 +12,7 @@ public:
 	sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>());
 	// operation node
 	sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>());
-	sgnode(const nlohmann::json& obj);
+	sgnode(const nlohmann::json& obj, scene_ctx* const scene);
 	MGL_DCM(sgnode);
 	virtual ~sgnode();
 public:
@@ -49,7 +49,7 @@ public:
 	sgnode* clone_self_and_insert(app_ctx* const app, sgnode* const parent) const;
 	sgnode* freeze(scene_ctx* const scene) const;
 	void recompute(scene_ctx* const scene);
-	nlohmann::json save() const;
+	nlohmann::json save(scene_ctx* const scene) const;
 private:
 	static inline u32 s_next_id = 0;
 private:

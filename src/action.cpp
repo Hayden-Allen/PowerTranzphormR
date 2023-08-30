@@ -33,6 +33,10 @@ bool action::undo_conflict(const sgnode* const selected) const
 {
 	return false;
 }
+void action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
+{
+	nodes.insert(target);
+}
 
 
 
@@ -100,7 +104,12 @@ nlohmann::json reparent_action::save() const
 	obj["ni"] = new_index;
 	return obj;
 }
-
+void reparent_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
+{
+	action::all_nodes(nodes);
+	nodes.insert(old_parent);
+	nodes.insert(new_parent);
+}
 
 
 create_action::create_action(sgnode* const new_node, sgnode* const _parent) :
@@ -135,7 +144,11 @@ nlohmann::json create_action::save() const
 	obj["p"] = parent->get_id();
 	return obj;
 }
-
+void create_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
+{
+	action::all_nodes(nodes);
+	nodes.insert(parent);
+}
 
 
 destroy_action::destroy_action(sgnode* const target) :
@@ -183,7 +196,11 @@ nlohmann::json destroy_action::save() const
 	obj["i"] = index;
 	return obj;
 }
-
+void destroy_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
+{
+	action::all_nodes(nodes);
+	nodes.insert(parent);
+}
 
 
 freeze_action::freeze_action(sgnode* const target, scene_ctx* const scene) :
@@ -221,7 +238,11 @@ nlohmann::json freeze_action::save() const
 	obj["i"] = index;
 	return obj;
 }
-
+void freeze_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
+{
+	action::all_nodes(nodes);
+	nodes.insert(frozen);
+}
 
 
 unfreeze_action::unfreeze_action(sgnode* const target, sgnode* const _unfrozen) :
@@ -260,6 +281,11 @@ nlohmann::json unfreeze_action::save() const
 	obj["u"] = unfrozen->get_id();
 	obj["i"] = index;
 	return obj;
+}
+void unfreeze_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
+{
+	action::all_nodes(nodes);
+	nodes.insert(unfrozen);
 }
 
 

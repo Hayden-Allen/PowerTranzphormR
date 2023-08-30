@@ -105,11 +105,12 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	std::unordered_set<const sgnode*> nodes;
 	nodes.insert(root);
 	for (action* const a : all)
-		all_nodes(a->target, nodes);
+		// all_nodes(a->target, nodes);
+		a->all_nodes(nodes);
 	out << nodes.size() << "\n";
 	for (const sgnode* const node : nodes)
 	{
-		out << std::string(node->save().dump()) << "\n";
+		out << std::string(node->save(&m_app_ctx->scene).dump()) << "\n";
 	}
 
 	// write out all events
@@ -138,7 +139,7 @@ sgnode* action_stack::load(std::ifstream& in)
 	{
 		std::getline(in, line);
 		const nlohmann::json obj = nlohmann::json::parse(line);
-		sgnode* node = new sgnode(obj);
+		sgnode* node = new sgnode(obj, &m_app_ctx->scene);
 		node->set_dirty();
 		nodes[obj["id"]] = node;
 	}
@@ -193,7 +194,6 @@ void action_stack::clear()
 	m_past.clear();
 	m_future.clear();
 }
-
 bool action_stack::get_modified() const
 {
 	return m_modified;

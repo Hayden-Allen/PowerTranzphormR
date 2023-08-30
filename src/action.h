@@ -4,9 +4,11 @@
 class scene_ctx;
 struct app_ctx;
 class sgnode;
+class action_stack;
 
 struct action
 {
+	friend class action_stack;
 public:
 	sgnode* target;
 public:
@@ -22,6 +24,8 @@ public:
 	virtual nlohmann::json save() const = 0;
 	virtual bool redo_conflict(const sgnode* const selected) const;
 	virtual bool undo_conflict(const sgnode* const selected) const;
+protected:
+	virtual void all_nodes(std::unordered_set<const sgnode*>& nodes) const;
 };
 
 struct transform_action : public action
@@ -52,6 +56,8 @@ public:
 	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
+protected:
+	void all_nodes(std::unordered_set<const sgnode*>& nodes) const override;
 };
 
 struct create_action : public action
@@ -68,6 +74,8 @@ public:
 	bool redo_conflict(const sgnode* const selected) const;
 	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
+protected:
+	void all_nodes(std::unordered_set<const sgnode*>& nodes) const override;
 };
 
 struct destroy_action : public action
@@ -85,6 +93,8 @@ public:
 	bool redo_conflict(const sgnode* const selected) const;
 	bool undo_conflict(const sgnode* const selected) const;
 	nlohmann::json save() const override;
+protected:
+	void all_nodes(std::unordered_set<const sgnode*>& nodes) const override;
 };
 
 struct freeze_action : public action
@@ -100,6 +110,8 @@ public:
 	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
+protected:
+	void all_nodes(std::unordered_set<const sgnode*>& nodes) const override;
 };
 
 struct unfreeze_action : public action
@@ -115,6 +127,8 @@ public:
 	void apply(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	void undo(scene_ctx* const ctx, app_ctx* const a_ctx) override;
 	nlohmann::json save() const override;
+protected:
+	void all_nodes(std::unordered_set<const sgnode*>& nodes) const override;
 };
 
 struct rename_action : public action

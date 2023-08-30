@@ -26,17 +26,30 @@ sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, spac
 	assert(op != carve::csg::CSG::OP::ALL);
 	set_dirty();
 }
-sgnode::sgnode(const nlohmann::json& obj) :
+sgnode::sgnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	m_operation(obj["op"]),
 	m_id(obj["id"]),
-	m_name(obj["name"])
+	m_name(obj["name"]),
+	m_frozen(obj["frozen"])
 {
-	assert(false);
+	m_mat = json2tmat<space::OBJECT, space::PARENT>(obj["mat"]);
+
 	if (!obj["gen"].is_null())
-		m_gen = generated_mesh::create(obj["gen"]);
+		m_gen = generated_mesh::create(obj["gen"], scene);
 	else
 		m_gen = new generated_mesh(nullptr);
-	m_mat = json2tmat<space::OBJECT, space::PARENT>(obj["mat"]);
+
+	// if a noperation node, generated_mesh will not have an underlying mesh;
+	// set it dirty so it is recomputed automatically at first call to sgnode::recompute
+	if (!is_operation())
+		set_gen_dirty();
+	// if an operation node, gen doesn't need to be recomputed, but this node does
+	else
+		set_dirty();
+
+	// if a phrozen node, gen->mesh exists (but will never be "recomputed"), so we need to grab its verts now
+	if (m_frozen)
+		copy_local_verts();
 }
 sgnode::~sgnode()
 {
@@ -74,47 +87,38 @@ const sgnode* sgnode::get_parent() const
 {
 	return m_parent;
 }
-
 const std::string& sgnode::get_id() const
 {
 	return m_id;
 }
-
 const std::string& sgnode::get_name() const
 {
 	return m_name;
 }
-
 tmat<space::OBJECT, space::PARENT>& sgnode::get_mat()
 {
 	return m_mat;
 }
-
 const tmat<space::OBJECT, space::PARENT>& sgnode::get_mat() const
 {
 	return m_mat;
 }
-
 generated_mesh* sgnode::get_gen()
 {
 	return m_gen;
 }
-
 const generated_mesh* sgnode::get_gen() const
 {
 	return m_gen;
 }
-
 const std::vector<sgnode*>& sgnode::get_children() const
 {
 	return m_children;
 }
-
 const carve::csg::CSG::OP sgnode::get_operation() const
 {
 	return m_operation;
 }
-
 bool sgnode::is_root() const
 {
 	return !m_parent;
@@ -283,7 +287,7 @@ void sgnode::recompute(scene_ctx* const scene)
 		transform_verts();
 	}
 }
-nlohmann::json sgnode::save() const
+nlohmann::json sgnode::save(scene_ctx* const scene) const
 {
 	nlohmann::json obj;
 	// good for debugging?
@@ -293,11 +297,12 @@ nlohmann::json sgnode::save() const
 		child_ids.push_back(child->m_id);
 	obj["children"] = child_ids;*/
 
-	obj["gen"] = m_gen->save();
+	obj["gen"] = m_gen->save(scene);
 	obj["op"] = m_operation;
 	obj["id"] = m_id;
 	obj["name"] = m_name;
 	obj["mat"] = m_mat.e;
+	obj["frozen"] = m_frozen;
 
 	return obj;
 }
