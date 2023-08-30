@@ -39,6 +39,7 @@ public:
 	void undo();
 	void redo();
 	bool has_unfrozen(const sgnode* const node) const;
+	void set_sel_type(const global_selection_type t);
 	void set_selected_sgnode(sgnode* const node);
 	sgnode* get_selected_sgnode();
 	sgnode* get_imgui_needs_select_unfocused_sgnode();

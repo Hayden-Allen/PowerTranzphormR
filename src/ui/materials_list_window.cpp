@@ -13,7 +13,15 @@ void materials_list_window::handle_frame()
 {
 	if (ImGui::IsWindowFocused())
 	{
-		m_app_ctx->sel_type = global_selection_type::material;
+		if (!m_was_focused)
+		{
+			m_app_ctx->set_sel_type(global_selection_type::material);
+		}
+		m_was_focused = true;
+	}
+	else
+	{
+		m_was_focused = false;
 	}
 
 	const auto& sorted_mtls = m_app_ctx->get_sorted_materials();

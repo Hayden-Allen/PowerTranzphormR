@@ -142,6 +142,18 @@ bool app_ctx::has_unfrozen(const sgnode* const node) const
 {
 	return frozen2unfrozen.contains(node);
 }
+void app_ctx::set_sel_type(const global_selection_type t)
+{
+	sel_type = t;
+	if (sel_type == global_selection_type::sgnode)
+	{
+		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
+	}
+	else if (sel_type == global_selection_type::material)
+	{
+		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
+	}
+}
 void app_ctx::set_selected_sgnode(sgnode* const node)
 {
 	if (m_selected_sgnode != node)

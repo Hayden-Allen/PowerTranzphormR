@@ -14,8 +14,17 @@ void scene_graph_window::handle_frame()
 {
 	if (ImGui::IsWindowFocused())
 	{
-		m_app_ctx->sel_type = global_selection_type::sgnode;
+		if (!m_was_focused)
+		{
+			m_app_ctx->set_sel_type(global_selection_type::sgnode);
+		}
+		m_was_focused = true;
 	}
+	else
+	{
+		m_was_focused = false;
+	}
+
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();

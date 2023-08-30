@@ -18,4 +18,5 @@ private:
 	sgnode* m_show_add_child = nullptr;
 	sgnode* m_renaming = nullptr;
 	bool m_rename_needs_focus = false;
+	bool m_was_focused = false;
 };

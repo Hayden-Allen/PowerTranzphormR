@@ -8,4 +8,6 @@ public:
 	virtual ~materials_list_window() {}
 public:
 	virtual void handle_frame() override;
+private:
+	bool m_was_focused = false;
 };
