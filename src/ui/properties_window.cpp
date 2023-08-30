@@ -75,33 +75,32 @@ void properties_window::handle_sgnode_transform(sgnode* const selected)
 
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
+	if (!selected->is_operation() && !selected->is_frozen())
+	{
+		u32 combo_selected_mtl_id = selected->get_material();
+		if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(combo_selected_mtl_id)->name.c_str()))
+		{
+			const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
+			for (const auto& pair : sorted_mtls)
+			{
+				bool cur_mtl_combo_selected = pair.first == combo_selected_mtl_id;
+				ImGui::PushID(pair.first);
+				if (ImGui::Selectable(pair.second->name.c_str(), cur_mtl_combo_selected))
+				{
+					m_app_ctx->set_material(selected, pair.first);
+				}
+				if (cur_mtl_combo_selected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndCombo();
+		}
+	}
+
 	for (const auto& prop : selected->get_gen()->get_params())
 	{
-		if (prop.first == "Material")
-		{
-			u32 combo_selected_mtl_id = selected->get_gen()->get_material();
-			if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(combo_selected_mtl_id)->name.c_str()))
-			{
-				const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
-				for (const auto& pair : sorted_mtls)
-				{
-					bool cur_mtl_combo_selected = pair.first == combo_selected_mtl_id;
-					ImGui::PushID(pair.first);
-					if (ImGui::Selectable(pair.second->name.c_str(), cur_mtl_combo_selected))
-					{
-						selected->get_gen()->set_material(pair.first);
-					}
-					if (cur_mtl_combo_selected)
-					{
-						ImGui::SetItemDefaultFocus();
-					}
-					ImGui::PopID();
-				}
-				ImGui::EndCombo();
-			}
-			continue;
-		}
-
 		if (prop.second.is_float)
 		{
 			if (ImGui::DragFloat(prop.first.c_str(), static_cast<f32*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max))
@@ -121,7 +120,11 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 
 void properties_window::handle_material_frame(scene_material* const selected)
 {
-	//
-	// TODO
-	//
+	const auto& tex = selected->texs["u_tex"];
+	const ImVec2 win_min = ImGui::GetWindowContentRegionMin(), win_max = ImGui::GetWindowContentRegionMax();
+	const f32 win_w = win_max.x - win_min.x;
+	const f32 img_w = std::min(win_w, m_app_ctx->mgl_ctx.get_height() * 0.3f);
+	const ImVec2 img_dim(img_w, img_w);
+	ImGui::SetCursorPosX(win_min.x + (win_w - img_w) * 0.5f);
+	ImGui::Image(tex->get_imgui_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 }

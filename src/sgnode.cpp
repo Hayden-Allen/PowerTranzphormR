@@ -179,15 +179,34 @@ tmat<space::PARENT, space::WORLD> sgnode::accumulate_parent_mats() const
 		return tmat<space::PARENT, space::WORLD>();
 	return m_parent->accumulate_mats().cast_copy<space::PARENT, space::WORLD>();
 }
-void sgnode::remove_material(u32 mtl_id)
+void sgnode::set_material(scene_ctx* const scene, u32 mtl_id)
 {
-	if (!is_operation() && m_gen && m_gen->get_material() == mtl_id)
+	assert(!is_operation() && m_gen);
+	m_gen->set_material(scene, mtl_id);
+	set_dirty();
+}
+void sgnode::replace_material(scene_ctx* const scene, const u32 old_mtl_id, const u32 new_mtl_id)
+{
+	if (!is_operation() && m_gen)
 	{
-		m_gen->set_material(0);
+		m_gen->replace_material(scene, old_mtl_id, new_mtl_id);
+		set_dirty();
 	}
 	for (const auto& child : m_children)
 	{
-		child->remove_material(mtl_id);
+		child->replace_material(scene, old_mtl_id, new_mtl_id);
+	}
+}
+
+u32 sgnode::get_material()
+{
+	if (!is_operation() && m_gen)
+	{
+		return m_gen->get_material();
+	}
+	else
+	{
+		return 0;
 	}
 }
 

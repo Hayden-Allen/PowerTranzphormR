@@ -30,7 +30,8 @@ public:
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	virtual nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const;
 	virtual GLuint get_material() const;
-	virtual void set_material(const GLuint mat);
+	virtual void set_material(scene_ctx* const scene, const GLuint mat);
+	virtual void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat);
 	void set_mesh(mesh_t* const m);
 	virtual void set_dirty();
 	bool is_dirty() const;
@@ -50,7 +51,8 @@ public:
 	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
 	virtual void recompute(scene_ctx* const scene) override;
 	GLuint get_material() const override;
-	void set_material(const GLuint mat) override;
+	void set_material(scene_ctx* const scene, const GLuint mat) override;
+	void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat) override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 	void set_dirty() override
 	{
@@ -184,6 +186,8 @@ public:
 	generated_static_mesh(const nlohmann::json& obj, scene_ctx* const scene);
 	MGL_DCM(generated_static_mesh);
 public:
+	void set_material(scene_ctx* const scene, const GLuint new_mat) override;
+	void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat) override;
 	generated_mesh* clone(scene_ctx* const scene) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 	void set_dirty() override;

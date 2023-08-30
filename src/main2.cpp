@@ -85,8 +85,6 @@ void make_scene(scene_ctx* const out_scene)
 
 int main(int argc, char** argv)
 {
-	g::init();
-
 	app_ctx a_ctx;
 
 	shortcut_menus_layer sl(&a_ctx);

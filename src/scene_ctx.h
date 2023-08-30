@@ -35,7 +35,7 @@ public:
 	const std::unordered_map<u32, scene_material*>& get_materials();
 	scene_material* create_default_material();
 	u32 add_material(scene_material* mtl);
-	void remove_material(const u32 id);
+	void erase_material(const u32 id); // WARNING: Call app_ctx->remove_material instead of this one
 	u32 get_id_for_material(scene_material* mat);
 	scene_material* get_material(GLuint id);
 public:

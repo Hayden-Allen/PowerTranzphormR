@@ -12,6 +12,8 @@ app_ctx::app_ctx() :
 	preview_fb(1280, 720)
 {
 	NFD_Init(); // Should happen after GLFW initialized
+	g::init();
+	scene.clear(); // Fix shader error
 	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
 	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
 	init_menus();
@@ -25,6 +27,7 @@ void app_ctx::clear()
 	actions.clear();
 	scene.clear();
 	set_selected_sgnode(nullptr);
+	set_selected_material(nullptr);
 	NFD_Quit(); // Should happen before GLFW destroyed
 }
 bool app_ctx::save() const
@@ -195,6 +198,26 @@ std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
 		});
 	sorted_mtls.emplace(sorted_mtls.begin(), std::make_pair(0, unordered_mtls.at(0)));
 	return sorted_mtls;
+}
+
+void app_ctx::remove_material(const u32 id)
+{
+	scene.erase_material(id);
+	scene.get_sg_root()->replace_material(&scene, id, 0);
+	for (const auto& pair : frozen2unfrozen)
+	{
+		pair.second->replace_material(&scene, id, 0);
+	}
+}
+
+void app_ctx::set_material(sgnode* const node, const u32 id)
+{
+	node->set_material(&scene, id);
+	const auto& it = frozen2unfrozen.find(node);
+	if (it != frozen2unfrozen.end())
+	{
+		it->second->set_material(&scene, id);
+	}
 }
 
 
@@ -822,7 +845,7 @@ void app_ctx::material_menu()
 		[&]()
 		{
 			scene_material* const mtl = get_selected_material();
-			scene.remove_material(scene.get_id_for_material(mtl));
+			remove_material(scene.get_id_for_material(mtl));
 			set_selected_material(nullptr);
 		},
 		[&]()

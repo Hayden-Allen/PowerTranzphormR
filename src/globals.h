@@ -3,14 +3,10 @@
 
 namespace g
 {
-	static texture_library* texlib;
+	extern texture_library* texlib;
+	extern mgl::shaders* shaders;
+	extern mgl::texture2d_rgb_u8* deftex;
 
-	static void init()
-	{
-		texlib = new texture_library();
-	}
-	static void destroy()
-	{
-		delete texlib;
-	}
+	extern void init();
+	extern void destroy();
 } // namespace g

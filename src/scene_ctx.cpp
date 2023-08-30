@@ -106,10 +106,9 @@ const std::unordered_map<u32, scene_material*>& scene_ctx::get_materials()
 scene_material* scene_ctx::create_default_material()
 {
 	scene_material* mtl = new scene_material;
-	mtl->shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+	mtl->shaders = g::shaders;
 	mtl->name = "Untitled Material";
-	u8 pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };
-	mtl->texs.insert(std::make_pair("u_tex", new mgl::texture2d_rgb_u8(GL_RGB, 2, 2, pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST })));
+	mtl->texs.insert(std::make_pair("u_tex", g::deftex));
 	return mtl;
 }
 u32 scene_ctx::add_material(scene_material* mtl)
@@ -119,10 +118,10 @@ u32 scene_ctx::add_material(scene_material* mtl)
 	++s_next_mtl_id;
 	return id;
 }
-void scene_ctx::remove_material(const u32 id)
+void scene_ctx::erase_material(const u32 id)
 {
+	delete m_mtls[id];
 	m_mtls.erase(id);
-	m_sg_root->remove_material(id);
 }
 
 u32 scene_ctx::get_id_for_material(scene_material* mat)

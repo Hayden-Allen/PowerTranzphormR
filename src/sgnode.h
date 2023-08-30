@@ -42,7 +42,9 @@ public:
 	void set_name(const std::string& n);
 	tmat<space::OBJECT, space::WORLD> accumulate_mats() const;
 	tmat<space::PARENT, space::WORLD> accumulate_parent_mats() const;
-	void remove_material(u32 mtl_id);
+	void set_material(scene_ctx* const scene, u32 mtl_id); // WARNING: Always use app_ctx->set_material instead of this one
+	void replace_material(scene_ctx* const scene, const u32 old_mtl_id, const u32 new_mtl_id); // WARNING: Always use app_ctx->remove_material instead of using this
+	u32 get_material();
 public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);

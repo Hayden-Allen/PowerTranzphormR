@@ -45,7 +45,11 @@ GLuint generated_mesh::get_material() const
 	GLuint tmp = 0;
 	return MAX_VALUE(tmp);
 }
-void generated_mesh::set_material(const GLuint mat)
+void generated_mesh::set_material(scene_ctx* const scene, const GLuint mat)
+{
+	assert(false);
+}
+void generated_mesh::replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat)
 {
 	assert(false);
 }
@@ -105,7 +109,6 @@ std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_p
 {
 	const primitive_options* const opts = get_options();
 	return {
-		{ "Material", { false, (void*)&m_material, 0.f, 1.f * MAX_VALUE(m_material), 1.f } },
 		{ "U Scale", { true, (void*)&opts->u_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "V Scale", { true, (void*)&opts->v_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
@@ -118,10 +121,18 @@ GLuint generated_primitive::get_material() const
 {
 	return m_material;
 }
-void generated_primitive::set_material(const GLuint mat)
+void generated_primitive::set_material(scene_ctx* const scene, const GLuint mat)
 {
 	m_material = mat;
 	dirty = true;
+}
+void generated_primitive::replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat)
+{
+	if (m_material == old_mat)
+	{
+		m_material = new_mat;
+		dirty = true;
+	}
 }
 nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
@@ -493,6 +504,32 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 	}
 
 	mesh = new mesh_t(faces);
+}
+void generated_static_mesh::set_material(scene_ctx* const scene, const GLuint new_mat)
+{
+	auto& mtl_id_attr = scene->get_mtl_id_attr();
+	auto& tex_coord_attr = scene->get_tex_coord_attr();
+
+	for (mesh_t::face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+	{
+		const face_t* const f = *i;
+		mtl_id_attr.setAttribute(f, new_mat);
+	}
+}
+void generated_static_mesh::replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat)
+{
+	auto& mtl_id_attr = scene->get_mtl_id_attr();
+	auto& tex_coord_attr = scene->get_tex_coord_attr();
+
+	for (mesh_t::face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+	{
+		const face_t* const f = *i;
+		const u32 old_mtl_id = mtl_id_attr.getAttribute(f, 0);
+		if (old_mtl_id == old_mat)
+		{
+			mtl_id_attr.setAttribute(f, new_mat);
+		}
+	}
 }
 generated_mesh* generated_static_mesh::clone(scene_ctx* const scene) const
 {
