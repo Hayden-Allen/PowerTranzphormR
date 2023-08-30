@@ -179,7 +179,6 @@ tmat<space::PARENT, space::WORLD> sgnode::accumulate_parent_mats() const
 		return tmat<space::PARENT, space::WORLD>();
 	return m_parent->accumulate_mats().cast_copy<space::PARENT, space::WORLD>();
 }
-
 void sgnode::remove_material(u32 mtl_id)
 {
 	if (!is_operation() && m_gen && m_gen->get_material() == mtl_id)
@@ -309,7 +308,7 @@ nlohmann::json sgnode::save(scene_ctx* const scene) const
 		child_ids.push_back(child->m_id);
 	obj["children"] = child_ids;*/
 
-	obj["gen"] = m_gen->save(scene);
+	obj["gen"] = m_gen->save(scene, accumulate_mats().invert_copy());
 	obj["op"] = m_operation;
 	obj["id"] = m_id;
 	obj["name"] = m_name;
@@ -318,7 +317,21 @@ nlohmann::json sgnode::save(scene_ctx* const scene) const
 
 	return obj;
 }
-
+void sgnode::destroy(std::unordered_set<sgnode*>& freed)
+{
+	delete m_gen;
+	for (sgnode* const child : m_children)
+	{
+		if (!freed.contains(child))
+		{
+			freed.insert(child);
+			delete child;
+		}
+	}
+	// this node will soon be deleted, don't want any double frees
+	m_children.clear();
+	m_gen = nullptr;
+}
 
 
 sgnode::sgnode(const sgnode* const original) :

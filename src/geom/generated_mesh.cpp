@@ -35,7 +35,7 @@ generated_mesh* generated_mesh::clone(scene_ctx* const scene) const
 {
 	return new generated_mesh(nullptr);
 }
-nlohmann::json generated_mesh::save(scene_ctx* const scene) const
+nlohmann::json generated_mesh::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	return {};
 }
@@ -123,7 +123,7 @@ void generated_primitive::set_material(const GLuint mat)
 	m_material = mat;
 	dirty = true;
 }
-nlohmann::json generated_primitive::save(scene_ctx* const scene) const
+nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	const primitive_options* const opts = get_options();
 	nlohmann::json obj;
@@ -162,12 +162,12 @@ generated_mesh* generated_cuboid::clone(scene_ctx* const scene) const
 {
 	return new generated_cuboid(m_material, m_options);
 }
-nlohmann::json generated_cuboid::save(scene_ctx* const scene) const
+nlohmann::json generated_cuboid::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	nlohmann::json obj;
 	obj["type"] = 0;
 	obj["mat"] = m_material;
-	obj["opts"] = generated_primitive::save(scene)["opts"];
+	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	return obj;
 }
 primitive_options* generated_cuboid::get_options() const
@@ -214,12 +214,12 @@ generated_mesh* generated_ellipsoid::clone(scene_ctx* const scene) const
 {
 	return new generated_ellipsoid(m_material, m_options);
 }
-nlohmann::json generated_ellipsoid::save(scene_ctx* const scene) const
+nlohmann::json generated_ellipsoid::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	nlohmann::json obj;
 	obj["type"] = 1;
 	obj["mat"] = m_material;
-	obj["opts"] = generated_primitive::save(scene)["opts"];
+	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["nh"] = m_options.num_horizontal_steps;
 	obj["opts"]["nv"] = m_options.num_vertical_steps;
 	return obj;
@@ -270,12 +270,12 @@ generated_mesh* generated_cylinder::clone(scene_ctx* const scene) const
 {
 	return new generated_cylinder(m_material, m_options);
 }
-nlohmann::json generated_cylinder::save(scene_ctx* const scene) const
+nlohmann::json generated_cylinder::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	nlohmann::json obj;
 	obj["type"] = 2;
 	obj["mat"] = m_material;
-	obj["opts"] = generated_primitive::save(scene)["opts"];
+	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["rt"] = m_options.top_radius;
 	obj["opts"]["rb"] = m_options.bottom_radius;
 	obj["opts"]["n"] = m_options.num_steps;
@@ -323,12 +323,12 @@ generated_mesh* generated_cone::clone(scene_ctx* const scene) const
 {
 	return new generated_cone(m_material, m_options);
 }
-nlohmann::json generated_cone::save(scene_ctx* const scene) const
+nlohmann::json generated_cone::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	nlohmann::json obj;
 	obj["type"] = 3;
 	obj["mat"] = m_material;
-	obj["opts"] = generated_primitive::save(scene)["opts"];
+	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["n"] = m_options.num_steps;
 	return obj;
 }
@@ -380,12 +380,12 @@ generated_mesh* generated_torus::clone(scene_ctx* const scene) const
 {
 	return new generated_torus(m_material, m_options);
 }
-nlohmann::json generated_torus::save(scene_ctx* const scene) const
+nlohmann::json generated_torus::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	nlohmann::json obj;
 	obj["type"] = 4;
 	obj["mat"] = m_material;
-	obj["opts"] = generated_primitive::save(scene)["opts"];
+	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["rc"] = m_options.center_radius;
 	obj["opts"]["rt"] = m_options.tube_radius;
 	obj["opts"]["nc"] = m_options.num_center_steps;
@@ -436,14 +436,14 @@ generated_mesh* generated_heightmap::clone(scene_ctx* const scene) const
 	assert(false);
 	return new generated_heightmap(m_material, m_options);
 }
-nlohmann::json generated_heightmap::save(scene_ctx* const scene) const
+nlohmann::json generated_heightmap::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	// TODO
 	assert(false);
 	nlohmann::json obj;
 	obj["type"] = 5;
 	obj["mat"] = m_material;
-	obj["opts"] = generated_primitive::save(scene)["opts"];
+	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["nw"] = m_options.width_steps;
 	obj["opts"]["nd"] = m_options.depth_steps;
 	return obj;
@@ -504,7 +504,7 @@ generated_mesh* generated_static_mesh::clone(scene_ctx* const scene) const
 {
 	return new generated_static_mesh(carve_clone(mesh, scene));
 }
-nlohmann::json generated_static_mesh::save(scene_ctx* const scene) const
+nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& tex_coord_attr = scene->get_tex_coord_attr();
@@ -517,10 +517,12 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene) const
 	for (u64 i = 0; i < mesh->vertex_storage.size(); i++)
 	{
 		const mesh_t::vertex_t* const vert = &mesh->vertex_storage[i];
+		const point<space::WORLD> p(vert->v.x, vert->v.y, vert->v.z);
+		const point<space::OBJECT>& op = p.transform_copy(mat);
 		nlohmann::json::array_t j;
-		j.push_back((f32)vert->v.x);
-		j.push_back((f32)vert->v.y);
-		j.push_back((f32)vert->v.z);
+		j.push_back(op.x);
+		j.push_back(op.y);
+		j.push_back(op.z);
 		verts.push_back(j);
 		vert2index.insert({ vert, i });
 	}

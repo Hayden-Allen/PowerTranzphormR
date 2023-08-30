@@ -101,12 +101,13 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	all.insert(all.end(), m_past.begin(), m_past.end());
 	all.insert(all.end(), m_future.begin(), m_future.end());
 
-	// write out all nodes
+	// find all nodes
 	std::unordered_set<const sgnode*> nodes;
 	nodes.insert(root);
 	for (action* const a : all)
-		// all_nodes(a->target, nodes);
 		a->all_nodes(nodes);
+
+	// write out all nodes
 	out << nodes.size() << "\n";
 	for (const sgnode* const node : nodes)
 	{
@@ -212,8 +213,9 @@ void action_stack::clear(sgnode* const node, std::unordered_set<sgnode*>& freed)
 		clear(child, freed);
 	if (!freed.contains(node))
 	{
-		delete node;
 		freed.insert(node);
+		node->destroy(freed);
+		delete node;
 	}
 	m_modified = false;
 }

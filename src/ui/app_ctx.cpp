@@ -24,6 +24,7 @@ void app_ctx::clear()
 	loaded_filename = "";
 	actions.clear();
 	scene.clear();
+	set_selected_sgnode(nullptr);
 	NFD_Quit(); // Should happen before GLFW destroyed
 }
 bool app_ctx::save() const

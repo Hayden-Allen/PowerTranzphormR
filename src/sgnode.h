@@ -51,6 +51,7 @@ public:
 	sgnode* freeze(scene_ctx* const scene) const;
 	void recompute(scene_ctx* const scene);
 	nlohmann::json save(scene_ctx* const scene) const;
+	void destroy(std::unordered_set<sgnode*>& freed);
 private:
 	static inline u32 s_next_id = 0;
 private:
