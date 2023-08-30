@@ -18,6 +18,7 @@ public:
 public:
 	static u32 get_next_id();
 	static void set_next_id(const u32 id);
+	static void reset_next_id();
 public:
 	s64 get_index() const;
 	sgnode* get_parent();
@@ -55,7 +56,8 @@ public:
 	nlohmann::json save(scene_ctx* const scene) const;
 	void destroy(std::unordered_set<sgnode*>& freed);
 private:
-	static inline u32 s_next_id = 0;
+	static constexpr inline u32 s_first_id = 0;
+	static inline u32 s_next_id = s_first_id;
 private:
 	sgnode* m_parent = nullptr;
 	std::vector<sgnode*> m_children;

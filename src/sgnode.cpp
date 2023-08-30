@@ -68,6 +68,10 @@ void sgnode::set_next_id(const u32 id)
 {
 	s_next_id = id;
 }
+void sgnode::reset_next_id()
+{
+	s_next_id = s_first_id;
+}
 
 
 

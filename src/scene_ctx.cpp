@@ -64,6 +64,9 @@ void scene_ctx::update()
 }
 void scene_ctx::clear()
 {
+	sgnode::reset_next_id();
+	s_next_mtl_id = 1;
+
 	m_csg = carve::csg::CSG();
 	m_tex_coord_attr = attr_tex_coord_t();
 	m_mtl_id_attr = attr_material_t();
