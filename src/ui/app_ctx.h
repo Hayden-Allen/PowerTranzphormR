@@ -47,6 +47,7 @@ public:
 	scene_material* get_imgui_needs_select_unfocused_mtl();
 	void unset_imgui_needs_select_unfocused_mtl();
 	void set_sg_window(scene_graph_window* const window);
+	std::vector<std::pair<u32, scene_material*>> get_sorted_materials();
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);

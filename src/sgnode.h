@@ -42,6 +42,7 @@ public:
 	void set_name(const std::string& n);
 	tmat<space::OBJECT, space::WORLD> accumulate_mats() const;
 	tmat<space::PARENT, space::WORLD> accumulate_parent_mats() const;
+	void remove_material(u32 mtl_id);
 public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);

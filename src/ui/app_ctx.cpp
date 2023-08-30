@@ -2,6 +2,7 @@
 #include "app_ctx.h"
 #include "geom/generated_mesh.h"
 #include "sgnode.h"
+#include "scene_material.h"
 #include "action.h"
 #include "scene_graph_window.h"
 
@@ -158,6 +159,25 @@ void app_ctx::set_sg_window(scene_graph_window* const window)
 {
 	assert(!m_sg_window);
 	m_sg_window = window;
+}
+
+std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
+{
+	const auto& unordered_mtls = scene.get_materials();
+	std::vector<std::pair<u32, scene_material*>> sorted_mtls;
+	for (const auto& i : unordered_mtls)
+	{
+		if (i.first != 0)
+		{
+			sorted_mtls.emplace_back(std::make_pair(i.first, i.second));
+		}
+	}
+	std::sort(sorted_mtls.begin(), sorted_mtls.end(), [](const auto& a, const auto& b)
+		{
+			return a.second->name < b.second->name;
+		});
+	sorted_mtls.emplace(sorted_mtls.begin(), std::make_pair(0, unordered_mtls.at(0)));
+	return sorted_mtls;
 }
 
 
@@ -753,9 +773,9 @@ void app_ctx::material_menu()
 		"Create",
 		[&]()
 		{
-			//
-			// TODO
-			//
+			scene_material* const mtl = scene.create_default_material();
+			scene.add_material(mtl);
+			set_selected_material(mtl);
 		},
 		[&]()
 		{
@@ -785,9 +805,9 @@ void app_ctx::material_menu()
 		"Destroy",
 		[&]()
 		{
-			//
-			// TODO
-			//
+			scene_material* const mtl = get_selected_material();
+			scene.remove_material(scene.get_id_for_material(mtl));
+			set_selected_material(nullptr);
 		},
 		[&]()
 		{

@@ -3,6 +3,7 @@
 #include "geom/generated_mesh.h"
 #include "app_ctx.h"
 #include "sgnode.h"
+#include "scene_material.h"
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")
@@ -76,6 +77,31 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
 	for (const auto& prop : selected->get_gen()->get_params())
 	{
+		if (prop.first == "Material")
+		{
+			u32 combo_selected_mtl_id = selected->get_gen()->get_material();
+			if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(combo_selected_mtl_id)->name.c_str()))
+			{
+				const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
+				for (const auto& pair : sorted_mtls)
+				{
+					bool cur_mtl_combo_selected = pair.first == combo_selected_mtl_id;
+					ImGui::PushID(pair.first);
+					if (ImGui::Selectable(pair.second->name.c_str(), cur_mtl_combo_selected))
+					{
+						selected->get_gen()->set_material(pair.first);
+					}
+					if (cur_mtl_combo_selected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+					ImGui::PopID();
+				}
+				ImGui::EndCombo();
+			}
+			continue;
+		}
+
 		if (prop.second.is_float)
 		{
 			if (ImGui::DragFloat(prop.first.c_str(), static_cast<f32*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max))

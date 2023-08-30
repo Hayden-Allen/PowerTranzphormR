@@ -176,6 +176,18 @@ tmat<space::PARENT, space::WORLD> sgnode::accumulate_parent_mats() const
 	return m_parent->accumulate_mats().cast_copy<space::PARENT, space::WORLD>();
 }
 
+void sgnode::remove_material(u32 mtl_id)
+{
+	if (!is_operation() && m_gen && m_gen->get_material() == mtl_id)
+	{
+		m_gen->set_material(0);
+	}
+	for (const auto& child : m_children)
+	{
+		child->remove_material(mtl_id);
+	}
+}
+
 
 
 void sgnode::add_child(sgnode* const node, const s64 index)
