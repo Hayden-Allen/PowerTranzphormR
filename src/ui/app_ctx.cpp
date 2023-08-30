@@ -13,10 +13,16 @@ app_ctx::app_ctx() :
 {
 	NFD_Init(); // Should happen after GLFW initialized
 	g::init();
-	scene.clear(); // Fix shader error
+	scene.clear(); // Need to create the default material after initializing globals
 	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
 	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
 	init_menus();
+}
+
+app_ctx::~app_ctx()
+{
+	scene.destroy();
+	g::destroy();
 }
 
 

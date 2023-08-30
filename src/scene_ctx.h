@@ -26,7 +26,8 @@ public:
 	attr_material_t& get_mtl_id_attr();
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
 	void update();
-	void clear();
+	void clear(bool ready_for_default_material = true);
+	void destroy();
 public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;

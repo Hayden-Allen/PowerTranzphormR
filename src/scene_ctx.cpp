@@ -7,13 +7,11 @@
 
 scene_ctx::scene_ctx()
 {
-	clear();
+	clear(false);
 }
 scene_ctx::~scene_ctx()
 {
-	delete m_sg_root;
-	for (const auto& pair : m_mtls)
-		delete pair.second;
+	destroy();
 }
 
 
@@ -62,7 +60,7 @@ void scene_ctx::update()
 		m_hms_dirty = false;
 	}
 }
-void scene_ctx::clear()
+void scene_ctx::clear(bool ready_for_default_material)
 {
 	sgnode::reset_next_id();
 	s_next_mtl_id = 1;
@@ -78,9 +76,21 @@ void scene_ctx::clear()
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
-	scene_material* null_mtl = create_default_material();
-	null_mtl->name = "<NULL>";
-	m_mtls.insert(std::make_pair(0, null_mtl));
+	if (ready_for_default_material)
+	{
+		scene_material* null_mtl = create_default_material();
+		null_mtl->name = "<NULL>";
+		m_mtls.insert(std::make_pair(0, null_mtl));
+	}
+}
+
+void scene_ctx::destroy()
+{
+	delete m_sg_root;
+	m_sg_root = nullptr;
+	for (const auto& pair : m_mtls)
+		delete pair.second;
+	m_mtls.clear();
 }
 
 
@@ -111,7 +121,7 @@ scene_material* scene_ctx::create_default_material()
 	scene_material* mtl = new scene_material;
 	mtl->shaders = g::shaders;
 	mtl->name = "Untitled Material";
-	mtl->texs.insert(std::make_pair("u_tex", g::deftex));
+	mtl->set_texture("u_tex", "<NULL>");
 	return mtl;
 }
 u32 scene_ctx::add_material(scene_material* mtl)
@@ -421,12 +431,12 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
 
 		u32 slot = 0;
-		for (const auto& it : mat->texs)
-		{
-			it.second->bind(slot);
-			mat->shaders->uniform_1i(it.first.c_str(), slot);
-			++slot;
-		}
+		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
+			{
+				tex->bind(slot);
+				mat->shaders->uniform_1i(name.c_str(), slot);
+				++slot;
+			});
 
 		glctx.draw(it->second, *mat->shaders);
 	}

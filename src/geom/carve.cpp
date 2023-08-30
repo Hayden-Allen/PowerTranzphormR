@@ -378,6 +378,10 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 
 mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)
 {
+	assert(false);
+	return nullptr;
+
+	/*
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
 	assert(options.width_steps > 0.f);
@@ -433,4 +437,5 @@ mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	}
 
 	return new mesh_t(faces);
+	*/
 }

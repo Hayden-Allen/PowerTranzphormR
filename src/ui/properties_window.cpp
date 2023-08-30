@@ -120,7 +120,7 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 
 void properties_window::handle_material_frame(scene_material* const selected)
 {
-	const auto& tex = selected->texs["u_tex"];
+	const auto& tex = selected->get_texture("u_tex");
 	const ImVec2 win_min = ImGui::GetWindowContentRegionMin(), win_max = ImGui::GetWindowContentRegionMax();
 	const f32 win_w = win_max.x - win_min.x;
 	const f32 img_w = std::min(win_w, m_app_ctx->mgl_ctx.get_height() * 0.3f);

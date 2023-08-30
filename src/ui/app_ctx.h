@@ -28,6 +28,7 @@ public:
 	global_selection_type sel_type = global_selection_type::none;
 public:
 	app_ctx();
+	~app_ctx();
 public:
 	void clear();
 	bool save() const;

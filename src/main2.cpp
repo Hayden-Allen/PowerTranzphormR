@@ -148,6 +148,5 @@ int main(int argc, char** argv)
 		a_ctx.mgl_ctx.end_frame();
 	}
 
-	g::destroy();
 	return 0;
 }
