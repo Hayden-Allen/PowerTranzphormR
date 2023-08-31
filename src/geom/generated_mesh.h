@@ -4,10 +4,34 @@
 
 class scene_ctx;
 
+enum class generated_mesh_param_type
+{
+	NONE = -1,
+	FLOAT_1,
+	FLOAT_2,
+	FLOAT_4,
+	COLOR_4,
+	UINT_1,
+	UINT_2
+};
+static u32 param_type_element_count(const generated_mesh_param_type t)
+{
+	switch (t)
+	{
+	case generated_mesh_param_type::UINT_1:
+	case generated_mesh_param_type::FLOAT_1: return 1;
+	case generated_mesh_param_type::UINT_2:
+	case generated_mesh_param_type::FLOAT_2: return 2;
+	case generated_mesh_param_type::FLOAT_4:
+	case generated_mesh_param_type::COLOR_4: return 4;
+	}
+	assert(false);
+	return 0;
+}
 constexpr static f32 MIN_PARAM_VALUE = .01f, MAX_PARAM_VALUE = 4096.f, DRAG_PARAM_STEP = .01f;
 struct generated_mesh_param
 {
-	bool is_float;
+	generated_mesh_param_type type;
 	void* value;
 	f32 min, max, speed;
 };
