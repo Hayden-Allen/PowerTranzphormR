@@ -13,7 +13,7 @@ struct tex_coord_t
 };
 static tex_coord_t operator*(const f64 s, const tex_coord_t& t)
 {
-	return tex_coord_t(t.u * (float)s, t.v * (float)s);
+	return tex_coord_t(t.u * (f32)s, t.v * (f32)s);
 }
 static tex_coord_t& operator+=(tex_coord_t& t1, const tex_coord_t& t2)
 {
@@ -22,11 +22,68 @@ static tex_coord_t& operator+=(tex_coord_t& t1, const tex_coord_t& t2)
 	return t1;
 }
 
+struct color_t
+{
+	f32 r, g, b, a;
+	color_t() :
+		r(0.f), g(0.f), b(0.f), a(0.f)
+	{}
+	color_t(const f32 _r, const f32 _g, const f32 _b, const f32 _a) :
+		r(_r), g(_g), b(_b), a(_a)
+	{}
+};
+static color_t operator*(const f64 s, const color_t& c)
+{
+	return color_t(c.r * (f32)s, c.r * (f32)s, c.g * (f32)s, c.b * (f32)s);
+}
+static color_t& operator+=(color_t& t1, const color_t& t2)
+{
+	t1.r += t2.r;
+	t1.g += t2.g;
+	t1.b += t2.b;
+	t1.a += t2.a;
+	return t1;
+}
+
 typedef carve::mesh::MeshSet<3> mesh_t;
 typedef mesh_t::vertex_t vertex_t;
 typedef mesh_t::face_t face_t;
 typedef carve::interpolate::FaceVertexAttr<tex_coord_t> attr_tex_coord_t;
+typedef carve::interpolate::FaceVertexAttr<f64> attr_tex_weight_t;
+typedef carve::interpolate::FaceVertexAttr<color_t> attr_tex_color_t;
 typedef carve::interpolate::FaceAttr<GLuint> attr_material_t;
+
+struct carve_vert_attrs
+{
+	attr_tex_coord_t uv0, uv1, uv2, uv3;
+	attr_tex_weight_t w0, w1, w2, w3;
+	attr_tex_color_t color;
+
+	void install_hooks(carve::csg::CSG& csg)
+	{
+		uv0.installHooks(csg);
+		uv1.installHooks(csg);
+		uv2.installHooks(csg);
+		uv3.installHooks(csg);
+		w0.installHooks(csg);
+		w1.installHooks(csg);
+		w2.installHooks(csg);
+		w3.installHooks(csg);
+		color.installHooks(csg);
+	}
+	void set_attribute(const face_t* const face, const u32 i, const tex_coord_t& tc, const f64 _w0 = 1, const f64 _w1 = 0, const f64 _w2 = 0, const f64 _w3 = 0, const color_t& c = color_t())
+	{
+		uv0.setAttribute(face, i, tc);
+		uv1.setAttribute(face, i, tc);
+		uv2.setAttribute(face, i, tc);
+		uv3.setAttribute(face, i, tc);
+		w0.setAttribute(face, i, _w0);
+		w1.setAttribute(face, i, _w1);
+		w2.setAttribute(face, i, _w2);
+		w3.setAttribute(face, i, _w3);
+		color.setAttribute(face, i, c);
+	}
+};
 
 template<space SPACE>
 static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
@@ -66,9 +123,9 @@ struct heightmap_options : public primitive_options
 	std::string map_path;
 };
 
-mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options = {});
-mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cylinder_options& options = {});
-mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cone_options& options = {});
-mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const torus_options& options = {});
-mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options = {});
-mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options = {});
+mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options = {});
+mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cylinder_options& options = {});
+mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cone_options& options = {});
+mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const torus_options& options = {});
+mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options = {});
+mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options = {});

@@ -18,11 +18,15 @@ struct scene_ctx_uniforms
 class scene_ctx
 {
 public:
+	// TODO temporary
+	static inline f32 s_snap_angle = 7 * c::PI / 24;
+	static inline bool s_snap_all = false;
+public:
 	scene_ctx();
 	~scene_ctx();
 public:
 	carve::csg::CSG& get_csg();
-	attr_tex_coord_t& get_tex_coord_attr();
+	carve_vert_attrs& get_vert_attrs();
 	attr_material_t& get_mtl_id_attr();
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
 	void update();
@@ -54,15 +58,22 @@ public:
 	generated_mesh* generated_textured_heightmap(const GLuint mtl_id, const heightmap_options& options = {});
 private:
 	static inline u32 s_next_mtl_id = 1;
-	constexpr static u32 s_vert_size = 8;
-	// TODO temporary
-public:
-	static inline f32 s_snap_angle = 7 * c::PI / 24;
-	static inline bool s_snap_all = false;
+private:
+	constexpr static std::initializer_list<u32> get_vert_layout()
+	{
+		return {
+			3,			// x, y, z
+			3,			// nx, ny, nz
+			2, 2, 2, 2, // uv0-uv3
+			1, 1, 1, 1, // w0-w3
+			4,			// rgba
+		};
+	}
 private:
 	carve::csg::CSG m_csg;
-	attr_tex_coord_t m_tex_coord_attr;
 	attr_material_t m_mtl_id_attr;
+	// attr_tex_coord_t m_tex_coord_attr;
+	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
 	std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
 	std::vector<mesh_t*> m_hms;

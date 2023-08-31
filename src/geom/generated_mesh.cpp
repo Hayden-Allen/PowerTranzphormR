@@ -473,7 +473,8 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 	generated_mesh(nullptr)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	auto& tex_coord_attr = scene->get_tex_coord_attr();
+	// auto& tex_coord_attr = scene->get_tex_coord_attr();
+	auto& vert_attrs = scene->get_vert_attrs();
 
 	const nlohmann::json::array_t& overts = obj["v"];
 	std::vector<vertex_t> verts;
@@ -496,7 +497,16 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 		face_t* const face = new face_t(face_verts.begin(), face_verts.end());
 		for (const nlohmann::json& oface_vert : oface_verts)
 		{
-			tex_coord_attr.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["x"], oface_vert["y"]));
+			vert_attrs.uv0.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u0"], oface_vert["v0"]));
+			vert_attrs.uv1.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u1"], oface_vert["v1"]));
+			vert_attrs.uv2.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u2"], oface_vert["v2"]));
+			vert_attrs.uv3.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u3"], oface_vert["v3"]));
+			vert_attrs.w0.setAttribute(face, oface_vert["i"], oface_vert["w0"]);
+			vert_attrs.w1.setAttribute(face, oface_vert["i"], oface_vert["w1"]);
+			vert_attrs.w2.setAttribute(face, oface_vert["i"], oface_vert["w2"]);
+			vert_attrs.w3.setAttribute(face, oface_vert["i"], oface_vert["w3"]);
+			const auto& color = oface_vert["c"];
+			vert_attrs.color.setAttribute(face, oface_vert["i"], color_t(color[0], color[1], color[2], color[3]));
 		}
 		const u32 mtl_id = oface["m"];
 		mtl_id_attr.setAttribute(face, mtl_id);
@@ -508,7 +518,6 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 void generated_static_mesh::set_material(scene_ctx* const scene, const GLuint new_mat)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	auto& tex_coord_attr = scene->get_tex_coord_attr();
 
 	for (mesh_t::face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 	{
@@ -519,7 +528,6 @@ void generated_static_mesh::set_material(scene_ctx* const scene, const GLuint ne
 void generated_static_mesh::replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	auto& tex_coord_attr = scene->get_tex_coord_attr();
 
 	for (mesh_t::face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 	{
@@ -538,7 +546,8 @@ generated_mesh* generated_static_mesh::clone(scene_ctx* const scene) const
 nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	auto& tex_coord_attr = scene->get_tex_coord_attr();
+	// auto& tex_coord_attr = scene->get_tex_coord_attr();
+	auto& vert_attrs = scene->get_vert_attrs();
 
 	nlohmann::json obj;
 	obj["type"] = 6;
@@ -572,11 +581,30 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 		{
 			nlohmann::json face_vert;
 			face_vert["v"] = vert2index.at(e->vert);
-			const tex_coord_t& tc = tex_coord_attr.getAttribute(f, e.idx());
+			const tex_coord_t uv0 = vert_attrs.uv0.getAttribute(f, e.idx());
+			const tex_coord_t uv1 = vert_attrs.uv1.getAttribute(f, e.idx());
+			const tex_coord_t uv2 = vert_attrs.uv2.getAttribute(f, e.idx());
+			const tex_coord_t uv3 = vert_attrs.uv3.getAttribute(f, e.idx());
+			const f64 w0 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w1 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w2 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w3 = vert_attrs.w0.getAttribute(f, e.idx());
+			const color_t& color = vert_attrs.color.getAttribute(f, e.idx());
 			face_vert["i"] = e.idx();
-			face_vert["x"] = tc.u;
-			face_vert["y"] = tc.v;
-			face_verts.push_back(face_vert);
+			face_vert["u0"] = uv0.u;
+			face_vert["v0"] = uv0.v;
+			face_vert["u1"] = uv1.u;
+			face_vert["v1"] = uv1.v;
+			face_vert["u2"] = uv2.u;
+			face_vert["v2"] = uv2.v;
+			face_vert["u3"] = uv3.u;
+			face_vert["v3"] = uv3.v;
+			face_vert["w0"] = w0;
+			face_vert["w1"] = w1;
+			face_vert["w2"] = w2;
+			face_vert["w3"] = w3;
+			const std::vector<f32> c = { color.r, color.g, color.b, color.a };
+			face_vert["c"] = c;
 		}
 		face["v"] = face_verts;
 		faces.push_back(face);
