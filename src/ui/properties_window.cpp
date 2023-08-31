@@ -7,8 +7,9 @@
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")
-{
-}
+{}
+
+
 
 void properties_window::handle_frame()
 {
@@ -24,7 +25,6 @@ void properties_window::handle_frame()
 		handle_material_frame(selected_material);
 	}
 }
-
 void properties_window::handle_sgnode_frame(sgnode* const selected)
 {
 	if (selected->is_root())
@@ -37,7 +37,6 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 		handle_sgnode_mesh(selected);
 	}
 }
-
 void properties_window::handle_sgnode_snapping_angle()
 {
 	const bool start_all = scene_ctx::s_snap_all;
@@ -48,7 +47,6 @@ void properties_window::handle_sgnode_snapping_angle()
 	if (start_angle != scene_ctx::s_snap_angle || start_all != scene_ctx::s_snap_all)
 		m_app_ctx->scene.get_sg_root()->set_dirty();
 }
-
 void properties_window::handle_sgnode_transform(sgnode* const selected)
 {
 	bool dirty = false;
@@ -72,7 +70,6 @@ void properties_window::handle_sgnode_transform(sgnode* const selected)
 		selected->set_transform(selected->get_mat().e);
 	}
 }
-
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
 	if (!selected->is_operation() && !selected->is_frozen())
@@ -116,9 +113,40 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 		case generated_mesh_param_type::FLOAT_2:
 			changed = ImGui::DragFloat2(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
 			break;
-		case generated_mesh_param_type::FLOAT_4:
-			changed = ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
-			break;
+		case generated_mesh_param_type::FLOAT_4_SUM_1:
+			{
+				f32* const f = static_cast<f32*>(prop.second.value);
+				const f32 f0 = f[0], f1 = f[1], f2 = f[2], f3 = f[3];
+				const f32 of[4] = { f[0], f[1], f[2], f[3] };
+				changed = ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+				if (changed)
+				{
+					// index of weight that changed
+					u32 ci = 0;
+					for (u32 i = 1; i < 4; i++)
+						if (f[i] != of[i])
+							ci = i;
+
+					// sum of original values of non-changed weight
+					f32 odenom = 0.f;
+					for (u32 i = 0; i < 4; i++)
+						if (i != ci)
+							odenom += of[i];
+
+					// original percentage of each weight
+					f32 opct[4] = { 0.f };
+					for (u32 i = 0; i < 4; i++)
+						opct[i] = of[i] / odenom;
+
+					// new sum of unchanged weights
+					const f32 denom = 1.f - f[ci];
+					// replace unchanged weights to maintain sum of 1
+					for (u32 i = 0; i < 4; i++)
+						if (i != ci)
+							f[i] = opct[i] * denom;
+				}
+				break;
+			}
 		case generated_mesh_param_type::COLOR_4:
 			changed = ImGui::ColorEdit4(prop.first.c_str(), static_cast<float*>(prop.second.value));
 			break;
@@ -132,15 +160,13 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 		}
 	}
 }
-
 void properties_window::handle_material_frame(scene_material* const selected)
 {
 	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
-	{
-		handle_material_texture(selected, name);
-	});
+		{
+			handle_material_texture(selected, name);
+		});
 }
-
 void properties_window::handle_material_texture(scene_material* const selected_mtl, const std::string& name)
 {
 	const ImVec2 win_min = ImGui::GetWindowContentRegionMin(), win_max = ImGui::GetWindowContentRegionMax();
@@ -154,7 +180,8 @@ void properties_window::handle_material_texture(scene_material* const selected_m
 		selected_mtl->set_texture(name, "<NULL>");
 	}
 	ImGui::SetCursorPosX(win_min.x + (win_w - img_dim.x) * 0.5f);
-	if (ImGui::ImageButton(name.c_str(), selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f))) {
+	if (ImGui::ImageButton(name.c_str(), selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)))
+	{
 		nfdchar_t* nfd_path = nullptr;
 		nfdfilteritem_t nfd_filters[1] = { { "Image file", "png,jpg,bmp" } };
 		nfdresult_t nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);

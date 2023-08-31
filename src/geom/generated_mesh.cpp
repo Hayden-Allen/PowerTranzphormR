@@ -132,7 +132,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::g
 		{ "UV1", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u1, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "UV2", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u2, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "UV3", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u3, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Weights", { generated_mesh_param_type::FLOAT_4, (void*)&opts->w0, 0.0f, 1.0f, DRAG_PARAM_STEP } },
+		{ "Weights", { generated_mesh_param_type::FLOAT_4_SUM_1, (void*)&opts->w0, 0.0f, 1.0f, DRAG_PARAM_STEP } },
 		{ "Color", { generated_mesh_param_type::COLOR_4, (void*)&opts->r, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
