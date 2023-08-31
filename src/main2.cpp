@@ -116,6 +116,7 @@ int main(int argc, char** argv)
 
 	materials_list_window ml_window(&a_ctx);
 	il.add_window(&ml_window);
+	a_ctx.set_mtls_window(&ml_window);
 
 	scene_graph_window sg_window(&a_ctx);
 	il.add_window(&sg_window);

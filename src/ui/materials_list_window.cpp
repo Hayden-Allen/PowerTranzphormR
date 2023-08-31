@@ -41,7 +41,47 @@ void materials_list_window::handle_frame()
 
 		bool selected = m_app_ctx->get_selected_material() == mtl;
 		ImGui::PushID(std::to_string(id).c_str());
-		ImGui::Selectable(mtl->name.c_str(), &selected);
+		if (mtl == m_renaming)
+		{
+			const f32 x = ImGui::GetCursorPosX();
+
+			constexpr u32 BUF_SIZE = 32;
+			char buf[32] = { 0 };
+			memcpy_s(buf, BUF_SIZE, mtl->name.c_str(), mtl->name.size());
+
+			if (ImGui::InputText("##MW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				std::string new_name(buf);
+				if (!new_name.empty())
+				{
+					mtl->name = new_name;
+				}
+				m_renaming = nullptr;
+			}
+
+			if (m_rename_needs_focus)
+			{
+				ImGui::SetKeyboardFocusHere(-1);
+				m_rename_needs_focus = false;
+			}
+			else if (!ImGui::IsItemActive())
+			{
+				m_renaming = nullptr;
+			}
+		}
+		else
+		{
+			ImGui::Selectable(mtl->name.c_str(), &selected);
+		}
+		if (ImGui::BeginPopupContextItem())
+		{
+			m_app_ctx->set_selected_material(mtl);
+			if (ImGui::MenuItem("Rename"))
+			{
+				set_renaming(mtl);
+			}
+			ImGui::EndPopup();
+		}
 		ImGui::PopID();
 		scene_material* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_mtl();
 		if (needs_select)
@@ -58,4 +98,16 @@ void materials_list_window::handle_frame()
 	}
 
 	m_app_ctx->unset_imgui_needs_select_unfocused_mtl();
+}
+
+void materials_list_window::set_renaming(scene_material* mtl)
+{
+	assert(!m_renaming);
+	m_renaming = mtl;
+	m_rename_needs_focus = true;
+}
+
+const scene_material* materials_list_window::get_renaming() const
+{
+	return m_renaming;
 }

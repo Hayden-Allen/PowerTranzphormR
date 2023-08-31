@@ -48,7 +48,7 @@ public:
 public:
 	static generated_mesh* create(const nlohmann::json& obj, scene_ctx* const scene);
 public:
-	virtual std::unordered_map<std::string, generated_mesh_param> get_params() const;
+	virtual std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
 	virtual void recompute(scene_ctx* const scene);
 	// for operation nodes
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
@@ -72,7 +72,7 @@ public:
 	MGL_DCM(generated_primitive);
 	virtual ~generated_primitive();
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	virtual void recompute(scene_ctx* const scene) override;
 	GLuint get_material() const override;
 	void set_material(scene_ctx* const scene, const GLuint mat) override;
@@ -96,7 +96,7 @@ public:
 	generated_cuboid(const nlohmann::json& obj);
 	MGL_DCM(generated_cuboid);
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
@@ -115,7 +115,7 @@ public:
 	generated_ellipsoid(const nlohmann::json& obj);
 	MGL_DCM(generated_ellipsoid);
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
@@ -134,7 +134,7 @@ public:
 	generated_cylinder(const nlohmann::json& obj);
 	MGL_DCM(generated_cylinder);
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
@@ -153,7 +153,7 @@ public:
 	generated_cone(const nlohmann::json& obj);
 	MGL_DCM(generated_cone);
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
@@ -172,7 +172,7 @@ public:
 	generated_torus(const nlohmann::json& obj);
 	MGL_DCM(generated_torus);
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
@@ -191,7 +191,7 @@ public:
 	generated_heightmap(const nlohmann::json& obj);
 	MGL_DCM(generated_heightmap);
 public:
-	std::unordered_map<std::string, generated_mesh_param> get_params() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
 	virtual generated_mesh* clone(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;

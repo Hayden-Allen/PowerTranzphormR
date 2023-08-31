@@ -101,19 +101,34 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 
 	for (const auto& prop : selected->get_gen()->get_params())
 	{
-		if (prop.second.is_float)
+		bool changed = false;
+		switch (prop.second.type)
 		{
-			if (ImGui::DragFloat(prop.first.c_str(), static_cast<f32*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max))
-			{
-				selected->set_gen_dirty();
-			}
+		case generated_mesh_param_type::UINT_1:
+			changed = ImGui::DragInt(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max));
+			break;
+		case generated_mesh_param_type::UINT_2:
+			changed = ImGui::DragInt2(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max));
+			break;
+		case generated_mesh_param_type::FLOAT_1:
+			changed = ImGui::DragFloat(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			break;
+		case generated_mesh_param_type::FLOAT_2:
+			changed = ImGui::DragFloat2(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			break;
+		case generated_mesh_param_type::FLOAT_4:
+			changed = ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			break;
+		case generated_mesh_param_type::COLOR_4:
+			changed = ImGui::ColorEdit4(prop.first.c_str(), static_cast<float*>(prop.second.value));
+			break;
+		default:
+			assert(false); // Unsupported type
+			break;
 		}
-		else
+		if (changed)
 		{
-			if (ImGui::DragInt(prop.first.c_str(), static_cast<s32*>(prop.second.value), prop.second.speed, static_cast<s32>(prop.second.min), static_cast<s32>(prop.second.max)))
-			{
-				selected->set_gen_dirty();
-			}
+			selected->set_gen_dirty();
 		}
 	}
 }

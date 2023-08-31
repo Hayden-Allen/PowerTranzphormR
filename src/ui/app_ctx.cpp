@@ -5,6 +5,7 @@
 #include "scene_material.h"
 #include "action.h"
 #include "scene_graph_window.h"
+#include "materials_list_window.h"
 
 app_ctx::app_ctx() :
 	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
@@ -198,6 +199,11 @@ void app_ctx::set_sg_window(scene_graph_window* const window)
 {
 	assert(!m_sg_window);
 	m_sg_window = window;
+}
+void app_ctx::set_mtls_window(materials_list_window* const window)
+{
+	assert(!m_mtls_window);
+	m_mtls_window = window;
 }
 std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
 {
@@ -846,9 +852,9 @@ void app_ctx::material_menu()
 		"Rename",
 		[&]()
 		{
-			//
-			// TODO
-			//
+			assert(m_mtls_window);
+			assert(!m_mtls_window->get_renaming());
+			m_mtls_window->set_renaming(get_selected_material());
 		},
 		[&]()
 		{
