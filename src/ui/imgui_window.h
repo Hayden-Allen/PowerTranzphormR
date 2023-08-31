@@ -11,6 +11,7 @@ public:
 	{}
 	virtual ~imgui_window() {}
 public:
+	virtual void handle_focused(bool focused) {}
 	virtual void handle_frame() = 0;
 	const std::string& get_title() const
 	{

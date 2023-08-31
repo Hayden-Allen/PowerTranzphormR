@@ -10,9 +10,9 @@ scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 
 
 
-void scene_graph_window::handle_frame()
+void scene_graph_window::handle_focused(bool focused)
 {
-	if (ImGui::IsWindowFocused())
+	if (focused)
 	{
 		if (!m_was_focused)
 		{
@@ -24,7 +24,10 @@ void scene_graph_window::handle_frame()
 	{
 		m_was_focused = false;
 	}
+}
 
+void scene_graph_window::handle_frame()
+{
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();

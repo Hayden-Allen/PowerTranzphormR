@@ -56,6 +56,10 @@ public:
 	}
 	void unload(const std::string& fp)
 	{
+		if (fp == "<NULL>")
+		{
+			return; // default texture
+		}
 		assert(m_counts.contains(fp));
 		m_counts[fp]--;
 		if (m_counts[fp] == 0)
