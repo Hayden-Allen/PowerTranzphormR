@@ -1,7 +1,7 @@
 #version 430 core
 layout(location = 0) out vec4 o_col;
 
-uniform sampler2D u_tex;
+uniform sampler2D u_tex_1, u_tex_2, u_tex_3, u_tex_4;
 uniform vec3 u_cam_pos;
 uniform mat4 u_m;
 
@@ -18,6 +18,6 @@ void main()
 	float RdV = pow(max(0, dot(V, R)), 16);
 
 	vec4 spec = vec4(RdV * vec3(1), 1);
-	vec4 diff = min(1, v_NdL + .33) * texture(u_tex, v_uv0);
+	vec4 diff = min(1, v_NdL + .33) * texture(u_tex_1, v_uv0);
 	o_col = clamp(diff + spec * 0.0, vec4(vec3(0), 1), vec4(1));
 }

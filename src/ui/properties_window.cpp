@@ -120,22 +120,26 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 
 void properties_window::handle_material_frame(scene_material* const selected)
 {
-	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
+	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
 	{
-		handle_material_texture(selected, name, tex);
+		handle_material_texture(selected, name);
 	});
 }
 
-void properties_window::handle_material_texture(scene_material* const selected_mtl, const std::string& name, const mgl::texture2d_rgb_u8* tex)
+void properties_window::handle_material_texture(scene_material* const selected_mtl, const std::string& name)
 {
 	const ImVec2 win_min = ImGui::GetWindowContentRegionMin(), win_max = ImGui::GetWindowContentRegionMax();
 	const f32 win_w = win_max.x - win_min.x;
 	const f32 img_w = std::min(win_w, m_app_ctx->mgl_ctx.get_height() * 0.3f);
 	const ImVec2 img_dim(img_w, img_w);
-	ImGui::SetCursorPosX(win_min.x + (win_w - img_w) * 0.5f);
-	ImGui::Image(tex->get_imgui_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
-	if (ImGui::Button("Load Texture"))
+	const f32 btn_w = std::min(win_w, 100.0f);
+	ImGui::SetCursorPosX(win_min.x + (win_w - btn_w) * 0.5f);
+	if (ImGui::Button("Reset", ImVec2(btn_w, 0)))
 	{
+		selected_mtl->set_texture(name, "<NULL>");
+	}
+	ImGui::SetCursorPosX(win_min.x + (win_w - img_dim.x) * 0.5f);
+	if (ImGui::ImageButton(name.c_str(), selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f))) {
 		nfdchar_t* nfd_path = nullptr;
 		nfdfilteritem_t nfd_filters[1] = { { "Image file", "png,jpg,bmp" } };
 		nfdresult_t nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);
