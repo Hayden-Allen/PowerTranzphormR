@@ -14,20 +14,6 @@ enum class generated_mesh_param_type
 	UINT_1,
 	UINT_2
 };
-static u32 param_type_element_count(const generated_mesh_param_type t)
-{
-	switch (t)
-	{
-	case generated_mesh_param_type::UINT_1:
-	case generated_mesh_param_type::FLOAT_1: return 1;
-	case generated_mesh_param_type::UINT_2:
-	case generated_mesh_param_type::FLOAT_2: return 2;
-	case generated_mesh_param_type::FLOAT_4:
-	case generated_mesh_param_type::COLOR_4: return 4;
-	}
-	assert(false);
-	return 0;
-}
 constexpr static f32 MIN_PARAM_VALUE = .01f, MAX_PARAM_VALUE = 4096.f, DRAG_PARAM_STEP = .01f;
 struct generated_mesh_param
 {
