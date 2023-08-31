@@ -20,9 +20,9 @@ carve::csg::CSG& scene_ctx::get_csg()
 {
 	return m_csg;
 }
-attr_tex_coord_t& scene_ctx::get_tex_coord_attr()
+carve_vert_attrs& scene_ctx::get_vert_attrs()
 {
-	return m_tex_coord_attr;
+	return m_vert_attrs;
 }
 attr_material_t& scene_ctx::get_mtl_id_attr()
 {
@@ -53,7 +53,7 @@ void scene_ctx::update()
 		m_hm_vaos_for_mtl.clear();
 		for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 		{
-			mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2, 3 });
+			mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size(), get_vert_layout());
 			m_hm_vaos_for_mtl.emplace(it->first, std::move(vao));
 		}
 
@@ -66,10 +66,10 @@ void scene_ctx::clear(bool ready_for_default_material)
 	s_next_mtl_id = 1;
 
 	m_csg = carve::csg::CSG();
-	m_tex_coord_attr = attr_tex_coord_t();
+	m_vert_attrs = carve_vert_attrs();
 	m_mtl_id_attr = attr_material_t();
 
-	m_tex_coord_attr.installHooks(m_csg);
+	m_vert_attrs.install_hooks(m_csg);
 	m_mtl_id_attr.installHooks(m_csg);
 	m_sg_root = new sgnode(nullptr, carve::csg::CSG::OP::UNION);
 
@@ -83,7 +83,6 @@ void scene_ctx::clear(bool ready_for_default_material)
 		m_mtls.insert(std::make_pair(0, null_mtl));
 	}
 }
-
 void scene_ctx::destroy()
 {
 	delete m_sg_root;
@@ -136,7 +135,6 @@ void scene_ctx::erase_material(const u32 id)
 	delete m_mtls[id];
 	m_mtls.erase(id);
 }
-
 u32 scene_ctx::get_id_for_material(scene_material* mat)
 {
 	for (const auto& pair : m_mtls)
@@ -149,7 +147,6 @@ u32 scene_ctx::get_id_for_material(scene_material* mat)
 	assert(false);
 	return 0;
 }
-
 scene_material* scene_ctx::get_material(GLuint id)
 {
 	return m_mtls[id];
@@ -159,27 +156,27 @@ scene_material* scene_ctx::get_material(GLuint id)
 
 mesh_t* scene_ctx::create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options)
 {
-	return textured_cuboid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	return textured_cuboid(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 }
 mesh_t* scene_ctx::create_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options)
 {
-	return textured_ellipsoid(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	return textured_ellipsoid(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 }
 mesh_t* scene_ctx::create_textured_cylinder(const GLuint mtl_id, const cylinder_options& options)
 {
-	return textured_cylinder(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	return textured_cylinder(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 }
 mesh_t* scene_ctx::create_textured_cone(const GLuint mtl_id, const cone_options& options)
 {
-	return textured_cone(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	return textured_cone(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 }
 mesh_t* scene_ctx::create_textured_torus(const GLuint mtl_id, const torus_options& options)
 {
-	return textured_torus(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	return textured_torus(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 }
 mesh_t* scene_ctx::create_textured_heightmap(const GLuint mtl_id, const heightmap_options& options)
 {
-	return textured_heightmap(m_tex_coord_attr, m_mtl_id_attr, mtl_id, options);
+	return textured_heightmap(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 }
 generated_mesh* scene_ctx::generated_textured_cuboid(const GLuint mtl_id, const cuboid_options& options)
 {
@@ -225,7 +222,7 @@ void scene_ctx::m_build_sg_vaos()
 	m_sg_vaos_for_mtl.clear();
 	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 	{
-		mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size() * s_vert_size, { 3, 2, 3 });
+		mgl::static_vertex_array vao((f32*)it->second.data(), (u32)it->second.size(), get_vert_layout());
 		m_sg_vaos_for_mtl.emplace(it->first, std::move(vao));
 	}
 }
@@ -246,13 +243,36 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			std::vector<tess_vtx> verts;
 			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 			{
-				auto t = m_tex_coord_attr.getAttribute(f, e.idx());
+				const tex_coord_t& t0 = m_vert_attrs.uv0.getAttribute(f, e.idx());
+				const tex_coord_t& t1 = m_vert_attrs.uv1.getAttribute(f, e.idx());
+				const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
+				const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
+				const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const f64 w1 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const f64 w2 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const f64 w3 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
+
 				tess_vtx v;
 				v.x = e->vert->v.x;
 				v.y = e->vert->v.y;
 				v.z = e->vert->v.z;
-				v.u = t.u;
-				v.v = t.v;
+				v.u0 = t0.u;
+				v.v0 = t0.v;
+				v.u1 = t1.u;
+				v.v1 = t1.v;
+				v.u2 = t2.u;
+				v.v2 = t2.v;
+				v.u3 = t3.u;
+				v.v3 = t3.v;
+				v.w0 = w0;
+				v.w1 = w1;
+				v.w2 = w2;
+				v.w3 = w3;
+				v.r = color.r;
+				v.g = color.g;
+				v.b = color.b;
+				v.a = color.a;
 				v.target = &out_verts_for_mtl.at(mtl_id);
 				verts.emplace_back(v);
 			}

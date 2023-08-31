@@ -5,7 +5,8 @@
 mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	auto& tex_coord_attr = scene->get_tex_coord_attr();
+	// auto& tex_coord_attr = scene->get_tex_coord_attr();
+	auto& vert_attrs = scene->get_vert_attrs();
 
 	std::unordered_map<const vertex_t*, vertex_t> verts_map;
 	verts_map.reserve(mesh->vertex_storage.size());
@@ -30,8 +31,24 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 		mtl_id_attr.setAttribute(new_f, mtl_id);
 		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 		{
-			const tex_coord_t tex_coord = tex_coord_attr.getAttribute(f, e.idx());
-			tex_coord_attr.setAttribute(new_f, e.idx(), tex_coord);
+			const tex_coord_t uv0 = vert_attrs.uv0.getAttribute(f, e.idx());
+			const tex_coord_t uv1 = vert_attrs.uv1.getAttribute(f, e.idx());
+			const tex_coord_t uv2 = vert_attrs.uv2.getAttribute(f, e.idx());
+			const tex_coord_t uv3 = vert_attrs.uv3.getAttribute(f, e.idx());
+			const f64 w0 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w1 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w2 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w3 = vert_attrs.w0.getAttribute(f, e.idx());
+			const color_t& color = vert_attrs.color.getAttribute(f, e.idx());
+			vert_attrs.uv0.setAttribute(new_f, e.idx(), uv0);
+			vert_attrs.uv1.setAttribute(new_f, e.idx(), uv1);
+			vert_attrs.uv2.setAttribute(new_f, e.idx(), uv2);
+			vert_attrs.uv3.setAttribute(new_f, e.idx(), uv3);
+			vert_attrs.w0.setAttribute(new_f, e.idx(), w0);
+			vert_attrs.w1.setAttribute(new_f, e.idx(), w1);
+			vert_attrs.w2.setAttribute(new_f, e.idx(), w2);
+			vert_attrs.w3.setAttribute(new_f, e.idx(), w3);
+			vert_attrs.color.setAttribute(new_f, e.idx(), color);
 		}
 		faces.emplace_back(new_f);
 	}
@@ -40,7 +57,7 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 	return clone;
 }
 
-mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options)
+mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
@@ -86,17 +103,17 @@ mesh_t* textured_cuboid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_i
 	{
 		const f32 top = 1.0f * options.v_scale, bottom = 0.0f;
 		const f32 left = 0.0f, right = 1.0f * options.u_scale;
-		tex_coord_attr.setAttribute(faces[i], 0, tex_coord_t(left, bottom));
-		tex_coord_attr.setAttribute(faces[i], 1, tex_coord_t(right, bottom));
-		tex_coord_attr.setAttribute(faces[i], 2, tex_coord_t(right, top));
-		tex_coord_attr.setAttribute(faces[i], 3, tex_coord_t(left, top));
+		vert_attrs.set_attribute(faces[i], 0, tex_coord_t(left, bottom));
+		vert_attrs.set_attribute(faces[i], 1, tex_coord_t(right, bottom));
+		vert_attrs.set_attribute(faces[i], 2, tex_coord_t(right, top));
+		vert_attrs.set_attribute(faces[i], 3, tex_coord_t(left, top));
 		mtl_id_attr.setAttribute(faces[i], mtl_id);
 	}
 
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cylinder_options& options)
+mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cylinder_options& options)
 {
 	assert(options.num_steps > 0);
 	assert(options.top_radius > 0.f);
@@ -144,7 +161,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 			// map each vertex to where it lies within the texture
 			// (don't stretch rectangle texture to fit circle, just take subtexture that fits)
 			const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-			tex_coord_attr.setAttribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
+			vert_attrs.set_attribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
 		}
 	}
 	// vertical strips
@@ -154,10 +171,10 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 		const u32 c = i + STEPS, d = b + STEPS;
 		// wound clockwise
 		face_t* face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
-		tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * i / STEPS, options.v_scale * 0));
-		tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * i / STEPS, options.v_scale * 1));
-		tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * (i + 1) / STEPS, options.v_scale * 1));
-		tex_coord_attr.setAttribute(face, 3, tex_coord_t(options.u_scale * (i + 1) / STEPS, options.v_scale * 0));
+		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * i / STEPS, options.v_scale * 0));
+		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * i / STEPS, options.v_scale * 1));
+		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + 1) / STEPS, options.v_scale * 1));
+		vert_attrs.set_attribute(face, 3, tex_coord_t(options.u_scale * (i + 1) / STEPS, options.v_scale * 0));
 		faces.push_back(face);
 	}
 
@@ -167,7 +184,7 @@ mesh_t* textured_cylinder(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cone_options& options)
+mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cone_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
@@ -200,16 +217,16 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	for (uint32_t i = 0; i < STEPS; i++)
 	{
 		const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-		tex_coord_attr.setAttribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
+		vert_attrs.set_attribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
 	}
 	// generate vertical strips for cone
 	for (u32 i = 0; i < STEPS; i++)
 	{
 		const u32 a = i, b = (i + 1) % STEPS, c = STEPS;
 		face = new face_t(vertices[a], vertices[c], vertices[b]);
-		tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / STEPS, options.v_scale * 0.0f));
-		tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * 0.5f, options.v_scale * 1.0f));
-		tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * 1.f * (i + 1) / STEPS, options.v_scale * 0.0f));
+		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / STEPS, options.v_scale * 0.0f));
+		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * 0.5f, options.v_scale * 1.0f));
+		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * 1.f * (i + 1) / STEPS, options.v_scale * 0.0f));
 		faces.push_back(face);
 	}
 
@@ -219,7 +236,7 @@ mesh_t* textured_cone(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const torus_options& options)
+mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const torus_options& options)
 {
 	assert(options.center_radius > 0.f);
 	assert(options.tube_radius > 0.f);
@@ -268,10 +285,10 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 			const u32 a = cur + j, b = cur + mj;
 			const u32 c = next + j, d = next + mj;
 			face_t* const face = new face_t(vertices[a], vertices[b], vertices[d], vertices[c]);
-			tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / CENTER_STEPS, options.v_scale * (1 - 1.f * j / TUBE_STEPS)));
-			tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * 1.f * i / CENTER_STEPS, options.v_scale * (1 - 1.f * (j + 1) / TUBE_STEPS)));
-			tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * (i + 1.f) / CENTER_STEPS, options.v_scale * (1 - 1.f * (j + 1) / TUBE_STEPS)));
-			tex_coord_attr.setAttribute(face, 3, tex_coord_t(options.u_scale * (i + 1.f) / CENTER_STEPS, options.v_scale * (1 - 1.f * j / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / CENTER_STEPS, options.v_scale * (1 - 1.f * j / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * 1.f * i / CENTER_STEPS, options.v_scale * (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + 1.f) / CENTER_STEPS, options.v_scale * (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 3, tex_coord_t(options.u_scale * (i + 1.f) / CENTER_STEPS, options.v_scale * (1 - 1.f * j / TUBE_STEPS)));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}
@@ -280,7 +297,7 @@ mesh_t* textured_torus(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options)
+mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options)
 {
 	assert(options.u_scale > 0.f);
 	assert(options.v_scale > 0.f);
@@ -333,9 +350,9 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 		const u32 a = i, b = (i + 1) % nh;
 		const u32 c = MGL_CAST(u32, vertices.size() - 2);
 		face_t* const face = new face_t(vertices[a], vertices[b], vertices[c]);
-		tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / nh, options.v_scale * 1.f / nv));
-		tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * (i + 1.f) / nh, options.v_scale * 1.f / nv));
-		tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * (i + .5f) / nh, options.v_scale * 0));
+		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / nh, options.v_scale * 1.f / nv));
+		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * (i + 1.f) / nh, options.v_scale * 1.f / nv));
+		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + .5f) / nh, options.v_scale * 0));
 		mtl_id_attr.setAttribute(face, mtl_id);
 		faces.push_back(face);
 	}
@@ -346,9 +363,9 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 		const u32 a = i + off, b = (i + 1) % nh + off;
 		const u32 c = MGL_CAST(u32, vertices.size() - 1);
 		face_t* const face = new face_t(vertices[a], vertices[c], vertices[b]);
-		tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / nh, options.v_scale * (nv - 1.f) / nv));
-		tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * (i + .5f) / nh, options.v_scale * 1));
-		tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * (i + 1.f) / nh, options.v_scale * (nv - 1.f) / nv));
+		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / nh, options.v_scale * (nv - 1.f) / nv));
+		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * (i + .5f) / nh, options.v_scale * 1));
+		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + 1.f) / nh, options.v_scale * (nv - 1.f) / nv));
 		mtl_id_attr.setAttribute(face, mtl_id);
 		faces.push_back(face);
 	}
@@ -364,10 +381,10 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 			const u32 a = ix + cur_off, b = (ix + 1) % nh + cur_off;
 			const u32 c = ix + next_off, d = (ix + 1) % nh + next_off;
 			face_t* const face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
-			tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * ctx, options.v_scale * cty));
-			tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * ctx, options.v_scale * nty));
-			tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * ntx, options.v_scale * nty));
-			tex_coord_attr.setAttribute(face, 3, tex_coord_t(options.u_scale * ntx, options.v_scale * cty));
+			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * ctx, options.v_scale * cty));
+			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * ctx, options.v_scale * nty));
+			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * ntx, options.v_scale * nty));
+			vert_attrs.set_attribute(face, 3, tex_coord_t(options.u_scale * ntx, options.v_scale * cty));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}
@@ -376,7 +393,7 @@ mesh_t* textured_ellipsoid(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 	return new mesh_t(faces);
 }
 
-mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)
+mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)
 {
 	assert(false);
 	return nullptr;
@@ -421,16 +438,16 @@ mesh_t* textured_heightmap(attr_tex_coord_t& tex_coord_attr, attr_material_t& mt
 			const u32 tl = (iz + 1) * x_steps + ix, tr = tl + 1;
 			// bottom right triangle
 			face_t* face = new face_t(vertices[bl], vertices[tr], vertices[br]);
-			tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * ix / x_steps, options.v_scale * (1.f - 1.f * iz / z_steps)));
-			tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.v_scale * (1.f - 1.f * (iz + 1) / z_steps)));
-			tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.v_scale * (1.f - 1.f * iz / z_steps)));
+			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * ix / x_steps, options.v_scale * (1.f - 1.f * iz / z_steps)));
+			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.v_scale * (1.f - 1.f * (iz + 1) / z_steps)));
+			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.v_scale * (1.f - 1.f * iz / z_steps)));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 			// top left triangle
 			face = new face_t(vertices[bl], vertices[tl], vertices[tr]);
-			tex_coord_attr.setAttribute(face, 0, tex_coord_t(options.u_scale * ix / x_steps, options.u_scale * (1.f - 1.f * iz / z_steps)));
-			tex_coord_attr.setAttribute(face, 1, tex_coord_t(options.u_scale * ix / x_steps, options.u_scale * (1.f - 1.f * (iz + 1) / z_steps)));
-			tex_coord_attr.setAttribute(face, 2, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.u_scale * (1.f - 1.f * (iz + 1) / z_steps)));
+			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * ix / x_steps, options.u_scale * (1.f - 1.f * iz / z_steps)));
+			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * ix / x_steps, options.u_scale * (1.f - 1.f * (iz + 1) / z_steps)));
+			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.u_scale * (1.f - 1.f * (iz + 1) / z_steps)));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}

@@ -1,12 +1,20 @@
 #version 430 core
 layout (location = 0) in vec3 i_pos;
-layout (location = 1) in vec2 i_tex;
-layout (location = 2) in vec3 i_norm;
+layout (location = 1) in vec3 i_norm;
+layout (location = 2) in vec2 i_uv0;
+layout (location = 3) in vec2 i_uv1;
+layout (location = 4) in vec2 i_uv2;
+layout (location = 5) in vec2 i_uv3;
+layout (location = 6) in float i_w0;
+layout (location = 7) in float i_w1;
+layout (location = 8) in float i_w2;
+layout (location = 9) in float i_w3;
+layout (location = 10) in vec4 i_rgba;
 
 uniform mat4 u_mvp, u_m, u_normal;
 uniform vec3 u_cam_pos;
 
-out vec2 v_tex;
+out vec2 v_uv0, v_uv1, v_uv2, v_uv3;
 out vec3 v_N, v_pos;
 out float v_NdL;
 
@@ -19,7 +27,9 @@ void main()
 	vec3 L = normalize(u_cam_pos - world_pos);
 	v_NdL = max(0, dot(i_norm, L));
 
-	v_tex = i_tex;
+	v_uv0 = i_uv0;
+	v_uv1 = i_uv1;
+	v_uv2 = i_uv2;
 	v_N = i_norm;
 	v_pos = i_pos;
 }
