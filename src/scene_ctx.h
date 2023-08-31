@@ -59,7 +59,7 @@ public:
 private:
 	static inline u32 s_next_mtl_id = 1;
 private:
-	constexpr static std::initializer_list<u32> get_vert_layout()
+	constexpr static std::vector<u32> get_vert_layout()
 	{
 		return {
 			3,			// x, y, z
