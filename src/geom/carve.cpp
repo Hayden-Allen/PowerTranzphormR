@@ -36,9 +36,9 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 			const tex_coord_t uv2 = vert_attrs.uv2.getAttribute(f, e.idx());
 			const tex_coord_t uv3 = vert_attrs.uv3.getAttribute(f, e.idx());
 			const f64 w0 = vert_attrs.w0.getAttribute(f, e.idx());
-			const f64 w1 = vert_attrs.w0.getAttribute(f, e.idx());
-			const f64 w2 = vert_attrs.w0.getAttribute(f, e.idx());
-			const f64 w3 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w1 = vert_attrs.w1.getAttribute(f, e.idx());
+			const f64 w2 = vert_attrs.w2.getAttribute(f, e.idx());
+			const f64 w3 = vert_attrs.w3.getAttribute(f, e.idx());
 			const color_t& color = vert_attrs.color.getAttribute(f, e.idx());
 			vert_attrs.uv0.setAttribute(new_f, e.idx(), uv0);
 			vert_attrs.uv1.setAttribute(new_f, e.idx(), uv1);

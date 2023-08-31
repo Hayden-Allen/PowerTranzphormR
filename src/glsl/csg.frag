@@ -19,7 +19,10 @@ void main()
 	vec3 R = normalize(reflect(L, v_N));
 	float RdV = pow(max(0, dot(V, R)), 16);
 
-	vec4 multi_tex_res = texture(u_tex0, v_uv0) * v_w0 + texture(u_tex1, v_uv1) * v_w1 + texture(u_tex2, v_uv2) * v_w2 + texture(u_tex3, v_uv3) * v_w3;
+	vec4 multi_tex_res = texture(u_tex0, v_uv0) * v_w0 +
+				texture(u_tex1, v_uv1) * v_w1 +
+				texture(u_tex2, v_uv2) * v_w2 +
+				texture(u_tex3, v_uv3) * v_w3;
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
 
 	vec3 spec = RdV * vec3(1);

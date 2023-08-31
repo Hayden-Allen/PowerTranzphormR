@@ -251,9 +251,9 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
 				const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
 				const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
-				const f64 w1 = m_vert_attrs.w0.getAttribute(f, e.idx());
-				const f64 w2 = m_vert_attrs.w0.getAttribute(f, e.idx());
-				const f64 w3 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const f64 w1 = m_vert_attrs.w1.getAttribute(f, e.idx());
+				const f64 w2 = m_vert_attrs.w2.getAttribute(f, e.idx());
+				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
 				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
 
 				tess_vtx v;
