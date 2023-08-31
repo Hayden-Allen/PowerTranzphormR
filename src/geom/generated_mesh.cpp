@@ -103,14 +103,33 @@ generated_primitive::generated_primitive(mesh_t* const m, const GLuint material)
 generated_primitive::generated_primitive(const nlohmann::json& obj) :
 	generated_mesh(nullptr),
 	m_material(obj["mat"])
-{}
+{
+	primitive_options* const options = get_options();
+	const auto& opts = obj["opts"];
+	options->u0 = opts["u0"];
+	options->v0 = opts["v0"];
+	options->u1 = opts["u1"];
+	options->v1 = opts["v1"];
+	options->u2 = opts["u2"];
+	options->v2 = opts["v2"];
+	options->u3 = opts["u3"];
+	options->v3 = opts["v3"];
+	options->w0 = opts["w0"];
+	options->w1 = opts["w1"];
+	options->w2 = opts["w2"];
+	options->w3 = opts["w3"];
+	options->r = opts["r"];
+	options->g = opts["g"];
+	options->b = opts["b"];
+	options->a = opts["a"];
+}
 generated_primitive::~generated_primitive() {}
 std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_params() const
 {
 	const primitive_options* const opts = get_options();
 	return {
-		{ "U Scale", { true, (void*)&opts->u_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "V Scale", { true, (void*)&opts->v_scale, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "U Scale", { true, (void*)&opts->u0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "V Scale", { true, (void*)&opts->v0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
 void generated_primitive::recompute(scene_ctx* const scene)
@@ -140,8 +159,22 @@ nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<spac
 	nlohmann::json obj;
 	obj["opts"] = {
 		{ "t", opts->transform.e },
-		{ "u", opts->u_scale },
-		{ "v", opts->v_scale },
+		{ "u0", opts->u0 },
+		{ "v0", opts->v0 },
+		{ "u1", opts->u1 },
+		{ "v1", opts->v1 },
+		{ "u2", opts->u2 },
+		{ "v2", opts->v2 },
+		{ "u3", opts->u3 },
+		{ "v3", opts->v3 },
+		{ "w0", opts->w0 },
+		{ "w1", opts->w1 },
+		{ "w2", opts->w2 },
+		{ "w3", opts->w3 },
+		{ "r", opts->r },
+		{ "g", opts->g },
+		{ "b", opts->b },
+		{ "a", opts->a },
 	};
 	return obj;
 }

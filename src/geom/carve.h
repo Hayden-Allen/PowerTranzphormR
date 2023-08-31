@@ -53,38 +53,6 @@ typedef carve::interpolate::FaceVertexAttr<f64> attr_tex_weight_t;
 typedef carve::interpolate::FaceVertexAttr<color_t> attr_tex_color_t;
 typedef carve::interpolate::FaceAttr<GLuint> attr_material_t;
 
-struct carve_vert_attrs
-{
-	attr_tex_coord_t uv0, uv1, uv2, uv3;
-	attr_tex_weight_t w0, w1, w2, w3;
-	attr_tex_color_t color;
-
-	void install_hooks(carve::csg::CSG& csg)
-	{
-		uv0.installHooks(csg);
-		uv1.installHooks(csg);
-		uv2.installHooks(csg);
-		uv3.installHooks(csg);
-		w0.installHooks(csg);
-		w1.installHooks(csg);
-		w2.installHooks(csg);
-		w3.installHooks(csg);
-		color.installHooks(csg);
-	}
-	void set_attribute(const face_t* const face, const u32 i, const tex_coord_t& tc, const f64 _w0 = 1, const f64 _w1 = 0, const f64 _w2 = 0, const f64 _w3 = 0, const color_t& c = color_t())
-	{
-		uv0.setAttribute(face, i, tc);
-		uv1.setAttribute(face, i, tc);
-		uv2.setAttribute(face, i, tc);
-		uv3.setAttribute(face, i, tc);
-		w0.setAttribute(face, i, _w0);
-		w1.setAttribute(face, i, _w1);
-		w2.setAttribute(face, i, _w2);
-		w3.setAttribute(face, i, _w3);
-		color.setAttribute(face, i, c);
-	}
-};
-
 template<space SPACE>
 static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
 {
@@ -95,7 +63,12 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene);
 struct primitive_options
 {
 	tmat<space::OBJECT, space::PARENT> transform;
-	f32 u_scale = 1.f, v_scale = 1.f;
+	f32 u0 = 1.f, v0 = 1.f;
+	f32 u1 = 1.f, v1 = 1.f;
+	f32 u2 = 1.f, v2 = 1.f;
+	f32 u3 = 1.f, v3 = 1.f;
+	f32 w0 = 1.f, w1 = 0.f, w2 = 0.f, w3 = 0.f;
+	f32 r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 };
 struct cuboid_options : public primitive_options
 {};
@@ -121,6 +94,50 @@ struct heightmap_options : public primitive_options
 {
 	u32 width_steps = 0, depth_steps = 0;
 	std::string map_path;
+};
+
+struct carve_vert_attrs
+{
+	attr_tex_coord_t uv0, uv1, uv2, uv3;
+	attr_tex_weight_t w0, w1, w2, w3;
+	attr_tex_color_t color;
+
+	void install_hooks(carve::csg::CSG& csg)
+	{
+		uv0.installHooks(csg);
+		uv1.installHooks(csg);
+		uv2.installHooks(csg);
+		uv3.installHooks(csg);
+		w0.installHooks(csg);
+		w1.installHooks(csg);
+		w2.installHooks(csg);
+		w3.installHooks(csg);
+		color.installHooks(csg);
+	}
+	/*void set_attribute(const face_t* const face, const u32 i, const tex_coord_t& _uv0, const tex_coord_t& _uv1, const tex_coord_t& _uv2, const tex_coord_t& _uv3, const f64 _w0, const f64 _w1, const f64 _w2, const f64 _w3, const color_t& c)
+	{
+		uv0.setAttribute(face, i, _uv0);
+		uv1.setAttribute(face, i, _uv1);
+		uv2.setAttribute(face, i, _uv2);
+		uv3.setAttribute(face, i, _uv3);
+		w0.setAttribute(face, i, _w0);
+		w1.setAttribute(face, i, _w1);
+		w2.setAttribute(face, i, _w2);
+		w3.setAttribute(face, i, _w3);
+		color.setAttribute(face, i, c);
+	}*/
+	void set_attribute(const face_t* const face, const u32 i, const primitive_options& opts, const tex_coord_t& mask)
+	{
+		uv0.setAttribute(face, i, tex_coord_t(mask.u * opts.u0, mask.v * opts.v0));
+		uv1.setAttribute(face, i, tex_coord_t(mask.u * opts.u1, mask.v * opts.v1));
+		uv2.setAttribute(face, i, tex_coord_t(mask.u * opts.u2, mask.v * opts.v2));
+		uv3.setAttribute(face, i, tex_coord_t(mask.u * opts.u3, mask.v * opts.v3));
+		w0.setAttribute(face, i, opts.w0);
+		w1.setAttribute(face, i, opts.w1);
+		w2.setAttribute(face, i, opts.w2);
+		w3.setAttribute(face, i, opts.w3);
+		color.setAttribute(face, i, color_t(opts.r, opts.g, opts.b, opts.a));
+	}
 };
 
 mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options = {});
