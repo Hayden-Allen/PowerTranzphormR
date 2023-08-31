@@ -21,6 +21,7 @@ action* action::create(const nlohmann::json& obj, const std::unordered_map<std::
 	case 3: return new destroy_action(obj, nodes);
 	case 4: return new freeze_action(obj, nodes);
 	case 5: return new unfreeze_action(obj, nodes);
+	case 6: return new rename_action(obj, nodes);
 	default: assert(false);
 	}
 	return nullptr;
