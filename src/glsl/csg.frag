@@ -19,7 +19,7 @@ void main()
 
 	vec4 spec = vec4(RdV * vec3(1), 1);
 	vec4 diff = min(1, v_NdL + .33) * texture(u_tex, v_tex);
-	o_col = clamp(diff + spec, vec4(vec3(0), 1), vec4(1));
+	o_col = clamp(diff + spec * 0.0, vec4(vec3(0), 1), vec4(1));
 
 	// o_col = texture(u_tex, v_tex);
 	// o_col = vec4(abs(v_N), 1);

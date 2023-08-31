@@ -127,4 +127,15 @@ void properties_window::handle_material_frame(scene_material* const selected)
 	const ImVec2 img_dim(img_w, img_w);
 	ImGui::SetCursorPosX(win_min.x + (win_w - img_w) * 0.5f);
 	ImGui::Image(tex->get_imgui_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
+	if (ImGui::Button("Load Texture"))
+	{
+		nfdchar_t* nfd_path = nullptr;
+		nfdfilteritem_t nfd_filters[1] = { { "Image file", "png,jpg,bmp" } };
+		nfdresult_t nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);
+		if (nfd_res == NFD_OKAY)
+		{
+			selected->set_texture("u_tex", nfd_path);
+			NFD_FreePath(nfd_path);
+		}
+	}
 }
