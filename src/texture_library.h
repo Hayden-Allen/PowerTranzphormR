@@ -47,31 +47,23 @@ public:
 		const auto& it = m_lib.find(fp);
 		if (it != m_lib.end())
 		{
-			m_counts[it->second]++;
+			m_counts[it->first]++;
 			return;
 		}
 		mgl::texture2d_rgb_u8* const new_tex = load_file(fp);
 		m_lib.insert({ fp, new_tex });
-		m_tex2fp.insert({ new_tex, fp });
-		m_counts.insert({ new_tex, 1 });
+		m_counts.insert({ fp, 1 });
 	}
-	void unload(mgl::texture2d_rgb_u8** const tex)
+	void unload(const std::string& fp)
 	{
-		if (*tex == m_deftex)
+		assert(m_counts.contains(fp));
+		m_counts[fp]--;
+		if (m_counts[fp] == 0)
 		{
-			return;
-		}
-		assert(m_counts.contains(*tex));
-		m_counts[*tex]--;
-		if (m_counts[*tex] == 0)
-		{
-			m_counts.erase(*tex);
-			const std::string& fp = m_tex2fp.at(*tex);
-			m_tex2fp.erase(*tex);
+			m_counts.erase(fp);
+			delete m_lib[fp];
 			m_lib.erase(fp);
-			delete *tex;
 		}
-		*tex = nullptr;
 	}
 private:
 	static mgl::texture2d_rgb_u8* load_file(const std::string& fp)
@@ -95,6 +87,5 @@ private:
 private:
 	mgl::texture2d_rgb_u8* m_deftex = nullptr;
 	std::unordered_map<std::string, mgl::texture2d_rgb_u8*> m_lib;
-	std::unordered_map<mgl::texture2d_rgb_u8*, std::string> m_tex2fp;
-	std::unordered_map<mgl::texture2d_rgb_u8*, u32> m_counts;
+	std::unordered_map<std::string, u32> m_counts;
 };

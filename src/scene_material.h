@@ -20,44 +20,45 @@ struct scene_material
 	{}
 	~scene_material()
 	{
-		for (auto& pair : texs)
+		for (auto& pair : m_tex_name_to_filename)
 		{
-			g::texlib->unload(&pair.second);
+			g::texlib->unload(pair.first);
 		}
 	}
 
-	void remove_texture(const std::string& name)
+	void remove_texture(const std::string& tex_name)
 	{
-		const auto& old_it = texs.find(name);
-		if (old_it != texs.end())
+		const auto& old_it = m_tex_name_to_filename.find(tex_name);
+		if (old_it != m_tex_name_to_filename.end())
 		{
-			g::texlib->unload(&old_it->second);
-			texs.erase(name);
+			g::texlib->unload(m_tex_name_to_filename.at(tex_name));
+			m_tex_name_to_filename.erase(tex_name);
 		}
 	}
-	void set_texture(const std::string& name, const std::string& fp)
+	void set_texture(const std::string& tex_name, const std::string& fp)
 	{
-		const auto& old_it = texs.find(name);
-		if (old_it != texs.end())
+		const auto& old_it = m_tex_name_to_filename.find(tex_name);
+		if (old_it != m_tex_name_to_filename.end())
 		{
-			g::texlib->unload(&old_it->second);
+			g::texlib->unload(m_tex_name_to_filename.at(tex_name));
 		}
 		g::texlib->load(fp);
-		texs[name] = g::texlib->get(fp);
+		m_tex_name_to_filename[tex_name] = fp;
 	}
-	const mgl::texture2d_rgb_u8* get_texture(const std::string& name) const
+	const mgl::texture2d_rgb_u8* get_texture(const std::string& tex_name) const
 	{
-		return texs.at(name);
+		assert(m_tex_name_to_filename.contains(tex_name));
+		return g::texlib->get(m_tex_name_to_filename.at(tex_name));
 	}
 
 	void for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgb_u8*)>& l) const
 	{
-		for (const auto& pair : texs)
+		for (const auto& pair : m_tex_name_to_filename)
 		{
-			l(pair.first, pair.second);
+			l(pair.first, get_texture(pair.first));
 		}
 	}
 
 private:
-	std::unordered_map<std::string, mgl::texture2d_rgb_u8*> texs;
+	std::unordered_map<std::string, std::string> m_tex_name_to_filename;
 };
