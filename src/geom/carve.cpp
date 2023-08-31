@@ -59,9 +59,6 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 
 mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options)
 {
-	assert(options.u_scale > 0.f);
-	assert(options.v_scale > 0.f);
-
 	// generate vertices for cube centered at local origin
 	const f32 w = .5f, h = .5f, d = .5f;
 	std::vector<vertex_t> v;
@@ -101,12 +98,10 @@ mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_at
 
 	for (s32 i = 0; i < 6; ++i)
 	{
-		const f32 top = 1.0f * options.v_scale, bottom = 0.0f;
-		const f32 left = 0.0f, right = 1.0f * options.u_scale;
-		vert_attrs.set_attribute(faces[i], 0, tex_coord_t(left, bottom));
-		vert_attrs.set_attribute(faces[i], 1, tex_coord_t(right, bottom));
-		vert_attrs.set_attribute(faces[i], 2, tex_coord_t(right, top));
-		vert_attrs.set_attribute(faces[i], 3, tex_coord_t(left, top));
+		vert_attrs.set_attribute(faces[i], 0, options, tex_coord_t(0.f, 0.f));
+		vert_attrs.set_attribute(faces[i], 1, options, tex_coord_t(1.f, 0.f));
+		vert_attrs.set_attribute(faces[i], 2, options, tex_coord_t(1.f, 1.f));
+		vert_attrs.set_attribute(faces[i], 3, options, tex_coord_t(0.f, 1.f));
 		mtl_id_attr.setAttribute(faces[i], mtl_id);
 	}
 
@@ -118,8 +113,6 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 	assert(options.num_steps > 0);
 	assert(options.top_radius > 0.f);
 	assert(options.bottom_radius > 0.f);
-	assert(options.u_scale > 0.f);
-	assert(options.v_scale > 0.f);
 
 	// number of vertical strips to generate
 	const u32 STEPS = options.num_steps;
@@ -161,7 +154,7 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 			// map each vertex to where it lies within the texture
 			// (don't stretch rectangle texture to fit circle, just take subtexture that fits)
 			const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-			vert_attrs.set_attribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
+			vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
 		}
 	}
 	// vertical strips
@@ -171,10 +164,10 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 		const u32 c = i + STEPS, d = b + STEPS;
 		// wound clockwise
 		face_t* face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
-		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * i / STEPS, options.v_scale * 0));
-		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * i / STEPS, options.v_scale * 1));
-		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + 1) / STEPS, options.v_scale * 1));
-		vert_attrs.set_attribute(face, 3, tex_coord_t(options.u_scale * (i + 1) / STEPS, options.v_scale * 0));
+		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
+		vert_attrs.set_attribute(face, 1, options, tex_coord_t(1.f * i / STEPS, 1.f));
+		vert_attrs.set_attribute(face, 2, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 1.f));
+		vert_attrs.set_attribute(face, 3, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 0.f));
 		faces.push_back(face);
 	}
 
@@ -186,8 +179,6 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 
 mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cone_options& options)
 {
-	assert(options.u_scale > 0.f);
-	assert(options.v_scale > 0.f);
 	assert(options.num_steps > 0);
 
 	// generate circular base of the cone
@@ -217,16 +208,16 @@ mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr
 	for (uint32_t i = 0; i < STEPS; i++)
 	{
 		const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-		vert_attrs.set_attribute(face, i, tex_coord_t(options.u_scale * u, options.v_scale * v));
+		vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
 	}
 	// generate vertical strips for cone
 	for (u32 i = 0; i < STEPS; i++)
 	{
 		const u32 a = i, b = (i + 1) % STEPS, c = STEPS;
 		face = new face_t(vertices[a], vertices[c], vertices[b]);
-		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / STEPS, options.v_scale * 0.0f));
-		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * 0.5f, options.v_scale * 1.0f));
-		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * 1.f * (i + 1) / STEPS, options.v_scale * 0.0f));
+		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
+		vert_attrs.set_attribute(face, 1, options, tex_coord_t(.5f, 1.f));
+		vert_attrs.set_attribute(face, 2, options, tex_coord_t(1.f * (i + 1) / STEPS, 0.f));
 		faces.push_back(face);
 	}
 
@@ -242,8 +233,6 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 	assert(options.tube_radius > 0.f);
 	assert(options.num_center_steps > 2);
 	assert(options.num_tube_steps > 2);
-	assert(options.u_scale > 0.f);
-	assert(options.v_scale > 0.f);
 
 	// number of circles to generate around the center of the torus
 	const u32 CENTER_STEPS = options.num_center_steps;
@@ -285,10 +274,10 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 			const u32 a = cur + j, b = cur + mj;
 			const u32 c = next + j, d = next + mj;
 			face_t* const face = new face_t(vertices[a], vertices[b], vertices[d], vertices[c]);
-			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / CENTER_STEPS, options.v_scale * (1 - 1.f * j / TUBE_STEPS)));
-			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * 1.f * i / CENTER_STEPS, options.v_scale * (1 - 1.f * (j + 1) / TUBE_STEPS)));
-			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + 1.f) / CENTER_STEPS, options.v_scale * (1 - 1.f * (j + 1) / TUBE_STEPS)));
-			vert_attrs.set_attribute(face, 3, tex_coord_t(options.u_scale * (i + 1.f) / CENTER_STEPS, options.v_scale * (1 - 1.f * j / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 1, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 2, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			vert_attrs.set_attribute(face, 3, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}
@@ -299,8 +288,6 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 
 mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options)
 {
-	assert(options.u_scale > 0.f);
-	assert(options.v_scale > 0.f);
 	assert(options.num_horizontal_steps > 2);
 	assert(options.num_vertical_steps > 3);
 
@@ -350,9 +337,9 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 		const u32 a = i, b = (i + 1) % nh;
 		const u32 c = MGL_CAST(u32, vertices.size() - 2);
 		face_t* const face = new face_t(vertices[a], vertices[b], vertices[c]);
-		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / nh, options.v_scale * 1.f / nv));
-		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * (i + 1.f) / nh, options.v_scale * 1.f / nv));
-		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + .5f) / nh, options.v_scale * 0));
+		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / nh, 1.f / nv));
+		vert_attrs.set_attribute(face, 1, options, tex_coord_t((i + 1.f) / nh, 1.f / nv));
+		vert_attrs.set_attribute(face, 2, options, tex_coord_t((i + .5f) / nh, 0.f));
 		mtl_id_attr.setAttribute(face, mtl_id);
 		faces.push_back(face);
 	}
@@ -363,9 +350,9 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 		const u32 a = i + off, b = (i + 1) % nh + off;
 		const u32 c = MGL_CAST(u32, vertices.size() - 1);
 		face_t* const face = new face_t(vertices[a], vertices[c], vertices[b]);
-		vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * 1.f * i / nh, options.v_scale * (nv - 1.f) / nv));
-		vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * (i + .5f) / nh, options.v_scale * 1));
-		vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (i + 1.f) / nh, options.v_scale * (nv - 1.f) / nv));
+		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / nh, (nv - 1.f) / nv));
+		vert_attrs.set_attribute(face, 1, options, tex_coord_t((i + .5f) / nh, 1.f));
+		vert_attrs.set_attribute(face, 2, options, tex_coord_t((i + 1.f) / nh, (nv - 1.f) / nv));
 		mtl_id_attr.setAttribute(face, mtl_id);
 		faces.push_back(face);
 	}
@@ -381,10 +368,10 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			const u32 a = ix + cur_off, b = (ix + 1) % nh + cur_off;
 			const u32 c = ix + next_off, d = (ix + 1) % nh + next_off;
 			face_t* const face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
-			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * ctx, options.v_scale * cty));
-			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * ctx, options.v_scale * nty));
-			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * ntx, options.v_scale * nty));
-			vert_attrs.set_attribute(face, 3, tex_coord_t(options.u_scale * ntx, options.v_scale * cty));
+			vert_attrs.set_attribute(face, 0, options, tex_coord_t(ctx, cty));
+			vert_attrs.set_attribute(face, 1, options, tex_coord_t(ctx, nty));
+			vert_attrs.set_attribute(face, 2, options, tex_coord_t(ntx, nty));
+			vert_attrs.set_attribute(face, 3, options, tex_coord_t(ntx, cty));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}
