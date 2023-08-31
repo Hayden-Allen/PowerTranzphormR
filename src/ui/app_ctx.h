@@ -4,6 +4,7 @@
 #include "shortcut_menu.h"
 
 class scene_graph_window;
+class materials_list_window;
 
 enum class global_selection_type
 {
@@ -49,6 +50,7 @@ public:
 	scene_material* get_imgui_needs_select_unfocused_mtl();
 	void unset_imgui_needs_select_unfocused_mtl();
 	void set_sg_window(scene_graph_window* const window);
+	void set_mtls_window(materials_list_window* const window);
 	std::vector<std::pair<u32, scene_material*>> get_sorted_materials();
 	void remove_material(const u32 id);
 	void set_material(sgnode* const node, const u32 id);
@@ -85,4 +87,5 @@ private:
 	scene_material* m_selected_mtl = nullptr;
 	scene_material* m_imgui_needs_select_unfocused_mtl = nullptr;
 	scene_graph_window* m_sg_window = nullptr;
+	materials_list_window* m_mtls_window = nullptr;
 };

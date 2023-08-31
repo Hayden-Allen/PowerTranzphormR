@@ -120,7 +120,10 @@ scene_material* scene_ctx::create_default_material()
 	scene_material* mtl = new scene_material;
 	mtl->shaders = g::shaders;
 	mtl->name = "Untitled Material";
-	mtl->set_texture("u_tex", "<NULL>");
+	mtl->set_texture("u_tex0", "<NULL>");
+	mtl->set_texture("u_tex1", "<NULL>");
+	mtl->set_texture("u_tex2", "<NULL>");
+	mtl->set_texture("u_tex3", "<NULL>");
 	return mtl;
 }
 u32 scene_ctx::add_material(scene_material* mtl)

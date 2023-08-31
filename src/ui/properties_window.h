@@ -18,5 +18,5 @@ private:
 	void handle_sgnode_mesh(sgnode* const selected);
 private:
 	void handle_material_frame(scene_material* const selected);
-	void handle_material_texture(scene_material* const selected_mtl, const std::string& name, const mgl::texture2d_rgb_u8* tex);
+	void handle_material_texture(scene_material* const selected_mtl, const std::string& name);
 };

@@ -26,7 +26,7 @@ generated_mesh* generated_mesh::create(const nlohmann::json& obj, scene_ctx* con
 	assert(false);
 	return nullptr;
 }
-std::unordered_map<std::string, generated_mesh_param> generated_mesh::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_mesh::get_params() const
 {
 	return {};
 }
@@ -124,7 +124,7 @@ generated_primitive::generated_primitive(const nlohmann::json& obj) :
 	options->a = opts["a"];
 }
 generated_primitive::~generated_primitive() {}
-std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::get_params() const
 {
 	const primitive_options* const opts = get_options();
 	return {
@@ -132,7 +132,7 @@ std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_p
 		{ "UV1", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u1, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "UV2", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u2, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "UV3", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u3, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Weights", { generated_mesh_param_type::FLOAT_4, (void*)&opts->w0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Weights", { generated_mesh_param_type::FLOAT_4, (void*)&opts->w0, 0.0f, 1.0f, DRAG_PARAM_STEP } },
 		{ "Color", { generated_mesh_param_type::COLOR_4, (void*)&opts->r, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
@@ -197,7 +197,7 @@ generated_cuboid::generated_cuboid(const nlohmann::json& obj) :
 	const auto& opts = obj["opts"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
-std::unordered_map<std::string, generated_mesh_param> generated_cuboid::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_cuboid::get_params() const
 {
 	return generated_primitive::get_params();
 }
@@ -243,13 +243,13 @@ generated_ellipsoid::generated_ellipsoid(const nlohmann::json& obj) :
 	m_options.num_vertical_steps = opts["nv"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
-std::unordered_map<std::string, generated_mesh_param> generated_ellipsoid::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_ellipsoid::get_params() const
 {
 	auto m = generated_primitive::get_params();
-	std::unordered_map<std::string, generated_mesh_param> t = {
+	std::vector<std::pair<std::string, generated_mesh_param>> t = {
 		{ "XY Steps", { generated_mesh_param_type::UINT_2, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
 	};
-	m.merge(t);
+	m.insert(m.end(), t.begin(), t.end());
 	return m;
 }
 void generated_ellipsoid::recompute(scene_ctx* const scene)
@@ -297,15 +297,15 @@ generated_cylinder::generated_cylinder(const nlohmann::json& obj) :
 	m_options.num_steps = opts["n"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
-std::unordered_map<std::string, generated_mesh_param> generated_cylinder::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_cylinder::get_params() const
 {
 	auto m = generated_primitive::get_params();
-	std::unordered_map<std::string, generated_mesh_param> t = {
+	std::vector<std::pair<std::string, generated_mesh_param>> t = {
 		{ "Steps", { generated_mesh_param_type::UINT_1, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 		{ "Top Radius", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "Bottom Radius", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
-	m.merge(t);
+	m.insert(m.end(), t.begin(), t.end());
 	return m;
 }
 void generated_cylinder::recompute(scene_ctx* const scene)
@@ -352,13 +352,13 @@ generated_cone::generated_cone(const nlohmann::json& obj) :
 	m_options.num_steps = opts["n"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
-std::unordered_map<std::string, generated_mesh_param> generated_cone::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_cone::get_params() const
 {
 	auto m = generated_primitive::get_params();
-	std::unordered_map<std::string, generated_mesh_param> t = {
+	std::vector<std::pair<std::string, generated_mesh_param>> t = {
 		{ "Steps", { generated_mesh_param_type::UINT_1, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 	};
-	m.merge(t);
+	m.insert(m.end(), t.begin(), t.end());
 	return m;
 }
 void generated_cone::recompute(scene_ctx* const scene)
@@ -406,14 +406,14 @@ generated_torus::generated_torus(const nlohmann::json& obj) :
 	m_options.num_tube_steps = opts["nt"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
-std::unordered_map<std::string, generated_mesh_param> generated_torus::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_torus::get_params() const
 {
 	auto m = generated_primitive::get_params();
-	std::unordered_map<std::string, generated_mesh_param> t = {
+	std::vector<std::pair<std::string, generated_mesh_param>> t = {
 		{ "Radii", { generated_mesh_param_type::FLOAT_2, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "Steps", { generated_mesh_param_type::UINT_2, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
 	};
-	m.merge(t);
+	m.insert(m.end(), t.begin(), t.end());
 	return m;
 }
 void generated_torus::recompute(scene_ctx* const scene)
@@ -463,7 +463,7 @@ generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
 	m_options.map_path = opts["path"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
-std::unordered_map<std::string, generated_mesh_param> generated_heightmap::get_params() const
+std::vector<std::pair<std::string, generated_mesh_param>> generated_heightmap::get_params() const
 {
 	return generated_primitive::get_params();
 }
