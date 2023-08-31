@@ -128,8 +128,12 @@ std::unordered_map<std::string, generated_mesh_param> generated_primitive::get_p
 {
 	const primitive_options* const opts = get_options();
 	return {
-		{ "U Scale", { true, (void*)&opts->u0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "V Scale", { true, (void*)&opts->v0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV0", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV1", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u1, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV2", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u2, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV3", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u3, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Weights", { generated_mesh_param_type::FLOAT_4, (void*)&opts->w0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Color", { generated_mesh_param_type::COLOR_4, (void*)&opts->r, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
 void generated_primitive::recompute(scene_ctx* const scene)
@@ -243,8 +247,7 @@ std::unordered_map<std::string, generated_mesh_param> generated_ellipsoid::get_p
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "X Steps", { false, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
-		{ "Y Steps", { false, (void*)&m_options.num_vertical_steps, 3.f, 64.f, 1.f } },
+		{ "XY Steps", { generated_mesh_param_type::UINT_2, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
 	};
 	m.merge(t);
 	return m;
@@ -298,9 +301,9 @@ std::unordered_map<std::string, generated_mesh_param> generated_cylinder::get_pa
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "Steps", { false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
-		{ "Top Radius", { true, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Bottom Radius", { true, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Steps", { generated_mesh_param_type::UINT_1, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Top Radius", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Bottom Radius", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 	m.merge(t);
 	return m;
@@ -353,7 +356,7 @@ std::unordered_map<std::string, generated_mesh_param> generated_cone::get_params
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "Steps", { false, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Steps", { generated_mesh_param_type::UINT_1, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 	};
 	m.merge(t);
 	return m;
@@ -407,10 +410,8 @@ std::unordered_map<std::string, generated_mesh_param> generated_torus::get_param
 {
 	auto m = generated_primitive::get_params();
 	std::unordered_map<std::string, generated_mesh_param> t = {
-		{ "Center Radius", { true, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Tube Radius", { true, (void*)&m_options.tube_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Center Steps", { false, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
-		{ "Tube Steps", { false, (void*)&m_options.num_tube_steps, 3.f, 64.f, 1.f } },
+		{ "Radii", { generated_mesh_param_type::FLOAT_2, (void*)&m_options.center_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Steps", { generated_mesh_param_type::UINT_2, (void*)&m_options.num_center_steps, 3.f, 64.f, 1.f } },
 	};
 	m.merge(t);
 	return m;
