@@ -22,7 +22,7 @@ struct scene_material
 	{
 		for (auto& pair : m_tex_name_to_filename)
 		{
-			g::texlib->unload(pair.first);
+			g::texlib->unload(pair.second);
 		}
 	}
 

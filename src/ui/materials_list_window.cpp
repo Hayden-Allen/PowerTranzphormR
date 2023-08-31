@@ -9,9 +9,9 @@ materials_list_window::materials_list_window(app_ctx* const a_ctx) :
 	//
 }
 
-void materials_list_window::handle_frame()
+void materials_list_window::handle_focused(bool focused)
 {
-	if (ImGui::IsWindowFocused())
+	if (focused)
 	{
 		if (!m_was_focused)
 		{
@@ -23,7 +23,10 @@ void materials_list_window::handle_frame()
 	{
 		m_was_focused = false;
 	}
+}
 
+void materials_list_window::handle_frame()
+{
 	const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
 
 	for (size_t i = 0; i < sorted_mtls.size(); ++i)

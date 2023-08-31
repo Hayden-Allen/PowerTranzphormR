@@ -82,7 +82,9 @@ bool imgui_layer::on_frame(const f32 dt)
 
 		for (imgui_window* window : m_windows)
 		{
-			if (ImGui::Begin(window->get_title().c_str()))
+			bool should_draw_window = ImGui::Begin(window->get_title().c_str());
+			window->handle_focused(ImGui::IsWindowFocused());
+			if (should_draw_window)
 			{
 				window->handle_frame();
 			}
