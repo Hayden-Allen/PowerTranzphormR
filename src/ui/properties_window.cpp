@@ -113,6 +113,9 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 		case generated_mesh_param_type::FLOAT_2:
 			changed = ImGui::DragFloat2(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
 			break;
+		case generated_mesh_param_type::FLOAT_4:
+			changed = ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			break;
 		case generated_mesh_param_type::FLOAT_4_SUM_1:
 			{
 				f32* const f = static_cast<f32*>(prop.second.value);

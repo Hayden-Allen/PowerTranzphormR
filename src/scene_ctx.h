@@ -64,7 +64,7 @@ private:
 		return {
 			3,			// x, y, z
 			3,			// nx, ny, nz
-			2, 2, 2, 2, // uv0-uv3
+			4, 4, 4, 4, // uv0-uv3
 			4,			// weights
 			4,			// rgba
 		};

@@ -10,10 +10,10 @@ struct mesh_vertex
 {
 	f32 x = 0.f, y = 0.f, z = 0.f;
 	f32 nx = 0.f, ny = 0.f, nz = 0.f;
-	f32 u0 = 0.f, v0 = 0.f;
-	f32 u1 = 0.f, v1 = 0.f;
-	f32 u2 = 0.f, v2 = 0.f;
-	f32 u3 = 0.f, v3 = 0.f;
+	f32 u0 = 1.f, v0 = 1.f, uo0 = 0.f, vo0 = 0.f;
+	f32 u1 = 1.f, v1 = 1.f, uo1 = 0.f, vo1 = 0.f;
+	f32 u2 = 1.f, v2 = 1.f, uo2 = 0.f, vo2 = 0.f;
+	f32 u3 = 1.f, v3 = 1.f, uo3 = 0.f, vo3 = 0.f;
 	f32 w0 = 0.f, w1 = 0.f, w2 = 0.f, w3 = 0.f;
 	f32 r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 
@@ -38,10 +38,10 @@ struct mesh_vertex
 struct tess_vtx
 {
 	f64 x = 0.0, y = 0.0, z = 0.0;
-	f32 u0 = 0.0f, v0 = 0.0f;
-	f32 u1 = 0.0f, v1 = 0.0f;
-	f32 u2 = 0.0f, v2 = 0.0f;
-	f32 u3 = 0.0f, v3 = 0.0f;
+	f32 u0 = 1.f, v0 = 1.f, uo0 = 0.f, vo0 = 0.f;
+	f32 u1 = 1.f, v1 = 1.f, uo1 = 0.f, vo1 = 0.f;
+	f32 u2 = 1.f, v2 = 1.f, uo2 = 0.f, vo2 = 0.f;
+	f32 u3 = 1.f, v3 = 1.f, uo3 = 0.f, vo3 = 0.f;
 	f64 w0 = 0.f, w1 = 0.f, w2 = 0.f, w3 = 0.f;
 	f32 r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 	std::vector<mesh_vertex>* target = nullptr;
@@ -64,12 +64,20 @@ static void tess_callback_vertex_data(void* vertex_data, void* user_data)
 	mv.z = (f32)v->z;
 	mv.u0 = v->u0;
 	mv.v0 = v->v0;
+	mv.uo0 = v->uo0;
+	mv.vo0 = v->vo0;
 	mv.u1 = v->u1;
 	mv.v1 = v->v1;
+	mv.uo1 = v->uo1;
+	mv.vo1 = v->vo1;
 	mv.u2 = v->u2;
 	mv.v2 = v->v2;
+	mv.uo2 = v->uo2;
+	mv.vo2 = v->vo2;
 	mv.u3 = v->u3;
 	mv.v3 = v->v3;
+	mv.uo3 = v->uo3;
+	mv.vo3 = v->vo3;
 	mv.w0 = (f32)v->w0;
 	mv.w1 = (f32)v->w1;
 	mv.w2 = (f32)v->w2;

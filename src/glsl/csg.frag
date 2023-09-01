@@ -4,8 +4,9 @@ layout(location = 0) out vec4 o_col;
 uniform sampler2D u_tex0, u_tex1, u_tex2, u_tex3;
 uniform vec3 u_cam_pos;
 uniform mat4 u_m;
+uniform float u_time;
 
-in vec2 v_uv0, v_uv1, v_uv2, v_uv3;
+in vec4 v_uv0, v_uv1, v_uv2, v_uv3;
 in vec4 v_weights, v_rgba;
 in vec3 v_pos, v_N;
 in float v_NdL;
@@ -18,10 +19,10 @@ void main()
 	vec3 R = normalize(reflect(L, v_N));
 	float RdV = pow(max(0, dot(V, R)), 16);
 
-	vec4 multi_tex_res = texture(u_tex0, v_uv0) * v_weights[0] +
-				texture(u_tex1, v_uv1) * v_weights[1] +
-				texture(u_tex2, v_uv2) * v_weights[2] +
-				texture(u_tex3, v_uv3) * v_weights[3];
+	vec4 multi_tex_res = texture(u_tex0, v_uv0.xy + v_uv0.zw * u_time) * v_weights[0] +
+				texture(u_tex1, v_uv1.xy + v_uv1.zw * u_time) * v_weights[1] +
+				texture(u_tex2, v_uv2.xy + v_uv2.zw * u_time) * v_weights[2] +
+				texture(u_tex3, v_uv3.xy + v_uv3.zw * u_time) * v_weights[3];
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
 
 	vec3 spec = RdV * vec3(1);

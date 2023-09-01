@@ -106,32 +106,40 @@ generated_primitive::generated_primitive(const nlohmann::json& obj) :
 {
 	primitive_options* const options = get_options();
 	const auto& opts = obj["opts"];
-	options->u0 = opts["u0"];
-	options->v0 = opts["v0"];
-	options->u1 = opts["u1"];
-	options->v1 = opts["v1"];
-	options->u2 = opts["u2"];
-	options->v2 = opts["v2"];
-	options->u3 = opts["u3"];
-	options->v3 = opts["v3"];
-	options->w0 = opts["w0"];
-	options->w1 = opts["w1"];
-	options->w2 = opts["w2"];
-	options->w3 = opts["w3"];
-	options->r = opts["r"];
-	options->g = opts["g"];
-	options->b = opts["b"];
-	options->a = opts["a"];
+	options->u0 = opts["uv0"][0];
+	options->v0 = opts["uv0"][1];
+	options->uo0 = opts["uv0"][2];
+	options->vo0 = opts["uv0"][3];
+	options->u1 = opts["uv1"][0];
+	options->v1 = opts["uv1"][1];
+	options->uo1 = opts["uv1"][2];
+	options->vo1 = opts["uv1"][3];
+	options->u2 = opts["uv2"][0];
+	options->v2 = opts["uv2"][1];
+	options->uo2 = opts["uv2"][2];
+	options->vo2 = opts["uv2"][3];
+	options->u3 = opts["uv3"][0];
+	options->v3 = opts["uv3"][1];
+	options->uo3 = opts["uv3"][2];
+	options->vo3 = opts["uv3"][3];
+	options->w0 = opts["w"][0];
+	options->w1 = opts["w"][1];
+	options->w2 = opts["w"][2];
+	options->w3 = opts["w"][3];
+	options->r = opts["c"][0];
+	options->g = opts["c"][1];
+	options->b = opts["c"][2];
+	options->a = opts["c"][3];
 }
 generated_primitive::~generated_primitive() {}
 std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::get_params() const
 {
 	const primitive_options* const opts = get_options();
 	return {
-		{ "UV0", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "UV1", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u1, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "UV2", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u2, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "UV3", { generated_mesh_param_type::FLOAT_2, (void*)&opts->u3, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV0", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV1", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u1, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV2", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u2, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV3", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u3, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "Weights", { generated_mesh_param_type::FLOAT_4_SUM_1, (void*)&opts->w0, 0.0f, 1.0f, DRAG_PARAM_STEP } },
 		{ "Color", { generated_mesh_param_type::COLOR_4, (void*)&opts->r, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
@@ -163,22 +171,12 @@ nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<spac
 	nlohmann::json obj;
 	obj["opts"] = {
 		{ "t", opts->transform.e },
-		{ "u0", opts->u0 },
-		{ "v0", opts->v0 },
-		{ "u1", opts->u1 },
-		{ "v1", opts->v1 },
-		{ "u2", opts->u2 },
-		{ "v2", opts->v2 },
-		{ "u3", opts->u3 },
-		{ "v3", opts->v3 },
-		{ "w0", opts->w0 },
-		{ "w1", opts->w1 },
-		{ "w2", opts->w2 },
-		{ "w3", opts->w3 },
-		{ "r", opts->r },
-		{ "g", opts->g },
-		{ "b", opts->b },
-		{ "a", opts->a },
+		{ "uv0", { opts->u0, opts->v0, opts->uo0, opts->vo0 } },
+		{ "uv1", { opts->u1, opts->v1, opts->uo1, opts->vo1 } },
+		{ "uv2", { opts->u2, opts->v2, opts->uo2, opts->vo2 } },
+		{ "uv3", { opts->u3, opts->v3, opts->uo3, opts->vo3 } },
+		{ "w", { opts->w0, opts->w1, opts->w2, opts->w3 } },
+		{ "c", { opts->r, opts->g, opts->b, opts->a } },
 	};
 	return obj;
 }

@@ -5,20 +5,27 @@ class scene_ctx;
 
 struct tex_coord_t
 {
-	f32 u, v;
+	f32 u, v, uo, vo;
 	tex_coord_t() :
-		u(0.0f), v(0.0f) {}
+		u(0.0f), v(0.0f), uo(0.f), vo(0.f)
+	{}
 	tex_coord_t(const f32 s, const f32 t) :
-		u(s), v(t) {}
+		u(s), v(t), uo(0.f), vo(0.f)
+	{}
+	tex_coord_t(const f32 s, const f32 t, const f32 r, const f32 q) :
+		u(s), v(t), uo(r), vo(q)
+	{}
 };
 static tex_coord_t operator*(const f64 s, const tex_coord_t& t)
 {
-	return tex_coord_t(t.u * (f32)s, t.v * (f32)s);
+	return tex_coord_t(t.u * (f32)s, t.v * (f32)s, t.uo * (f32)s, t.vo * (f32)s);
 }
 static tex_coord_t& operator+=(tex_coord_t& t1, const tex_coord_t& t2)
 {
 	t1.u += t2.u;
 	t1.v += t2.v;
+	t1.uo += t2.uo;
+	t1.vo += t2.vo;
 	return t1;
 }
 
@@ -63,10 +70,10 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene);
 struct primitive_options
 {
 	tmat<space::OBJECT, space::PARENT> transform;
-	f32 u0 = 1.f, v0 = 1.f;
-	f32 u1 = 1.f, v1 = 1.f;
-	f32 u2 = 1.f, v2 = 1.f;
-	f32 u3 = 1.f, v3 = 1.f;
+	f32 u0 = 1.f, v0 = 1.f, uo0 = 0.f, vo0 = 0.f;
+	f32 u1 = 1.f, v1 = 1.f, uo1 = 0.f, vo1 = 0.f;
+	f32 u2 = 1.f, v2 = 1.f, uo2 = 0.f, vo2 = 0.f;
+	f32 u3 = 1.f, v3 = 1.f, uo3 = 0.f, vo3 = 0.f;
 	f32 w0 = 1.f, w1 = 0.f, w2 = 0.f, w3 = 0.f;
 	f32 r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 };
@@ -128,10 +135,10 @@ struct carve_vert_attrs
 	}*/
 	void set_attribute(const face_t* const face, const u32 i, const primitive_options& opts, const tex_coord_t& mask)
 	{
-		uv0.setAttribute(face, i, tex_coord_t(mask.u * opts.u0, mask.v * opts.v0));
-		uv1.setAttribute(face, i, tex_coord_t(mask.u * opts.u1, mask.v * opts.v1));
-		uv2.setAttribute(face, i, tex_coord_t(mask.u * opts.u2, mask.v * opts.v2));
-		uv3.setAttribute(face, i, tex_coord_t(mask.u * opts.u3, mask.v * opts.v3));
+		uv0.setAttribute(face, i, tex_coord_t(mask.u * opts.u0, mask.v * opts.v0, opts.uo0, opts.vo0));
+		uv1.setAttribute(face, i, tex_coord_t(mask.u * opts.u1, mask.v * opts.v1, opts.uo1, opts.vo1));
+		uv2.setAttribute(face, i, tex_coord_t(mask.u * opts.u2, mask.v * opts.v2, opts.uo2, opts.vo2));
+		uv3.setAttribute(face, i, tex_coord_t(mask.u * opts.u3, mask.v * opts.v3, opts.uo3, opts.vo3));
 		w0.setAttribute(face, i, opts.w0);
 		w1.setAttribute(face, i, opts.w1);
 		w2.setAttribute(face, i, opts.w2);

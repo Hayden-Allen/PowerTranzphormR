@@ -262,12 +262,20 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				v.z = e->vert->v.z;
 				v.u0 = t0.u;
 				v.v0 = t0.v;
+				v.uo0 = t0.uo;
+				v.vo0 = t0.vo;
 				v.u1 = t1.u;
 				v.v1 = t1.v;
+				v.uo1 = t1.uo;
+				v.vo1 = t1.vo;
 				v.u2 = t2.u;
 				v.v2 = t2.v;
+				v.uo2 = t2.uo;
+				v.vo2 = t2.vo;
 				v.u3 = t3.u;
 				v.v3 = t3.v;
+				v.uo3 = t3.uo;
+				v.vo3 = t3.vo;
 				v.w0 = w0;
 				v.w1 = w1;
 				v.w2 = w2;
@@ -452,6 +460,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		mat->shaders->uniform_mat4("u_m", mats.model.e);
 		mat->shaders->uniform_mat4("u_normal", mats.normal.e);
 		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
+		mat->shaders->uniform_1f("u_time", glctx.time.now);
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
