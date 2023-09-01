@@ -65,7 +65,7 @@ private:
 			3,			// x, y, z
 			3,			// nx, ny, nz
 			2, 2, 2, 2, // uv0-uv3
-			1, 1, 1, 1, // w0-w3
+			4,			// weights
 			4,			// rgba
 		};
 	}

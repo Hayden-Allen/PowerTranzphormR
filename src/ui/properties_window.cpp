@@ -116,7 +116,6 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 		case generated_mesh_param_type::FLOAT_4_SUM_1:
 			{
 				f32* const f = static_cast<f32*>(prop.second.value);
-				const f32 f0 = f[0], f1 = f[1], f2 = f[2], f3 = f[3];
 				const f32 of[4] = { f[0], f[1], f[2], f[3] };
 				changed = ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
 				if (changed)
@@ -127,7 +126,7 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 						if (f[i] != of[i])
 							ci = i;
 
-					// sum of original values of non-changed weight
+					// sum of original values of non-changed weights
 					f32 odenom = 0.f;
 					for (u32 i = 0; i < 4; i++)
 						if (i != ci)

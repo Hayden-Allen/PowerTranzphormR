@@ -6,8 +6,7 @@ uniform vec3 u_cam_pos;
 uniform mat4 u_m;
 
 in vec2 v_uv0, v_uv1, v_uv2, v_uv3;
-in float v_w0, v_w1, v_w2, v_w3;
-in vec4 v_rgba;
+in vec4 v_weights, v_rgba;
 in vec3 v_pos, v_N;
 in float v_NdL;
 
@@ -19,10 +18,10 @@ void main()
 	vec3 R = normalize(reflect(L, v_N));
 	float RdV = pow(max(0, dot(V, R)), 16);
 
-	vec4 multi_tex_res = texture(u_tex0, v_uv0) * v_w0 +
-				texture(u_tex1, v_uv1) * v_w1 +
-				texture(u_tex2, v_uv2) * v_w2 +
-				texture(u_tex3, v_uv3) * v_w3;
+	vec4 multi_tex_res = texture(u_tex0, v_uv0) * v_weights[0] +
+				texture(u_tex1, v_uv1) * v_weights[1] +
+				texture(u_tex2, v_uv2) * v_weights[2] +
+				texture(u_tex3, v_uv3) * v_weights[3];
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
 
 	vec3 spec = RdV * vec3(1);

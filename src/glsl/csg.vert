@@ -5,18 +5,14 @@ layout (location = 2) in vec2 i_uv0;
 layout (location = 3) in vec2 i_uv1;
 layout (location = 4) in vec2 i_uv2;
 layout (location = 5) in vec2 i_uv3;
-layout (location = 6) in float i_w0;
-layout (location = 7) in float i_w1;
-layout (location = 8) in float i_w2;
-layout (location = 9) in float i_w3;
-layout (location = 10) in vec4 i_rgba;
+layout (location = 6) in vec4 i_weights;
+layout (location = 7) in vec4 i_rgba;
 
 uniform mat4 u_mvp, u_m, u_normal;
 uniform vec3 u_cam_pos;
 
 out vec2 v_uv0, v_uv1, v_uv2, v_uv3;
-out float v_w0, v_w1, v_w2, v_w3;
-out vec4 v_rgba;
+out vec4 v_weights, v_rgba;
 out vec3 v_N, v_pos;
 out float v_NdL;
 
@@ -33,10 +29,7 @@ void main()
 	v_uv1 = i_uv1;
 	v_uv2 = i_uv2;
 	v_uv3 = i_uv3;
-	v_w0 = i_w0;
-	v_w1 = i_w1;
-	v_w2 = i_w2;
-	v_w3 = i_w3;
+	v_weights = i_weights;
 	v_rgba = i_rgba;
 	v_N = i_norm;
 	v_pos = i_pos;
