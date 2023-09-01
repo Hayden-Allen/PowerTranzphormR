@@ -25,7 +25,6 @@ void scene_graph_window::handle_focused(bool focused)
 		m_was_focused = false;
 	}
 }
-
 void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();

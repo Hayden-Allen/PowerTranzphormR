@@ -9,6 +9,8 @@ materials_list_window::materials_list_window(app_ctx* const a_ctx) :
 	//
 }
 
+
+
 void materials_list_window::handle_focused(bool focused)
 {
 	if (focused)
@@ -24,7 +26,6 @@ void materials_list_window::handle_focused(bool focused)
 		m_was_focused = false;
 	}
 }
-
 void materials_list_window::handle_frame()
 {
 	const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
@@ -44,11 +45,15 @@ void materials_list_window::handle_frame()
 		if (mtl == m_renaming)
 		{
 			const f32 x = ImGui::GetCursorPosX();
+			const f32 y = ImGui::GetCursorPosY();
 
 			constexpr u32 BUF_SIZE = 32;
 			char buf[32] = { 0 };
 			memcpy_s(buf, BUF_SIZE, mtl->name.c_str(), mtl->name.size());
 
+			// hacky, but works
+			ImGui::SetCursorPosX(x - ImGui::GetStyle().FramePadding.x / 2 - 2);
+			ImGui::SetCursorPosY(y - ImGui::GetStyle().FramePadding.y / 2 - 1);
 			if (ImGui::InputText("##MW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				std::string new_name(buf);
@@ -99,14 +104,12 @@ void materials_list_window::handle_frame()
 
 	m_app_ctx->unset_imgui_needs_select_unfocused_mtl();
 }
-
 void materials_list_window::set_renaming(scene_material* mtl)
 {
 	assert(!m_renaming);
 	m_renaming = mtl;
 	m_rename_needs_focus = true;
 }
-
 const scene_material* materials_list_window::get_renaming() const
 {
 	return m_renaming;
