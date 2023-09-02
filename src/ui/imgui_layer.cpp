@@ -19,7 +19,6 @@ imgui_layer::imgui_layer(app_ctx* const a_ctx) :
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
-	io.Fonts->AddFontFromFileTTF("res/fonts/Jost-Regular.ttf", 20);
 	ImGui_ImplGlfw_InitForOpenGL(m_app_ctx->mgl_ctx.window, false);
 	ImGui_ImplOpenGL3_Init("#version 430 core");
 
@@ -59,6 +58,15 @@ imgui_layer::~imgui_layer()
 
 bool imgui_layer::on_frame(const f32 dt)
 {
+	f32 x_scale = -1.0f, y_scale = -1.0f;
+	glfwGetWindowContentScale(m_app_ctx->mgl_ctx.window, &x_scale, &y_scale);
+	if (x_scale != m_prev_x_scale || y_scale != m_prev_y_scale)
+	{
+		ImGui::GetIO().Fonts->AddFontFromFileTTF("res/fonts/Jost-Regular.ttf", 20.0f * std::max(x_scale, y_scale));
+		m_prev_x_scale = x_scale;
+		m_prev_y_scale = y_scale;
+	}
+
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();

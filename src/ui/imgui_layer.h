@@ -22,6 +22,7 @@ private:
 	app_ctx* const m_app_ctx = nullptr;
 	std::vector<imgui_window*> m_windows;
 	std::function<void()> m_exit_callback;
+	f32 m_prev_x_scale = -1.0f, m_prev_y_scale = -1.0f;
 private:
 	void draw_menus();
 	void draw_menu(const shortcut_menu& menu);
