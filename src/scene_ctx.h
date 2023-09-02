@@ -32,6 +32,8 @@ public:
 	void update();
 	void clear(bool ready_for_default_material = true);
 	void destroy();
+	void save(std::ofstream& out) const;
+	void load(std::ifstream& in);
 public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;

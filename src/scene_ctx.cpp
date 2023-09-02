@@ -91,7 +91,31 @@ void scene_ctx::destroy()
 		delete pair.second;
 	m_mtls.clear();
 }
-
+void scene_ctx::save(std::ofstream& out) const
+{
+	nlohmann::json obj;
+	obj["n"] = m_mtls.size();
+	std::vector<nlohmann::json::array_t> mtls;
+	for (const auto& pair : m_mtls)
+	{
+		mtls.push_back({ pair.first, pair.second->save(out) });
+	}
+	obj["m"] = mtls;
+	out << obj << "\n";
+}
+void scene_ctx::load(std::ifstream& in)
+{
+	std::string line;
+	std::getline(in, line);
+	const nlohmann::json& obj = nlohmann::json::parse(line);
+	m_mtls.reserve(obj["n"]);
+	for (const nlohmann::json::array_t& mtl : obj["m"])
+	{
+		const u32 id = mtl[0];
+		scene_material* const sm = new scene_material(mtl[1], g::shaders);
+		m_mtls.insert({ id, sm });
+	}
+}
 
 
 sgnode* scene_ctx::get_sg_root()

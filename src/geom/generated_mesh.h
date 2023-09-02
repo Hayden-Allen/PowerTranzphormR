@@ -71,7 +71,7 @@ public:
 	}
 protected:
 	generated_primitive(mesh_t* const m, const GLuint material);
-	generated_primitive(const nlohmann::json& obj);
+	generated_primitive(const nlohmann::json& obj, primitive_options* const options);
 protected:
 	GLuint m_material;
 };
