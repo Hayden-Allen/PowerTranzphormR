@@ -56,11 +56,20 @@ void app_ctx::save(const std::string& fp) const
 
 	actions.save(out, scene.get_sg_root());
 
-	out << frozen2unfrozen.size();
+	/*out << frozen2unfrozen.size();
 	for (const auto& pair : frozen2unfrozen)
 	{
 		out << pair.first->get_id() << " " << pair.second->get_id() << "\n";
+	}*/
+	nlohmann::json f2u;
+	f2u["n"] = frozen2unfrozen.size();
+	std::vector<nlohmann::json::array_t> pairs;
+	for (const auto& pair : frozen2unfrozen)
+	{
+		pairs.push_back({ pair.first->get_id(), pair.second->get_id() });
 	}
+	f2u["p"] = pairs;
+	out << f2u << "\n";
 
 	scene.save(out);
 }
@@ -109,15 +118,13 @@ void app_ctx::load(const std::string& fp)
 	assert(nodes.contains("sgn0"));
 	scene.set_sg_root(nodes.at("sgn0"));
 
-	u64 f2u_count;
-	in >> f2u_count;
-	frozen2unfrozen.reserve(f2u_count);
-	for (u64 i = 0; i < f2u_count; i++)
+	const nlohmann::json& f2u = u::next_line_json(in);
+	const nlohmann::json::array_t& f2us = f2u["p"];
+	frozen2unfrozen.reserve(f2u["n"]);
+	for (u64 i = 0; i < f2u["n"]; i++)
 	{
-		std::string fid = "", uid = "";
-		in >> fid >> uid;
-		assert(nodes.contains(fid) && nodes.contains(uid));
-		frozen2unfrozen.insert({ nodes.at(fid), nodes.at(uid) });
+		assert(nodes.contains(f2us[i][0]) && nodes.contains(f2us[i][1]));
+		frozen2unfrozen.insert({ nodes.at(f2us[i][0]), nodes.at(f2us[i][1]) });
 	}
 
 	scene.load(in);

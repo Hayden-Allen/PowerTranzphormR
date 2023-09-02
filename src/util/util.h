@@ -42,4 +42,11 @@ namespace u
 		const auto& cwd = std::filesystem::current_path();
 		return std::filesystem::relative(fp, cwd).string();
 	}
+
+	static nlohmann::json next_line_json(std::ifstream& in)
+	{
+		std::string line;
+		std::getline(in, line);
+		return nlohmann::json::parse(line);
+	}
 } // namespace u

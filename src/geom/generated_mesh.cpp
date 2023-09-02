@@ -189,6 +189,7 @@ void generated_primitive::set_options(const nlohmann::json& obj)
 }
 
 
+
 generated_cuboid::generated_cuboid(scene_ctx* const scene, const GLuint material, const cuboid_options& opts) :
 	generated_primitive(nullptr, material),
 	m_options(opts)
@@ -534,16 +535,15 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 		face_t* const face = new face_t(face_verts.begin(), face_verts.end());
 		for (const nlohmann::json& oface_vert : oface_verts)
 		{
-			vert_attrs.uv0.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u0"], oface_vert["v0"]));
-			vert_attrs.uv1.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u1"], oface_vert["v1"]));
-			vert_attrs.uv2.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u2"], oface_vert["v2"]));
-			vert_attrs.uv3.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["u3"], oface_vert["v3"]));
-			vert_attrs.w0.setAttribute(face, oface_vert["i"], oface_vert["w0"]);
-			vert_attrs.w1.setAttribute(face, oface_vert["i"], oface_vert["w1"]);
-			vert_attrs.w2.setAttribute(face, oface_vert["i"], oface_vert["w2"]);
-			vert_attrs.w3.setAttribute(face, oface_vert["i"], oface_vert["w3"]);
-			const auto& color = oface_vert["c"];
-			vert_attrs.color.setAttribute(face, oface_vert["i"], color_t(color[0], color[1], color[2], color[3]));
+			vert_attrs.uv0.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["uv0"][0], oface_vert["uv0"][1], oface_vert["uv0"][2], oface_vert["uv0"][3]));
+			vert_attrs.uv1.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["uv1"][0], oface_vert["uv1"][1], oface_vert["uv1"][2], oface_vert["uv1"][3]));
+			vert_attrs.uv2.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["uv2"][0], oface_vert["uv2"][1], oface_vert["uv2"][2], oface_vert["uv2"][3]));
+			vert_attrs.uv3.setAttribute(face, oface_vert["i"], tex_coord_t(oface_vert["uv3"][0], oface_vert["uv3"][1], oface_vert["uv3"][2], oface_vert["uv3"][3]));
+			vert_attrs.w0.setAttribute(face, oface_vert["i"], oface_vert["w"][0]);
+			vert_attrs.w1.setAttribute(face, oface_vert["i"], oface_vert["w"][1]);
+			vert_attrs.w2.setAttribute(face, oface_vert["i"], oface_vert["w"][2]);
+			vert_attrs.w3.setAttribute(face, oface_vert["i"], oface_vert["w"][3]);
+			vert_attrs.color.setAttribute(face, oface_vert["i"], color_t(oface_vert["c"][0], oface_vert["c"][1], oface_vert["c"][2], oface_vert["c"][3]));
 		}
 		const u32 mtl_id = oface["m"];
 		mtl_id_attr.setAttribute(face, mtl_id);
@@ -616,18 +616,18 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 		nlohmann::json::array_t face_verts;
 		for (face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 		{
-			nlohmann::json face_vert;
-			face_vert["v"] = vert2index.at(e->vert);
+			/*nlohmann::json face_vert;
+			face_vert["v"] = vert2index.at(e->vert);*/
 			const tex_coord_t uv0 = vert_attrs.uv0.getAttribute(f, e.idx());
 			const tex_coord_t uv1 = vert_attrs.uv1.getAttribute(f, e.idx());
 			const tex_coord_t uv2 = vert_attrs.uv2.getAttribute(f, e.idx());
 			const tex_coord_t uv3 = vert_attrs.uv3.getAttribute(f, e.idx());
 			const f64 w0 = vert_attrs.w0.getAttribute(f, e.idx());
-			const f64 w1 = vert_attrs.w0.getAttribute(f, e.idx());
-			const f64 w2 = vert_attrs.w0.getAttribute(f, e.idx());
-			const f64 w3 = vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w1 = vert_attrs.w1.getAttribute(f, e.idx());
+			const f64 w2 = vert_attrs.w2.getAttribute(f, e.idx());
+			const f64 w3 = vert_attrs.w3.getAttribute(f, e.idx());
 			const color_t& color = vert_attrs.color.getAttribute(f, e.idx());
-			face_vert["i"] = e.idx();
+			/*face_vert["i"] = e.idx();
 			face_vert["u0"] = uv0.u;
 			face_vert["v0"] = uv0.v;
 			face_vert["u1"] = uv1.u;
@@ -641,7 +641,20 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 			face_vert["w2"] = w2;
 			face_vert["w3"] = w3;
 			const std::vector<f32> c = { color.r, color.g, color.b, color.a };
-			face_vert["c"] = c;
+			face_vert["c"] = c;*/
+
+			const nlohmann::json face_vert = {
+				{ "v", vert2index.at(e->vert) },
+				{ "i", e.idx() },
+				{ "uv0", { uv0.u, uv0.v, uv0.uo, uv0.vo } },
+				{ "uv1", { uv1.u, uv1.v, uv1.uo, uv1.vo } },
+				{ "uv2", { uv2.u, uv2.v, uv2.uo, uv2.vo } },
+				{ "uv3", { uv3.u, uv3.v, uv3.uo, uv3.vo } },
+				{ "w", { w0, w1, w2, w3 } },
+				{ "c", { color.r, color.g, color.b, color.a } },
+			};
+
+			face_verts.push_back(face_vert);
 		}
 		face["v"] = face_verts;
 		faces.push_back(face);

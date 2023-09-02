@@ -118,6 +118,7 @@ void scene_ctx::load(std::ifstream& in)
 }
 
 
+
 sgnode* scene_ctx::get_sg_root()
 {
 	return m_sg_root;

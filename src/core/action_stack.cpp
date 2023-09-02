@@ -14,6 +14,7 @@ static void all_nodes(const sgnode* const cur, std::unordered_set<const sgnode*>
 }
 
 
+
 action_stack::action_stack(scene_ctx* const sc, app_ctx* const ac) :
 	m_ctx(sc),
 	m_app_ctx(ac)
@@ -107,20 +108,23 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	for (action* const a : all)
 		a->all_nodes(nodes);
 
+	// meta object
+	nlohmann::json meta;
+	meta["nn"] = nodes.size();
+	meta["np"] = m_past.size();
+	meta["nf"] = m_future.size();
+	meta["ni"] = sgnode::get_next_id();
+	out << meta << "\n";
+
 	// write out all nodes
-	out << nodes.size() << "\n";
 	for (const sgnode* const node : nodes)
 	{
-		out << std::string(node->save(&m_app_ctx->scene).dump()) << "\n";
+		out << node->save(&m_app_ctx->scene) << "\n";
 	}
 
 	// write out all events
-	out << m_past.size() << " " << m_future.size() << "\n";
 	for (const action* const a : all)
-		out << std::string(a->save().dump()) << "\n";
-
-	// write out next unique sgnode id
-	out << sgnode::get_next_id() << "\n";
+		out << a->save() << "\n";
 
 	m_modified = false;
 }
@@ -130,13 +134,13 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 
 	std::string line;
 
+	// read in meta block
+	const nlohmann::json& meta = u::next_line_json(in);
+
 	// read in all nodes
-	u64 num_nodes;
-	in >> num_nodes;
-	std::getline(in, line);
 	std::unordered_map<std::string, sgnode*> nodes;
-	nodes.reserve(num_nodes);
-	for (u64 i = 0; i < num_nodes; i++)
+	nodes.reserve(meta["nn"]);
+	for (u64 i = 0; i < meta["nn"]; i++)
 	{
 		std::getline(in, line);
 		const nlohmann::json obj = nlohmann::json::parse(line);
@@ -145,12 +149,9 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 		nodes[obj["id"]] = node;
 	}
 
-	u64 past_count, future_count;
-	in >> past_count >> future_count;
-	std::getline(in, line);
 	// read in (and apply) past events
-	m_past.reserve(past_count);
-	for (u64 i = 0; i < past_count; i++)
+	m_past.reserve(meta["np"]);
+	for (u64 i = 0; i < meta["np"]; i++)
 	{
 		std::getline(in, line);
 		const nlohmann::json obj = nlohmann::json::parse(line);
@@ -159,8 +160,8 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 		a->apply(m_ctx, m_app_ctx);
 	}
 	// read in future events
-	m_future.reserve(future_count);
-	for (u64 i = 0; i < future_count; i++)
+	m_future.reserve(meta["nf"]);
+	for (u64 i = 0; i < meta["nf"]; i++)
 	{
 		std::getline(in, line);
 		const nlohmann::json obj = nlohmann::json::parse(line);
@@ -169,9 +170,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 	}
 
 	// need to know what unique id to start making new sgnodes at
-	u32 next_id = 0;
-	in >> next_id;
-	sgnode::set_next_id(next_id);
+	sgnode::set_next_id(meta["ni"]);
 
 	return nodes;
 }
