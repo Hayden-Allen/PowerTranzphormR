@@ -100,11 +100,10 @@ generated_primitive::generated_primitive(mesh_t* const m, const GLuint material)
 {
 	dirty = true;
 }
-generated_primitive::generated_primitive(const nlohmann::json& obj) :
+generated_primitive::generated_primitive(const nlohmann::json& obj, primitive_options* const options) :
 	generated_mesh(nullptr),
 	m_material(obj["mat"])
 {
-	primitive_options* const options = get_options();
 	const auto& opts = obj["opts"];
 	options->u0 = opts["uv0"][0];
 	options->v0 = opts["uv0"][1];
@@ -190,7 +189,7 @@ generated_cuboid::generated_cuboid(scene_ctx* const scene, const GLuint material
 	recompute(scene);
 }
 generated_cuboid::generated_cuboid(const nlohmann::json& obj) :
-	generated_primitive(obj)
+	generated_primitive(obj, get_options())
 {
 	const auto& opts = obj["opts"];
 	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
@@ -234,7 +233,7 @@ generated_ellipsoid::generated_ellipsoid(scene_ctx* const scene, const GLuint ma
 	recompute(scene);
 }
 generated_ellipsoid::generated_ellipsoid(const nlohmann::json& obj) :
-	generated_primitive(obj)
+	generated_primitive(obj, get_options())
 {
 	const auto& opts = obj["opts"];
 	m_options.num_horizontal_steps = opts["nh"];
@@ -287,7 +286,7 @@ generated_cylinder::generated_cylinder(scene_ctx* const scene, const GLuint mate
 	recompute(scene);
 }
 generated_cylinder::generated_cylinder(const nlohmann::json& obj) :
-	generated_primitive(obj)
+	generated_primitive(obj, get_options())
 {
 	const auto& opts = obj["opts"];
 	m_options.top_radius = opts["rt"];
@@ -344,7 +343,7 @@ generated_cone::generated_cone(scene_ctx* const scene, const GLuint material, co
 	recompute(scene);
 }
 generated_cone::generated_cone(const nlohmann::json& obj) :
-	generated_primitive(obj)
+	generated_primitive(obj, get_options())
 {
 	const auto& opts = obj["opts"];
 	m_options.num_steps = opts["n"];
@@ -395,7 +394,7 @@ generated_torus::generated_torus(scene_ctx* const scene, const GLuint material, 
 	recompute(scene);
 }
 generated_torus::generated_torus(const nlohmann::json& obj) :
-	generated_primitive(obj)
+	generated_primitive(obj, get_options())
 {
 	const auto& opts = obj["opts"];
 	m_options.center_radius = opts["rc"];
@@ -453,7 +452,7 @@ generated_heightmap::generated_heightmap(scene_ctx* const scene, const GLuint ma
 	recompute(scene);
 }
 generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
-	generated_primitive(obj)
+	generated_primitive(obj, get_options())
 {
 	const auto& opts = obj["opts"];
 	m_options.width_steps = opts["nw"];

@@ -62,6 +62,8 @@ void app_ctx::save(const std::string& fp) const
 	{
 		out << pair.first->get_id() << " " << pair.second->get_id() << "\n";
 	}
+
+	scene.save(out);
 }
 bool app_ctx::save_as() const
 {
@@ -118,6 +120,8 @@ void app_ctx::load(const std::string& fp)
 		assert(nodes.contains(fid) && nodes.contains(uid));
 		frozen2unfrozen.insert({ nodes.at(fid), nodes.at(uid) });
 	}
+
+	scene.load(in);
 }
 void app_ctx::undo()
 {
@@ -223,7 +227,6 @@ std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
 	sorted_mtls.emplace(sorted_mtls.begin(), std::make_pair(0, unordered_mtls.at(0)));
 	return sorted_mtls;
 }
-
 void app_ctx::remove_material(const u32 id)
 {
 	scene.erase_material(id);
@@ -233,7 +236,6 @@ void app_ctx::remove_material(const u32 id)
 		pair.second->replace_material(&scene, id, 0);
 	}
 }
-
 void app_ctx::set_material(sgnode* const node, const u32 id)
 {
 	node->set_material(&scene, id);

@@ -362,6 +362,7 @@
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
     <ClCompile Include="src\globals.cpp" />
+    <ClCompile Include="src\scene_material.cpp" />
     <ClCompile Include="src\sgnode.cpp" />
     <ClCompile Include="src\ui\app_ctx.cpp" />
     <ClCompile Include="src\ui\imgui_layer.cpp" />
