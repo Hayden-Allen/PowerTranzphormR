@@ -65,15 +65,14 @@ public:
 	void set_material(scene_ctx* const scene, const GLuint mat) override;
 	void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat) override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
-	void set_dirty() override
-	{
-		dirty = true;
-	}
-protected:
-	generated_primitive(mesh_t* const m, const GLuint material);
-	generated_primitive(const nlohmann::json& obj, primitive_options* const options);
+	void set_dirty() override;
 protected:
 	GLuint m_material;
+protected:
+	generated_primitive(mesh_t* const m, const GLuint material);
+	generated_primitive(const nlohmann::json& obj);
+protected:
+	void set_options(const nlohmann::json& obj);
 };
 
 class generated_cuboid : public generated_primitive
