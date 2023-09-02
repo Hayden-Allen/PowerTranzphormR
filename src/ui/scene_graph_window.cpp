@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "scene_graph_window.h"
 #include "app_ctx.h"
-#include "sgnode.h"
+#include "core/sgnode.h"
 #include "geom/generated_mesh.h"
 
 scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
@@ -45,7 +45,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 {
 	// draw current node
 	std::string display_name = node->get_name();
-	const std::string op_name = operation_to_string(node->get_operation());
+	const std::string op_name = u::operation_to_string(node->get_operation());
 	if (node->is_operation() && display_name != op_name)
 	{
 		display_name += " [" + op_name + "]";

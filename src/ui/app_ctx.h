@@ -1,6 +1,6 @@
 #pragma once
-#include "scene_ctx.h"
-#include "action_stack.h"
+#include "core/scene_ctx.h"
+#include "core/action_stack.h"
 #include "shortcut_menu.h"
 
 class scene_graph_window;

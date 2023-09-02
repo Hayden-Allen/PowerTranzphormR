@@ -20,7 +20,7 @@ public:
 	}
 	const mgl::texture2d_rgb_u8* get(const std::string& fp) const
 	{
-		if (fp == "<NULL>")
+		if (fp == g::null_tex_fp)
 		{
 			return m_deftex;
 		}
@@ -30,7 +30,7 @@ public:
 	}
 	mgl::texture2d_rgb_u8* get(const std::string& fp)
 	{
-		if (fp == "<NULL>")
+		if (fp == g::null_tex_fp)
 		{
 			return m_deftex;
 		}
@@ -40,7 +40,7 @@ public:
 	}
 	void load(const std::string& fp)
 	{
-		if (fp == "<NULL>")
+		if (fp == g::null_tex_fp)
 		{
 			return; // default texture
 		}
@@ -56,7 +56,7 @@ public:
 	}
 	void unload(const std::string& fp)
 	{
-		if (fp == "<NULL>")
+		if (fp == g::null_tex_fp)
 		{
 			return; // default texture
 		}

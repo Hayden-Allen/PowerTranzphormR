@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "carve.h"
-#include "scene_ctx.h"
+#include "core/scene_ctx.h"
 
 mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 {
@@ -318,7 +318,7 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 				const f32 tmp = sin(phi - c::PI / 2) * sin(phi - c::PI / 2);
 				const f32 rz2 = 1.f;
 				const f32 rad = 1 - ct2 * sp2 - tmp;
-				z = .5f * sign(st) * sqrt(rad);
+				z = .5f * u::sign(st) * sqrt(rad);
 			}
 			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 		}

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "generated_mesh.h"
-#include "scene_ctx.h"
+#include "core/scene_ctx.h"
 
 generated_mesh::generated_mesh(mesh_t* const m) :
 	mesh(m),
@@ -161,6 +161,7 @@ void generated_primitive::set_options(const nlohmann::json& obj)
 {
 	primitive_options* const options = get_options();
 	const auto& opts = obj["opts"];
+	options->transform = u::json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 	options->u0 = opts["uv0"][0];
 	options->v0 = opts["uv0"][1];
 	options->uo0 = opts["uv0"][2];
@@ -198,8 +199,6 @@ generated_cuboid::generated_cuboid(const nlohmann::json& obj) :
 	generated_primitive(obj)
 {
 	generated_primitive::set_options(obj);
-	const auto& opts = obj["opts"];
-	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_cuboid::get_params() const
 {
@@ -246,7 +245,6 @@ generated_ellipsoid::generated_ellipsoid(const nlohmann::json& obj) :
 	const auto& opts = obj["opts"];
 	m_options.num_horizontal_steps = opts["nh"];
 	m_options.num_vertical_steps = opts["nv"];
-	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_ellipsoid::get_params() const
 {
@@ -301,7 +299,6 @@ generated_cylinder::generated_cylinder(const nlohmann::json& obj) :
 	m_options.top_radius = opts["rt"];
 	m_options.bottom_radius = opts["rb"];
 	m_options.num_steps = opts["n"];
-	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_cylinder::get_params() const
 {
@@ -357,7 +354,6 @@ generated_cone::generated_cone(const nlohmann::json& obj) :
 	generated_primitive::set_options(obj);
 	const auto& opts = obj["opts"];
 	m_options.num_steps = opts["n"];
-	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_cone::get_params() const
 {
@@ -412,7 +408,6 @@ generated_torus::generated_torus(const nlohmann::json& obj) :
 	m_options.tube_radius = opts["rt"];
 	m_options.num_center_steps = opts["nc"];
 	m_options.num_tube_steps = opts["nt"];
-	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_torus::get_params() const
 {
@@ -470,7 +465,6 @@ generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
 	m_options.width_steps = opts["nw"];
 	m_options.depth_steps = opts["nd"];
 	m_options.map_path = opts["path"];
-	m_options.transform = json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_heightmap::get_params() const
 {

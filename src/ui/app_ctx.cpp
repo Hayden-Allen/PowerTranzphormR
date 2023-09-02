@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "app_ctx.h"
 #include "geom/generated_mesh.h"
-#include "sgnode.h"
-#include "scene_material.h"
-#include "action.h"
+#include "core/sgnode.h"
+#include "core/scene_material.h"
+#include "core/action.h"
 #include "scene_graph_window.h"
 #include "materials_list_window.h"
 
@@ -19,7 +19,6 @@ app_ctx::app_ctx() :
 	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
 	init_menus();
 }
-
 app_ctx::~app_ctx()
 {
 	scene.destroy();

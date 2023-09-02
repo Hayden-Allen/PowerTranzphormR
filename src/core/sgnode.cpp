@@ -20,7 +20,7 @@ sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, spac
 	m_gen(new generated_mesh(nullptr)),
 	m_operation(op),
 	m_id(std::string("sgn") + std::to_string(s_next_id++)),
-	m_name(operation_to_string(op)),
+	m_name(u::operation_to_string(op)),
 	m_mat(t)
 {
 	assert(op != carve::csg::CSG::OP::ALL);
@@ -32,7 +32,7 @@ sgnode::sgnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	m_name(obj["name"]),
 	m_frozen(obj["frozen"])
 {
-	m_mat = json2tmat<space::OBJECT, space::PARENT>(obj["mat"]);
+	m_mat = u::json2tmat<space::OBJECT, space::PARENT>(obj["mat"]);
 
 	if (!obj["gen"].is_null())
 		m_gen = generated_mesh::create(obj["gen"], scene);

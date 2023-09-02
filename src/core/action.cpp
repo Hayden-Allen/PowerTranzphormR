@@ -48,8 +48,8 @@ transform_action::transform_action(sgnode* const target, const tmat<space::OBJEC
 {}
 transform_action::transform_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
 	action(obj, nodes),
-	initial(json2tmat<space::OBJECT, space::PARENT>(obj["i"])),
-	mat(json2tmat<space::OBJECT, space::PARENT>(obj["m"]))
+	initial(u::json2tmat<space::OBJECT, space::PARENT>(obj["i"])),
+	mat(u::json2tmat<space::OBJECT, space::PARENT>(obj["m"]))
 {}
 void transform_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {

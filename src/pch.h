@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <chrono>
 #include <functional>
+#include <filesystem>
 
 #include "carve/interpolator.hpp"
 #include "carve/csg.hpp"
@@ -31,7 +32,7 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#include "log.h"
+#include "util/log.h"
 
 #include "nlohmann/json.hpp"
 
@@ -39,5 +40,6 @@
 
 #include "hats/hats.h"
 #include "mingl/mingl.h"
-#include "util.h"
-#include "globals.h"
+#include "util/util.h"
+#include "util/globals.h"
+#include "util/texture_library.h"

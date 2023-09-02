@@ -2,8 +2,8 @@
 #include "properties_window.h"
 #include "geom/generated_mesh.h"
 #include "app_ctx.h"
-#include "sgnode.h"
-#include "scene_material.h"
+#include "core/sgnode.h"
+#include "core/scene_material.h"
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")
@@ -179,7 +179,7 @@ void properties_window::handle_material_texture(scene_material* const selected_m
 	ImGui::SetCursorPosX(win_min.x + (win_w - btn_w) * 0.5f);
 	if (ImGui::Button("Reset", ImVec2(btn_w, 0)))
 	{
-		selected_mtl->set_texture(name, "<NULL>");
+		selected_mtl->set_texture(name, g::null_tex_fp);
 	}
 	ImGui::SetCursorPosX(win_min.x + (win_w - img_dim.x) * 0.5f);
 	if (ImGui::ImageButton(name.c_str(), selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)))

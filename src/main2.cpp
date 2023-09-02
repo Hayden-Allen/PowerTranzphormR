@@ -7,7 +7,7 @@
 #include "ui/materials_list_window.h"
 #include "ui/properties_window.h"
 #include "ui/app_ctx.h"
-#include "scene_material.h"
+#include "core/scene_material.h"
 
 
 // static sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})

@@ -24,7 +24,7 @@ scene_material::scene_material(const nlohmann::json& obj, mgl::shaders* const s)
 		const std::string& fname = tex[1];
 		m_tex_name_to_filename.insert({ tname, fname });
 		// TODO hack
-		if (fname != "<NULL>")
+		if (fname != g::null_tex_fp)
 			g::texlib->load(fname);
 	}
 }
@@ -73,10 +73,15 @@ nlohmann::json scene_material::save(std::ofstream& out) const
 {
 	nlohmann::json obj;
 	obj["name"] = name;
+
 	std::vector<nlohmann::json::array_t> texs;
 	for (const auto& pair : m_tex_name_to_filename)
 	{
-		texs.push_back({ pair.first, pair.second });
+		// TODO hack
+		if (pair.second != g::null_tex_fp)
+			texs.push_back({ pair.first, u::absolute_to_relative(pair.second) });
+		else
+			texs.push_back({ pair.first, pair.second });
 	}
 	obj["texs"] = texs;
 	return obj;

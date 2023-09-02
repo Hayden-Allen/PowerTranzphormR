@@ -79,7 +79,7 @@ void scene_ctx::clear(bool ready_for_default_material)
 	if (ready_for_default_material)
 	{
 		scene_material* null_mtl = create_default_material();
-		null_mtl->name = "<NULL>";
+		null_mtl->name = g::null_mtl_name;
 		m_mtls.insert(std::make_pair(0, null_mtl));
 	}
 }
@@ -144,10 +144,10 @@ scene_material* scene_ctx::create_default_material()
 	scene_material* mtl = new scene_material;
 	mtl->shaders = g::shaders;
 	mtl->name = "Untitled Material";
-	mtl->set_texture("u_tex0", "<NULL>");
-	mtl->set_texture("u_tex1", "<NULL>");
-	mtl->set_texture("u_tex2", "<NULL>");
-	mtl->set_texture("u_tex3", "<NULL>");
+	mtl->set_texture("u_tex0", g::null_tex_fp);
+	mtl->set_texture("u_tex1", g::null_tex_fp);
+	mtl->set_texture("u_tex2", g::null_tex_fp);
+	mtl->set_texture("u_tex3", g::null_tex_fp);
 	return mtl;
 }
 u32 scene_ctx::add_material(scene_material* mtl)

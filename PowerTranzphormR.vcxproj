@@ -357,13 +357,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ASan|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\action.cpp" />
-    <ClCompile Include="src\action_stack.cpp" />
+    <ClCompile Include="src\core\action.cpp" />
+    <ClCompile Include="src\core\action_stack.cpp" />
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
-    <ClCompile Include="src\globals.cpp" />
-    <ClCompile Include="src\scene_material.cpp" />
-    <ClCompile Include="src\sgnode.cpp" />
+    <ClCompile Include="src\util\globals.cpp" />
+    <ClCompile Include="src\core\scene_material.cpp" />
+    <ClCompile Include="src\core\sgnode.cpp" />
     <ClCompile Include="src\ui\app_ctx.cpp" />
     <ClCompile Include="src\ui\imgui_layer.cpp" />
     <ClCompile Include="src\main2.cpp" />
@@ -378,36 +378,36 @@
     <ClCompile Include="src\ui\materials_list_window.cpp" />
     <ClCompile Include="src\ui\preview_layer.cpp" />
     <ClCompile Include="src\ui\preview_window.cpp" />
-    <ClCompile Include="src\scene_ctx.cpp" />
+    <ClCompile Include="src\core\scene_ctx.cpp" />
     <ClCompile Include="src\ui\properties_window.cpp" />
     <ClCompile Include="src\ui\scene_graph_window.cpp" />
     <ClCompile Include="src\ui\shortcut_menus_layer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
-    <ClInclude Include="src\action.h" />
-    <ClInclude Include="src\action_stack.h" />
+    <ClInclude Include="src\core\action.h" />
+    <ClInclude Include="src\core\action_stack.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
-    <ClInclude Include="src\globals.h" />
-    <ClInclude Include="src\scene_material.h" />
-    <ClInclude Include="src\sgnode.h" />
-    <ClInclude Include="src\texture_library.h" />
+    <ClInclude Include="src\util\globals.h" />
+    <ClInclude Include="src\core\scene_material.h" />
+    <ClInclude Include="src\core\sgnode.h" />
+    <ClInclude Include="src\util\texture_library.h" />
     <ClInclude Include="src\ui\app_ctx.h" />
     <ClInclude Include="src\ui\imgui_layer.h" />
     <ClInclude Include="src\ui\materials_list_window.h" />
     <ClInclude Include="src\ui\properties_window.h" />
     <ClInclude Include="src\ui\shortcut_menu.h" />
     <ClInclude Include="src\ui\imgui_window.h" />
-    <ClInclude Include="src\log.h" />
+    <ClInclude Include="src\util\log.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\ui\preview_layer.h" />
     <ClInclude Include="src\ui\preview_window.h" />
-    <ClInclude Include="src\scene_ctx.h" />
+    <ClInclude Include="src\core\scene_ctx.h" />
     <ClInclude Include="src\ui\scene_graph_window.h" />
     <ClInclude Include="src\ui\shortcut_menus_layer.h" />
-    <ClInclude Include="src\util.h" />
+    <ClInclude Include="src\util\util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
