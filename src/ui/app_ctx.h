@@ -57,7 +57,7 @@ public:
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
-	void create_action(sgnode* const target, sgnode* const parent);
+	void create_action(sgnode* const target, sgnode* const parent, const u32 skip_count = 0);
 	void destroy_action(sgnode* const target);
 	void destroy_selected_action();
 	void create_cube_action();

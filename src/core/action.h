@@ -11,8 +11,9 @@ struct action
 	friend class action_stack;
 public:
 	sgnode* target;
+	u32 skip_count;
 public:
-	action(sgnode* const t);
+	action(sgnode* const t, const u32 sc = 0);
 	action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(action);
 	virtual ~action() {}
@@ -21,7 +22,7 @@ public:
 public:
 	virtual void apply(scene_ctx* const ctx, app_ctx* const a_ctx) = 0;
 	virtual void undo(scene_ctx* const ctx, app_ctx* const a_ctx) = 0;
-	virtual nlohmann::json save() const = 0;
+	virtual nlohmann::json save() const;
 	virtual bool redo_conflict(const sgnode* const selected) const;
 	virtual bool undo_conflict(const sgnode* const selected) const;
 protected:
@@ -65,7 +66,7 @@ struct create_action : public action
 public:
 	sgnode* parent;
 public:
-	create_action(sgnode* const new_node, sgnode* const _parent);
+	create_action(sgnode* const new_node, sgnode* const _parent, const u32 skip_count);
 	create_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(create_action);
 public:

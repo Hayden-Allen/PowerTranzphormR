@@ -262,9 +262,9 @@ void app_ctx::reparent_action(sgnode* const target, sgnode* const new_parent, co
 {
 	actions.reparent(target, new_parent, new_index);
 }
-void app_ctx::create_action(sgnode* const target, sgnode* const parent)
+void app_ctx::create_action(sgnode* const target, sgnode* const parent, const u32 skip_count)
 {
-	actions.create(target, parent);
+	actions.create(target, parent, skip_count);
 }
 void app_ctx::destroy_action(sgnode* const target)
 {

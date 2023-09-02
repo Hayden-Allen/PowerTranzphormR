@@ -43,7 +43,7 @@ public:
 	void set_name(const std::string& n);
 	tmat<space::OBJECT, space::WORLD> accumulate_mats() const;
 	tmat<space::PARENT, space::WORLD> accumulate_parent_mats() const;
-	void set_material(scene_ctx* const scene, u32 mtl_id); // WARNING: Always use app_ctx->set_material instead of this one
+	void set_material(scene_ctx* const scene, u32 mtl_id);									   // WARNING: Always use app_ctx->set_material instead of this one
 	void replace_material(scene_ctx* const scene, const u32 old_mtl_id, const u32 new_mtl_id); // WARNING: Always use app_ctx->remove_material instead of using this
 	u32 get_material();
 public:
@@ -56,7 +56,7 @@ public:
 	nlohmann::json save(scene_ctx* const scene) const;
 	void destroy(std::unordered_set<sgnode*>& freed);
 private:
-	static constexpr inline u32 s_first_id = 0;
+	constexpr static inline u32 s_first_id = 0;
 	static inline u32 s_next_id = s_first_id;
 private:
 	sgnode* m_parent = nullptr;
@@ -75,4 +75,6 @@ private:
 	void transform_verts();
 	void set_dirty_up();
 	void set_dirty_down();
+	u32 subtree_count() const;
+	void clone_self_and_insert(app_ctx* const app, sgnode* const parent, const u32 count) const;
 };

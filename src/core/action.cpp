@@ -4,11 +4,13 @@
 #include "scene_ctx.h"
 #include "sgnode.h"
 
-action::action(sgnode* const t) :
-	target(t)
+action::action(sgnode* const t, const u32 sc) :
+	target(t),
+	skip_count(sc)
 {}
 action::action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
-	target(nodes.at(obj["t"]))
+	target(nodes.at(obj["t"])),
+	skip_count(obj["sc"])
 {}
 action* action::create(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes)
 {
@@ -38,6 +40,12 @@ void action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
 {
 	nodes.insert(target);
 }
+nlohmann::json action::save() const
+{
+	nlohmann::json obj;
+	obj["sc"] = skip_count;
+	return obj;
+}
 
 
 
@@ -61,7 +69,7 @@ void transform_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 }
 nlohmann::json transform_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 0;
 	obj["t"] = target->get_id();
 	obj["i"] = initial.e;
@@ -96,7 +104,7 @@ void reparent_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 }
 nlohmann::json reparent_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 1;
 	obj["t"] = target->get_id();
 	obj["op"] = old_parent->get_id();
@@ -113,8 +121,9 @@ void reparent_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
 }
 
 
-create_action::create_action(sgnode* const new_node, sgnode* const _parent) :
-	action(new_node),
+
+create_action::create_action(sgnode* const new_node, sgnode* const _parent, const u32 skip_count) :
+	action(new_node, skip_count),
 	parent(_parent)
 {}
 create_action::create_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
@@ -139,7 +148,7 @@ bool create_action::undo_conflict(const sgnode* const selected) const
 }
 nlohmann::json create_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 2;
 	obj["t"] = target->get_id();
 	obj["p"] = parent->get_id();
@@ -150,6 +159,7 @@ void create_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
 	action::all_nodes(nodes);
 	nodes.insert(parent);
 }
+
 
 
 destroy_action::destroy_action(sgnode* const target) :
@@ -190,7 +200,7 @@ bool destroy_action::undo_conflict(const sgnode* const selected) const
 }
 nlohmann::json destroy_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 3;
 	obj["t"] = target->get_id();
 	obj["p"] = parent->get_id();
@@ -202,6 +212,7 @@ void destroy_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
 	action::all_nodes(nodes);
 	nodes.insert(parent);
 }
+
 
 
 freeze_action::freeze_action(sgnode* const target, scene_ctx* const scene) :
@@ -232,7 +243,7 @@ void freeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 }
 nlohmann::json freeze_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 4;
 	obj["t"] = target->get_id();
 	obj["f"] = frozen->get_id();
@@ -244,6 +255,7 @@ void freeze_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
 	action::all_nodes(nodes);
 	nodes.insert(frozen);
 }
+
 
 
 unfreeze_action::unfreeze_action(sgnode* const target, sgnode* const _unfrozen) :
@@ -276,7 +288,7 @@ void unfreeze_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 }
 nlohmann::json unfreeze_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 5;
 	obj["t"] = target->get_id();
 	obj["u"] = unfrozen->get_id();
@@ -311,7 +323,7 @@ void rename_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 }
 nlohmann::json rename_action::save() const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = action::save();
 	obj["type"] = 6;
 	obj["t"] = target->get_id();
 	obj["o"] = old_name;

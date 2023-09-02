@@ -38,9 +38,9 @@ void action_stack::reparent(sgnode* const target, sgnode* const new_parent, cons
 {
 	new_action(new reparent_action(target, new_parent, new_index), true);
 }
-void action_stack::create(sgnode* const target, sgnode* const parent)
+void action_stack::create(sgnode* const target, sgnode* const parent, const u32 skip_count)
 {
-	new_action(new create_action(target, parent), true);
+	new_action(new create_action(target, parent, skip_count), true);
 }
 void action_stack::destroy(sgnode* const target)
 {
@@ -72,10 +72,23 @@ action* action_stack::undo()
 {
 	if (can_undo())
 	{
+		// undo one action
 		action* a = m_past.back();
 		m_past.pop_back();
 		a->undo(m_ctx, m_app_ctx);
 		m_future.push_back(a);
+
+		// if this action says to skip over following actions, also process them
+		const u32 skip_count = a->skip_count;
+		for (u32 i = 0; i < skip_count; i++)
+		{
+			action* a2 = m_past.back();
+			assert(a2->skip_count == skip_count);
+			m_past.pop_back();
+			a2->undo(m_ctx, m_app_ctx);
+			m_future.push_back(a2);
+		}
+
 		m_modified = true;
 		return a;
 	}
@@ -85,10 +98,23 @@ action* action_stack::redo()
 {
 	if (can_redo())
 	{
+		// redo one action
 		action* a = m_future.back();
 		m_future.pop_back();
 		a->apply(m_ctx, m_app_ctx);
 		m_past.push_back(a);
+
+		// if this action says to skip over following actions, also process them
+		const u32 skip_count = a->skip_count;
+		for (u32 i = 0; i < skip_count; i++)
+		{
+			action* a2 = m_future.back();
+			assert(a2->skip_count == skip_count);
+			m_future.pop_back();
+			a2->apply(m_ctx, m_app_ctx);
+			m_past.push_back(a2);
+		}
+
 		m_modified = true;
 		return a;
 	}

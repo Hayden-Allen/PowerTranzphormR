@@ -201,7 +201,6 @@ void sgnode::replace_material(scene_ctx* const scene, const u32 old_mtl_id, cons
 		child->replace_material(scene, old_mtl_id, new_mtl_id);
 	}
 }
-
 u32 sgnode::get_material()
 {
 	if (!is_operation() && m_gen)
@@ -258,13 +257,15 @@ sgnode* sgnode::clone(app_ctx* const app) const
 }
 sgnode* sgnode::clone_self_and_insert(app_ctx* const app, sgnode* const parent) const
 {
+	// create action for this node will be first, skip remaining n - 1
+	const u32 skip_count = subtree_count() - 1;
 	sgnode* ret = new sgnode(this);
 	ret->m_gen = m_gen->clone(&app->scene);
 	if (m_frozen)
 		ret->copy_local_verts();
-	app->create_action(ret, parent);
+	app->create_action(ret, parent, skip_count);
 	for (const sgnode* const child : m_children)
-		child->clone_self_and_insert(app, ret);
+		child->clone_self_and_insert(app, ret, skip_count);
 	return ret;
 }
 sgnode* sgnode::freeze(scene_ctx* const scene) const
@@ -357,6 +358,7 @@ void sgnode::destroy(std::unordered_set<sgnode*>& freed)
 }
 
 
+
 sgnode::sgnode(const sgnode* const original) :
 	m_operation(original->m_operation),
 	m_id(std::string("sgn") + std::to_string(s_next_id++)),
@@ -403,4 +405,21 @@ void sgnode::set_dirty_down()
 	m_dirty = true;
 	for (sgnode* const child : m_children)
 		child->set_dirty_down();
+}
+u32 sgnode::subtree_count() const
+{
+	u32 count = 1;
+	for (const sgnode* const child : m_children)
+		count += child->subtree_count();
+	return count;
+}
+void sgnode::clone_self_and_insert(app_ctx* const app, sgnode* const parent, const u32 count) const
+{
+	sgnode* ret = new sgnode(this);
+	ret->m_gen = m_gen->clone(&app->scene);
+	if (m_frozen)
+		ret->copy_local_verts();
+	app->create_action(ret, parent, count);
+	for (const sgnode* const child : m_children)
+		child->clone_self_and_insert(app, ret, count);
 }
