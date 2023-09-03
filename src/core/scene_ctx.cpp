@@ -76,9 +76,14 @@ void scene_ctx::clear(bool ready_for_default_material)
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
+
+	// needs to happen after mtls are deleted (they unload textures from texlib)
+	// and before new mtl is created (needs new shaders)
+	g::clear();
+
 	if (ready_for_default_material)
 	{
-		scene_material* null_mtl = create_default_material();
+		scene_material* const null_mtl = create_default_material();
 		null_mtl->name = g::null_mtl_name;
 		m_mtls.insert(std::make_pair(0, null_mtl));
 	}

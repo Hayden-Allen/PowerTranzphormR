@@ -10,5 +10,6 @@ namespace g
 	constexpr static char null_tex_fp[] = "<NULL>";
 
 	extern void init();
+	extern void clear();
 	extern void destroy();
 } // namespace g

@@ -14,6 +14,11 @@ namespace g
 		texlib->init_deftex();
 		shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
 	}
+	void clear()
+	{
+		destroy();
+		init();
+	}
 	void destroy()
 	{
 		delete shaders;
