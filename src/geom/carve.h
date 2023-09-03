@@ -41,7 +41,8 @@ struct color_t
 };
 static color_t operator*(const f64 s, const color_t& c)
 {
-	return color_t(c.r * (f32)s, c.r * (f32)s, c.g * (f32)s, c.b * (f32)s);
+	const f32 fs = (f32)s;
+	return color_t(c.r * fs, c.g * fs, c.b * fs, c.a * fs);
 }
 static color_t& operator+=(color_t& t1, const color_t& t2)
 {

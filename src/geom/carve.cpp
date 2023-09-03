@@ -5,7 +5,6 @@
 mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	// auto& tex_coord_attr = scene->get_tex_coord_attr();
 	auto& vert_attrs = scene->get_vert_attrs();
 
 	std::unordered_map<const vertex_t*, vertex_t> verts_map;
