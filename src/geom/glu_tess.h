@@ -28,24 +28,21 @@ struct mesh_vertex
 			   w0 == o.w0 && w1 == o.w1 && w2 == o.w2 && w3 == o.w3 &&
 			   r == o.r && g == o.g && b == o.b && a == o.a;
 	}
-	std::string to_string() const
+	u32 hash() const
 	{
-		char buf[256] = { 0 };
-		sprintf_s(buf,
-			"%.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f",
-			x, y, z, u0, v0, uo0, vo0, u1, v1, uo1, vo1, u2, v2, uo2, vo2, u3, v3, uo3, vo3, w0, w1, w2, w3, r, g, b, a);
-		return buf;
-		/*std::vector<f32> v = { x, y, z };
-		for (const f32* i = &u0; i != &a; ++i)
-			v.push_back(*i);
-		size_t h = 1;
+		// hash all elements except normals
+		std::vector<f32> v = { x, y, z };
+		for (u32 i = 0; i < 24; i++)
+			v.push_back(*(&u0 + i));
+		// https://cs.stackexchange.com/questions/37952/hash-function-floating-point-inputs-for-genetic-algorithm
+		u32 h = 1;
 		for (u64 i = 0; i < v.size(); i++)
 		{
 			s32 sf = *(s32*)&v[i];
 			h = 31 * h + sf;
 		}
 		h ^= (h >> 20) ^ (h >> 12);
-		return h ^ (h >> 7) ^ (h >> 4);*/
+		return h ^ (h >> 7) ^ (h >> 4);
 	}
 };
 struct tess_vtx

@@ -341,9 +341,8 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	for (auto& pair : out_verts_for_mtl)
 	{
 		std::vector<mesh_vertex>& input_verts = pair.second;
-		std::vector<u32> input_vert2index;
 		std::vector<u32> output_vert2index;
-		std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
+		std::unordered_map<u32, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
 		std::vector<mesh_vertex> unique_verts;
 		std::vector<u32>& indices = out_indices_for_mtl[pair.first];
 		u32 index_count = 0;
@@ -367,7 +366,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			for (u32 j = 0; j < 3; j++)
 			{
 				const mesh_vertex& mv = input_verts[i + j];
-				const std::string& key = mv.to_string();
+				const u32 key = mv.hash();
 				const auto& it = vert2index.find(key);
 				// this vertex has been seen before, try to match it to existing instance
 				bool found = false;
@@ -396,7 +395,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 									vert2index.at(key).at(instance.first).push_back(norm);
 									instance.second.push_back(norm);
 									indices.push_back(instance.first);
-									input_vert2index.push_back(instance.first);
 									found = true;
 									// need to break here because we're adding to instance.second, so this loop will go forever
 									break;
@@ -410,7 +408,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 									vert2index.at(key).at(instance.first).push_back(norm);
 									instance.second.push_back(norm);
 									indices.push_back(instance.first);
-									input_vert2index.push_back(instance.first);
 									found = true;
 									// need to break here because we're adding to instance.second, so this loop will go forever
 									break;
@@ -439,7 +436,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 						vert2index.at(key).insert({ index_count, { norm } });
 					}
 					indices.push_back(index_count);
-					input_vert2index.push_back(index_count);
 					output_vert2index.push_back(index_count);
 					index_count++;
 					unique_verts.push_back(mv);
@@ -480,14 +476,6 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		}
 
 		// write norms
-		/*for (u32 i = 0; i < input_verts.size(); i++)
-		{
-			mesh_vertex& mv = input_verts[i];
-			const auto& norm = norms[input_vert2index[i]];
-			mv.nx = norm.x;
-			mv.ny = norm.y;
-			mv.nz = norm.z;
-		}*/
 		for (u64 i = 0; i < unique_verts.size(); i++)
 		{
 			mesh_vertex& mv = unique_verts[i];
