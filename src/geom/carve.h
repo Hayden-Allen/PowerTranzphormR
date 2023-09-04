@@ -83,6 +83,7 @@ struct cuboid_options : public primitive_options
 struct ellipsoid_options : public primitive_options
 {
 	u32 num_horizontal_steps = 12, num_vertical_steps = 6;
+	f32 noise = 0.f;
 };
 struct cylinder_options : public primitive_options
 {

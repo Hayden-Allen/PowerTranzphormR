@@ -315,11 +315,20 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			{
 				const f32 sp2 = sp * sp, ct2 = ct * ct;
 				const f32 tmp = sin(phi - c::PI / 2) * sin(phi - c::PI / 2);
+
 				const f32 rz2 = 1.f;
 				const f32 rad = 1 - ct2 * sp2 - tmp;
 				z = .5f * u::sign(st) * sqrt(rad);
 			}
-			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
+			// take sign of each axis (if zero, choose random sign)
+			const s32 sx = u::sign(x) != 0 ? u::sign(x) : u::sign(u::rand(-1.f, 1.f));
+			const s32 sy = u::sign(y) != 0 ? u::sign(y) : u::sign(u::rand(-1.f, 1.f));
+			const s32 sz = u::sign(z) != 0 ? u::sign(z) : u::sign(u::rand(-1.f, 1.f));
+			// random noise within threshold, in direction of current point
+			const f32 nx = sx * u::rand(0.f, options.noise);
+			const f32 ny = sy * u::rand(0.f, options.noise);
+			const f32 nz = sz * u::rand(0.f, options.noise);
+			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x + nx, y + ny, z + nz).transform_copy(options.transform)));
 		}
 	}
 	// poles

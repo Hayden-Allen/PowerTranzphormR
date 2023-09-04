@@ -252,6 +252,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_ellipsoid::g
 	auto m = generated_primitive::get_params();
 	std::vector<std::pair<std::string, generated_mesh_param>> t = {
 		{ "XY Steps", { generated_mesh_param_type::UINT_2, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
+		{ "Noise", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.noise, 0.f, .3f, .001f } }
 	};
 	m.insert(m.end(), t.begin(), t.end());
 	return m;

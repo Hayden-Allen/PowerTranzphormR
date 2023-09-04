@@ -49,4 +49,21 @@ namespace u
 		std::getline(in, line);
 		return nlohmann::json::parse(line);
 	}
+
+	static bool rng_seeded = false;
+	// https://stackoverflow.com/questions/9878965/rand-between-0-and-1
+	static float rand(const f32 min = 0.f, const f32 max = 1.f)
+	{
+		static std::mt19937_64 rng;
+		if (!rng_seeded)
+		{
+			uint64_t timeSeed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+			std::seed_seq ss{ uint32_t(timeSeed & 0xffffffff), uint32_t(timeSeed >> 32) };
+			rng.seed(ss);
+			rng_seeded = true;
+		}
+		std::uniform_real_distribution<f32> unif(min, max);
+
+		return unif(rng);
+	}
 } // namespace u

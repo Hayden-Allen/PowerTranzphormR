@@ -5,6 +5,7 @@
 #include <chrono>
 #include <functional>
 #include <filesystem>
+#include <random>
 
 #include "carve/interpolator.hpp"
 #include "carve/csg.hpp"
