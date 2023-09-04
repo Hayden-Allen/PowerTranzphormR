@@ -44,15 +44,21 @@ public:
 		{
 			return; // default texture
 		}
+		// if we've already loaded a texture at this fp, delete it because we'll replace it with the newly loaded one
 		const auto& it = m_lib.find(fp);
 		if (it != m_lib.end())
 		{
-			m_counts[it->first]++;
-			return;
+			m_counts[fp]++;
+			delete it->second;
+			m_lib.erase(it);
 		}
+		else
+		{
+			m_counts.insert({ fp, 1 });
+		}
+		// ALWAYS reload because file may have been resaved
 		mgl::texture2d_rgb_u8* const new_tex = load_file(fp);
 		m_lib.insert({ fp, new_tex });
-		m_counts.insert({ fp, 1 });
 	}
 	void unload(const std::string& fp)
 	{
