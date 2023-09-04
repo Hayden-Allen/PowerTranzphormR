@@ -30,8 +30,8 @@ attr_material_t& scene_ctx::get_mtl_id_attr()
 }
 void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
-	m_draw_vaos(glctx, mats, m_hm_vaos_for_mtl);
-	m_draw_vaos(glctx, mats, m_sg_vaos_for_mtl);
+	m_draw_vaos(glctx, mats, m_hm_ros_for_mtl);
+	m_draw_vaos(glctx, mats, m_sg_ros_for_mtl);
 }
 void scene_ctx::update()
 {
@@ -54,13 +54,13 @@ void scene_ctx::update()
 		for (const auto& hm : m_hms)
 			m_tesselate(hm, verts_for_mtl, indices_for_mtl);
 
-		m_hm_vaos_for_mtl.clear();
+		m_hm_ros_for_mtl.clear();
 		for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 		{
 			const auto& verts = verts_for_mtl.at(it->first);
 			const auto& indices = indices_for_mtl.at(it->first);
-			mgl::static_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
-			m_hm_vaos_for_mtl.emplace(it->first, std::move(ro));
+			mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
+			m_hm_ros_for_mtl.emplace(it->first, std::move(ro));
 		}
 
 		m_hms_dirty = false;
@@ -125,6 +125,17 @@ void scene_ctx::load(std::ifstream& in)
 		const u32 id = mtl[0];
 		scene_material* const sm = new scene_material(mtl[1], g::shaders);
 		m_mtls.insert({ id, sm });
+	}
+}
+void scene_ctx::save_xport(mgl::output_file& out) const
+{
+	for (const auto& pair : m_sg_ros_for_mtl)
+	{
+		pair.second.save(out);
+	}
+	for (const auto& pair : m_hm_ros_for_mtl)
+	{
+		pair.second.save(out);
 	}
 }
 
@@ -268,13 +279,13 @@ void scene_ctx::m_build_sg_vaos()
 		m_tesselate(gen->mesh, verts_for_mtl, indices_for_mtl);
 	}
 
-	m_sg_vaos_for_mtl.clear();
+	m_sg_ros_for_mtl.clear();
 	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
 	{
 		const auto& verts = verts_for_mtl.at(it->first);
 		const auto& indices = indices_for_mtl.at(it->first);
-		mgl::static_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
-		m_sg_vaos_for_mtl.emplace(it->first, std::move(ro));
+		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
+		m_sg_ros_for_mtl.emplace(it->first, std::move(ro));
 	}
 }
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl)
@@ -496,7 +507,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 		input_verts = unique_verts;
 	}
 }
-void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_render_object>& ros)
+void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros)
 {
 	for (auto it = ros.begin(); it != ros.end(); ++it)
 	{

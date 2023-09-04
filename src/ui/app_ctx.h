@@ -36,6 +36,7 @@ public:
 	bool save() const;
 	void save(const std::string& fp) const;
 	bool save_as() const;
+	bool export_as() const;
 	bool confirm_unsaved_changes();
 	void load(const std::string& fp);
 	void undo();

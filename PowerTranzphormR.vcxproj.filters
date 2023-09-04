@@ -185,6 +185,9 @@
     <ClInclude Include="src\util\color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lib\mingl\src\file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

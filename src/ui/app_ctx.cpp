@@ -80,7 +80,25 @@ bool app_ctx::save_as() const
 	nfdresult_t nfd_res = NFD_SaveDialog(&nfd_path, nfd_filters, 1, nullptr, nullptr);
 	if (nfd_res == NFD_OKAY)
 	{
-		save(std::string(nfd_path));
+		save(nfd_path);
+		NFD_FreePath(nfd_path);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool app_ctx::export_as() const
+{
+	nfdchar_t* nfd_path = nullptr;
+	nfdfilteritem_t nfd_filters[1] = { { "PowerTranzphormR X-Port", "xport" } };
+	nfdresult_t nfd_res = NFD_SaveDialog(&nfd_path, nfd_filters, 1, nullptr, nullptr);
+	if (nfd_res == NFD_OKAY)
+	{
+		mgl::output_file out(nfd_path);
+		scene.save_xport(out);
+
 		NFD_FreePath(nfd_path);
 		return true;
 	}
@@ -460,7 +478,21 @@ void app_ctx::file_menu()
 		GLFW_KEY_S,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
-	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as });
+	shortcut_menu_item file_export = {
+		"Export...",
+		[&]()
+		{
+			export_as();
+		},
+		[]()
+		{
+			return true;
+		},
+		"",
+		0,
+		0,
+	};
+	file_menu.groups.push_back({ file_new, file_open, file_save, file_save_as, file_export });
 	shortcut_menus.push_back(file_menu);
 }
 void app_ctx::phorm_menu()

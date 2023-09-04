@@ -35,6 +35,7 @@ public:
 	void destroy();
 	void save(std::ofstream& out) const;
 	void load(std::ifstream& in);
+	void save_xport(mgl::output_file& out) const;
 public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;
@@ -80,7 +81,7 @@ private:
 	attr_material_t m_mtl_id_attr;
 	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
-	std::unordered_map<u32, mgl::static_render_object> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
+	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_hm_ros_for_mtl;
 	std::vector<mesh_t*> m_hms;
 	std::vector<light> m_lights;
 	sgnode* m_sg_root = nullptr;
@@ -90,5 +91,5 @@ private:
 private:
 	void m_build_sg_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl);
-	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_render_object>& ros);
+	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros);
 };

@@ -385,6 +385,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
+    <ClInclude Include="lib\mingl\src\file.h" />
     <ClInclude Include="src\core\action.h" />
     <ClInclude Include="src\core\action_stack.h" />
     <ClInclude Include="src\core\light.h" />
