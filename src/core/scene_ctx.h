@@ -1,6 +1,7 @@
 #pragma once
 #include "geom/carve.h"
 #include "geom/glu_tess.h"
+#include "light.h"
 
 class sgnode;
 class generated_mesh;
@@ -46,6 +47,9 @@ public:
 	u32 get_id_for_material(scene_material* mat);
 	scene_material* get_material(GLuint id);
 public:
+	std::vector<light>& get_lights();
+	void add_light();
+public:
 	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
 	mesh_t* create_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options = {});
 	mesh_t* create_textured_cylinder(const GLuint mtl_id, const cylinder_options& options = {});
@@ -76,12 +80,12 @@ private:
 	attr_material_t m_mtl_id_attr;
 	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
-	// std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
 	std::unordered_map<u32, mgl::static_render_object> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
 	std::vector<mesh_t*> m_hms;
+	std::vector<light> m_lights;
 	sgnode* m_sg_root = nullptr;
-	sgnode* m_selected_node = nullptr;
-	scene_material* m_selected_mtl = nullptr;
+	// sgnode* m_selected_node = nullptr;
+	// scene_material* m_selected_mtl = nullptr;
 	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();

@@ -142,7 +142,7 @@ void scene_ctx::set_sg_root(sgnode* const new_root)
 {
 	delete m_sg_root;
 	m_sg_root = new_root;
-	m_selected_node = new_root;
+	// m_selected_node = new_root;
 }
 
 
@@ -189,6 +189,14 @@ u32 scene_ctx::get_id_for_material(scene_material* mat)
 scene_material* scene_ctx::get_material(GLuint id)
 {
 	return m_mtls[id];
+}
+std::vector<light>& scene_ctx::get_lights()
+{
+	return m_lights;
+}
+void scene_ctx::add_light()
+{
+	m_lights.emplace_back();
 }
 
 

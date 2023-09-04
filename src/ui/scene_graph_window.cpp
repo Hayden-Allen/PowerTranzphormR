@@ -30,6 +30,7 @@ void scene_graph_window::handle_frame()
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+	handle_lights();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -41,12 +42,16 @@ const sgnode* scene_graph_window::get_renaming() const
 {
 	return m_renaming;
 }
-scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
+scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 {
 	// draw current node
 	std::string display_name = node->get_name();
 	const std::string op_name = u::operation_to_string(node->get_operation());
-	if (node->is_operation() && display_name != op_name)
+	if (node->is_root())
+	{
+		display_name = "Scene Graph";
+	}
+	else if (node->is_operation() && display_name != op_name)
 	{
 		display_name += " [" + op_name + "]";
 	}
@@ -137,10 +142,11 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 				m_app_ctx->create_subtract_action();
 			if (ImGui::MenuItem("Add Intersect"))
 				m_app_ctx->create_intersect_action();
-			ImGui::Separator();
 		}
 		if (!node->is_root() && node->get_gen()->mesh)
 		{
+			if (node->is_operation())
+				ImGui::Separator();
 			// if the current node is the original frozen version of a subtree
 			const bool has_unfrozen = m_app_ctx->has_unfrozen(node);
 			if (has_unfrozen)
@@ -154,12 +160,15 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 			{
 				if (ImGui::MenuItem("Phreeze!"))
 					m_app_ctx->freeze_action(node);
-				ImGui::Separator();
 			}
 		}
-		if (ImGui::MenuItem("Rename"))
+		if (!node->is_root())
 		{
-			set_renaming(node);
+			ImGui::Separator();
+			if (ImGui::MenuItem("Rename"))
+			{
+				set_renaming(node);
+			}
 		}
 		if (!node->is_root() && ImGui::MenuItem("Destroy"))
 			m_app_ctx->destroy_selected_action();
@@ -182,7 +191,7 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 			ImVec2 vertical_end = vertical_start;
 			for (sgnode* child : node->get_children())
 			{
-				const Rect& child_rect = handle_node(child);
+				const rect& child_rect = handle_node(child);
 				// draw horizontal line from vertical line to current child
 				const f32 horizontal_size = child->get_children().size() > 0 ? 12.f : 24.f;
 				const f32 midpoint = (child_rect.first.y + child_rect.second.y) / 2.f;
@@ -198,4 +207,36 @@ scene_graph_window::Rect scene_graph_window::handle_node(sgnode* const node)
 	}
 
 	return std::make_pair(cur_min, cur_max);
+}
+void scene_graph_window::handle_lights()
+{
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	const bool open = ImGui::TreeNodeEx("##SGW_LIGHTS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Lights");
+	ImGui::PopStyleVar();
+
+	ImGui::PushID("##SW_LIGHTS");
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::MenuItem("Add Light"))
+		{
+			m_app_ctx->add_light();
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (open)
+	{
+		auto& lights = m_app_ctx->scene.get_lights();
+		for (u32 i = 0; i < lights.size(); i++)
+		{
+			light* light = lights.data() + i;
+			if (ImGui::MenuItem(light->name.c_str(), "", m_app_ctx->get_selected_light() == light))
+			{
+				m_app_ctx->set_selected_light(light);
+			}
+		}
+		ImGui::TreePop();
+	}
 }

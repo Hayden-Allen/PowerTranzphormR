@@ -387,9 +387,11 @@
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
     <ClInclude Include="src\core\action.h" />
     <ClInclude Include="src\core\action_stack.h" />
+    <ClInclude Include="src\core\light.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
+    <ClInclude Include="src\util\color.h" />
     <ClInclude Include="src\util\globals.h" />
     <ClInclude Include="src\core\scene_material.h" />
     <ClInclude Include="src\core\sgnode.h" />

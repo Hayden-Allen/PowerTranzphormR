@@ -179,6 +179,12 @@
     <ClInclude Include="src\util\texture_library.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

@@ -10,7 +10,8 @@ enum class global_selection_type
 {
 	none = 0,
 	sgnode,
-	material
+	material,
+	light
 };
 
 struct app_ctx
@@ -54,6 +55,9 @@ public:
 	std::vector<std::pair<u32, scene_material*>> get_sorted_materials();
 	void remove_material(const u32 id);
 	void set_material(sgnode* const node, const u32 id);
+	void add_light();
+	void set_selected_light(light* const l);
+	light* get_selected_light();
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -86,6 +90,7 @@ private:
 	sgnode* m_imgui_needs_select_unfocused_sgnode = nullptr;
 	scene_material* m_selected_mtl = nullptr;
 	scene_material* m_imgui_needs_select_unfocused_mtl = nullptr;
+	light* m_selected_light = nullptr;
 	scene_graph_window* m_sg_window = nullptr;
 	materials_list_window* m_mtls_window = nullptr;
 };

@@ -5,7 +5,7 @@
 
 class scene_graph_window : public imgui_window
 {
-	using Rect = std::pair<ImVec2, ImVec2>;
+	using rect = std::pair<ImVec2, ImVec2>;
 public:
 	scene_graph_window(app_ctx* const a_ctx);
 	virtual ~scene_graph_window() {}
@@ -15,7 +15,8 @@ public:
 	void set_renaming(sgnode* const node);
 	const sgnode* get_renaming() const;
 private:
-	Rect handle_node(sgnode* const node);
+	rect handle_node(sgnode* const node);
+	void handle_lights();
 private:
 	sgnode* m_show_add_child = nullptr;
 	sgnode* m_renaming = nullptr;

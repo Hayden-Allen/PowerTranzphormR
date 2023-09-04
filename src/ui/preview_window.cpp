@@ -81,7 +81,6 @@ void preview_window::handle_frame()
 		m_enable_callback();
 	}
 }
-
 void preview_window::set_enable_callback(const std::function<void()>& callback)
 {
 	m_enable_callback = callback;

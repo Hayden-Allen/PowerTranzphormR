@@ -251,6 +251,18 @@ void app_ctx::set_material(sgnode* const node, const u32 id)
 		it->second->set_material(&scene, id);
 	}
 }
+void app_ctx::add_light()
+{
+	scene.add_light();
+}
+void app_ctx::set_selected_light(light* const l)
+{
+	m_selected_light = l;
+}
+light* app_ctx::get_selected_light()
+{
+	return sel_type == global_selection_type::light ? m_selected_light : nullptr;
+}
 
 
 
