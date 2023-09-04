@@ -74,10 +74,10 @@ private:
 private:
 	carve::csg::CSG m_csg;
 	attr_material_t m_mtl_id_attr;
-	// attr_tex_coord_t m_tex_coord_attr;
 	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
-	std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
+	// std::unordered_map<u32, mgl::static_vertex_array> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
+	std::unordered_map<u32, mgl::static_render_object> m_sg_vaos_for_mtl, m_hm_vaos_for_mtl;
 	std::vector<mesh_t*> m_hms;
 	sgnode* m_sg_root = nullptr;
 	sgnode* m_selected_node = nullptr;
@@ -85,6 +85,6 @@ private:
 	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();
-	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl);
-	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_vertex_array>& vaos);
+	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl);
+	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_render_object>& ros);
 };
