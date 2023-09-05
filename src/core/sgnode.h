@@ -46,6 +46,7 @@ public:
 	void set_material(scene_ctx* const scene, u32 mtl_id);									   // WARNING: Always use app_ctx->set_material instead of this one
 	void replace_material(scene_ctx* const scene, const u32 old_mtl_id, const u32 new_mtl_id); // WARNING: Always use app_ctx->remove_material instead of using this
 	u32 get_material();
+	std::vector<point<space::OBJECT>>& get_local_verts();
 public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);

@@ -15,7 +15,7 @@ void vertex_editor_window::handle_focused(const bool focused)
 }
 void vertex_editor_window::handle_frame()
 {
-	const sgnode* const selected_node = m_app_ctx->get_selected_sgnode();
+	sgnode* const selected_node = m_app_ctx->get_selected_sgnode();
 	if (!(selected_node && selected_node->is_frozen()))
 	{
 		ImGui::TextDisabled("Select a Phrozen Node to Edit Vertices");
@@ -36,22 +36,43 @@ void vertex_editor_window::handle_frame()
 		ImGui::EndCombo();
 	}
 
-	const mesh_t* mesh = selected_node->get_gen()->mesh;
-	const auto& verts = mesh->vertex_storage;
 	auto& vert_attrs = m_app_ctx->scene.get_vert_attrs();
 
 	switch (m_mode)
 	{
 	case vertex_editor_mode::POSITION:
 		{
+			mesh_t* const mesh = selected_node->get_gen()->mesh;
+			auto& verts = selected_node->get_local_verts();
 			for (u64 i = 0; i < verts.size(); i++)
 			{
-				ImGui::Text("%d %f %f %f", i, verts[i].v.x, verts[i].v.y, verts[i].v.z);
+				// ImGui::Text("%d %f %f %f", i, verts[i].v.x, verts[i].v.y, verts[i].v.z);
+				ImGui::PushID("##VEW_POS");
+				ImGui::PushID((s32)i);
+
+				ImGui::Text("%d", (s32)i);
+				ImGui::SameLine();
+				f32 v[3] = {
+					verts[i].x,
+					verts[i].y,
+					verts[i].z
+				};
+				if (ImGui::DragFloat3("", v, .01f))
+				{
+					verts[i].x = v[0];
+					verts[i].y = v[1];
+					verts[i].z = v[2];
+					selected_node->set_dirty();
+				}
+
+				ImGui::PopID();
+				ImGui::PopID();
 			}
 		}
 		break;
 	case vertex_editor_mode::COLOR:
 		{
+			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::unordered_map<const vertex_t*, u64> inserted;
 			std::vector<std::vector<std::tuple<const face_t*, u32, u64>>> vec;
 			u64 vert_id = 0;
@@ -76,13 +97,31 @@ void vertex_editor_window::handle_frame()
 
 			for (const auto& list : vec)
 			{
-				const color_t& color = vert_attrs.color.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
-				ImGui::Text("%d %f %f %f %f", std::get<2>(list[0]), color.r, color.g, color.b, color.a);
+				color_t color = vert_attrs.color.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
+				// ImGui::Text("%d %f %f %f %f", std::get<2>(list[0]), color.r, color.g, color.b, color.a);
+				ImGui::PushID("##VEW_COL");
+				ImGui::PushID((s32)std::get<2>(list[0]));
+
+				ImGui::Text("%d", (s32)std::get<2>(list[0]));
+				ImGui::SameLine();
+
+				if (ImGui::ColorEdit4("", &color.r))
+				{
+					for (const auto& tuple : list)
+					{
+						vert_attrs.color.setAttribute(std::get<0>(tuple), std::get<1>(tuple), color);
+					}
+					selected_node->set_dirty();
+				}
+
+				ImGui::PopID();
+				ImGui::PopID();
 			}
 		}
 		break;
 	case vertex_editor_mode::UV:
 		{
+			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::vector<std::pair<const face_t*, u32>> vec;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{

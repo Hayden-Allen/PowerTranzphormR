@@ -212,6 +212,10 @@ u32 sgnode::get_material()
 		return 0;
 	}
 }
+std::vector<point<space::OBJECT>>& sgnode::get_local_verts()
+{
+	return m_local_verts;
+}
 
 
 
