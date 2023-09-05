@@ -8,6 +8,7 @@
 #include "ui/properties_window.h"
 #include "ui/app_ctx.h"
 #include "core/scene_material.h"
+#include "ui/vertex_editor_window.h"
 
 
 // static sgnode* textured_cuboid_node(scene_ctx* const scene, GLuint mtl_id, const cuboid_options& options = {})
@@ -124,6 +125,10 @@ int main(int argc, char** argv)
 
 	properties_window prop_window(&a_ctx);
 	il.add_window(&prop_window);
+
+	vertex_editor_window vert_window(&a_ctx);
+	il.add_window(&vert_window);
+
 
 	while (true)
 	{

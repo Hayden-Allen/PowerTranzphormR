@@ -26,7 +26,7 @@ void preview_window::handle_frame()
 	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
 	// if something in the scene graph is selected, and the cursor is not locked, then show a transform gizmo for it
-	sgnode* target = m_app_ctx->get_selected_sgnode();
+	sgnode* const target = m_app_ctx->get_selected_sgnode();
 	if (target && !m_app_ctx->mgl_ctx.is_cursor_locked())
 	{
 		const auto& win_pos = ImGui::GetWindowPos();
@@ -48,8 +48,6 @@ void preview_window::handle_frame()
 		const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
 		ImGuizmo::Manipulate((view * target->accumulate_parent_mats()).e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
 
-		// whether or not ImGuizmo was being used last frame
-		// if using ImGuizmo this frame
 		if (ImGuizmo::IsUsing())
 		{
 			// if this is the first frame it's being used, save initial transform

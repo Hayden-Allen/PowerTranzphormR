@@ -361,6 +361,7 @@
     <ClCompile Include="src\core\action_stack.cpp" />
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
+    <ClCompile Include="src\ui\vertex_editor_window.cpp" />
     <ClCompile Include="src\util\globals.cpp" />
     <ClCompile Include="src\core\scene_material.cpp" />
     <ClCompile Include="src\core\sgnode.cpp" />
@@ -391,6 +392,7 @@
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />
+    <ClInclude Include="src\ui\vertex_editor_window.h" />
     <ClInclude Include="src\util\color.h" />
     <ClInclude Include="src\util\globals.h" />
     <ClInclude Include="src\core\scene_material.h" />

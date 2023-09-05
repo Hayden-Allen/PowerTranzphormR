@@ -9,8 +9,8 @@ public:
 	materials_list_window(app_ctx* const a_ctx);
 	virtual ~materials_list_window() {}
 public:
-	virtual void handle_focused(bool focused) override;
-	virtual void handle_frame() override;
+	void handle_focused(const bool focused) override;
+	void handle_frame() override;
 	void set_renaming(scene_material* mtl);
 	const scene_material* get_renaming() const;
 private:

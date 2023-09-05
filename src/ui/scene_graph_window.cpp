@@ -10,7 +10,7 @@ scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
 
 
 
-void scene_graph_window::handle_focused(bool focused)
+void scene_graph_window::handle_focused(const bool focused)
 {
 	if (focused)
 	{

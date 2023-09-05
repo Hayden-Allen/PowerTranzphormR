@@ -11,7 +11,7 @@ materials_list_window::materials_list_window(app_ctx* const a_ctx) :
 
 
 
-void materials_list_window::handle_focused(bool focused)
+void materials_list_window::handle_focused(const bool focused)
 {
 	if (focused)
 	{
