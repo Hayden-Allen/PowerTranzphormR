@@ -259,6 +259,8 @@ void app_ctx::remove_material(const u32 id)
 	{
 		pair.second->replace_material(&scene, id, 0);
 	}
+	if (clipboard)
+		clipboard->replace_material(&scene, id, 0);
 }
 void app_ctx::set_material(sgnode* const node, const u32 id)
 {
