@@ -120,7 +120,7 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 			{
 				f32* const f = static_cast<f32*>(prop.second.value);
 				const f32 of[4] = { f[0], f[1], f[2], f[3] };
-				changed = ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+				changed = ImGui::DragFloat4(prop.first.c_str(), f, prop.second.speed, prop.second.min, prop.second.max);
 				if (changed)
 				{
 					// index of weight that changed
@@ -128,6 +128,16 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 					for (u32 i = 1; i < 4; i++)
 						if (f[i] != of[i])
 							ci = i;
+
+					// if weights were some permutation of (1, 0, 0, 0) and the 1 is being decreased,
+					// bump all the other ones up equally to make up the difference
+					if (of[ci] == 1.f)
+					{
+						for (u32 i = 0; i < 4; i++)
+							if (i != ci)
+								f[i] = (1.f - f[ci]) / 3;
+						goto rebalance_end;
+					}
 
 					// sum of original values of non-changed weights
 					f32 odenom = 0.f;
@@ -147,6 +157,7 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 						if (i != ci)
 							f[i] = opct[i] * denom;
 				}
+rebalance_end:
 				break;
 			}
 		case generated_mesh_param_type::COLOR_4:

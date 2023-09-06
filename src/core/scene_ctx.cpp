@@ -173,7 +173,7 @@ scene_material* scene_ctx::create_default_material()
 	mtl->set_texture("u_tex3", g::null_tex_fp);
 	return mtl;
 }
-u32 scene_ctx::add_material(scene_material* mtl)
+u32 scene_ctx::add_material(scene_material* const mtl)
 {
 	const u32 id = s_next_mtl_id;
 	m_mtls.insert(std::make_pair(id, mtl));
@@ -185,7 +185,7 @@ void scene_ctx::erase_material(const u32 id)
 	delete m_mtls[id];
 	m_mtls.erase(id);
 }
-u32 scene_ctx::get_id_for_material(scene_material* mat)
+u32 scene_ctx::get_id_for_material(scene_material* const mat)
 {
 	for (const auto& pair : m_mtls)
 	{
@@ -197,7 +197,7 @@ u32 scene_ctx::get_id_for_material(scene_material* mat)
 	assert(false);
 	return 0;
 }
-scene_material* scene_ctx::get_material(GLuint id)
+scene_material* scene_ctx::get_material(const GLuint id)
 {
 	return m_mtls[id];
 }
