@@ -53,17 +53,9 @@ void vertex_editor_window::handle_frame()
 
 				ImGui::Text("%d", (s32)i);
 				ImGui::SameLine();
-				f32 v[3] = {
-					verts[i].x,
-					verts[i].y,
-					verts[i].z
-				};
-				if (ImGui::DragFloat3("", v, .01f))
+				if (ImGui::DragFloat3("", verts[i].e, .01f))
 				{
-					verts[i].x = v[0];
-					verts[i].y = v[1];
-					verts[i].z = v[2];
-					selected_node->set_dirty();
+					selected_node->set_gen_dirty();
 				}
 				if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
 				{
@@ -118,7 +110,7 @@ void vertex_editor_window::handle_frame()
 					{
 						vert_attrs.color.setAttribute(std::get<0>(tuple), std::get<1>(tuple), color);
 					}
-					selected_node->set_dirty();
+					selected_node->set_gen_dirty();
 				}
 				if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
 				{

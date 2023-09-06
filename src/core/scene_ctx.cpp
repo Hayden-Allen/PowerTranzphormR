@@ -315,34 +315,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
 				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
 
-				tess_vtx v;
-				v.x = e->vert->v.x;
-				v.y = e->vert->v.y;
-				v.z = e->vert->v.z;
-				v.u0 = t0.u;
-				v.v0 = t0.v;
-				v.uo0 = t0.uo;
-				v.vo0 = t0.vo;
-				v.u1 = t1.u;
-				v.v1 = t1.v;
-				v.uo1 = t1.uo;
-				v.vo1 = t1.vo;
-				v.u2 = t2.u;
-				v.v2 = t2.v;
-				v.uo2 = t2.uo;
-				v.vo2 = t2.vo;
-				v.u3 = t3.u;
-				v.v3 = t3.v;
-				v.uo3 = t3.uo;
-				v.vo3 = t3.vo;
-				v.w0 = w0;
-				v.w1 = w1;
-				v.w2 = w2;
-				v.w3 = w3;
-				v.r = color.r;
-				v.g = color.g;
-				v.b = color.b;
-				v.a = color.a;
+				tess_vtx v(e->vert->v.x, e->vert->v.y, e->vert->v.z, t0, t1, t2, t3, w0, w1, w2, w3, color);
 				v.target = &out_verts_for_mtl.at(mtl_id);
 				verts.emplace_back(v);
 			}
