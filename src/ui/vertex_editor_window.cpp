@@ -117,7 +117,7 @@ void vertex_editor_window::handle_frame()
 		{
 			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::unordered_map<const vertex_t*, u64> inserted;
-			std::vector<std::vector<std::tuple<const face_t*, u32, u64, const vertex_t*>>> vec;
+			std::vector<std::vector<std::tuple<const face_t*, u32, u64>>> vec;
 			u64 vert_id = 0;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
@@ -127,18 +127,18 @@ void vertex_editor_window::handle_frame()
 					const vertex_t* v = e->vert;
 					if (inserted.contains(v))
 					{
-						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id, v });
+						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id });
 					}
 					else
 					{
-						vec.push_back({ { f, e.idx(), vert_id, v } });
+						vec.push_back({ { f, e.idx(), vert_id } });
 						inserted.insert({ v, vec.size() - 1 });
 					}
 					vert_id++;
 				}
 			}
 
-			
+
 			if (ImGui::BeginTable("vew_col", 2))
 			{
 				ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, col_vert_id_width);
@@ -201,13 +201,13 @@ void vertex_editor_window::handle_frame()
 	case vertex_editor_mode::UV:
 		{
 			const mesh_t* const mesh = selected_node->get_gen()->mesh;
-			std::vector<std::tuple<const face_t*, u32, const vertex_t*>> vec;
+			std::vector<std::pair<const face_t*, u32>> vec;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
 				const mesh_t::face_t* const f = *i;
 				for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 				{
-					vec.push_back({ f, e.idx(), e->vert });
+					vec.push_back({ f, e.idx() });
 				}
 			}
 
@@ -281,28 +281,28 @@ void vertex_editor_window::handle_frame()
 							switch (chan)
 							{
 							case 0:
-							{
-								vert_attrs.uv0.setAttribute(pair.first, pair.second, new_tc);
-								vert_attrs.w0.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
-							}
+								{
+									vert_attrs.uv0.setAttribute(pair.first, pair.second, new_tc);
+									vert_attrs.w0.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+								}
 								break;
 							case 1:
-							{
-								vert_attrs.uv1.setAttribute(pair.first, pair.second, new_tc);
-								vert_attrs.w1.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
-							}
+								{
+									vert_attrs.uv1.setAttribute(pair.first, pair.second, new_tc);
+									vert_attrs.w1.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+								}
 								break;
 							case 2:
-							{
-								vert_attrs.uv2.setAttribute(pair.first, pair.second, new_tc);
-								vert_attrs.w2.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
-							}
+								{
+									vert_attrs.uv2.setAttribute(pair.first, pair.second, new_tc);
+									vert_attrs.w2.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+								}
 								break;
 							case 3:
-							{
-								vert_attrs.uv3.setAttribute(pair.first, pair.second, new_tc);
-								vert_attrs.w3.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
-							}
+								{
+									vert_attrs.uv3.setAttribute(pair.first, pair.second, new_tc);
+									vert_attrs.w3.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+								}
 								break;
 							default:
 								assert(false);
