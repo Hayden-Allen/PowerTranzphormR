@@ -18,6 +18,29 @@ app_ctx::app_ctx() :
 	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
 	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
 	init_menus();
+
+	constexpr u64 nverts = 6;
+	constexpr f32 s = .1f;
+	constexpr f32 verts[nverts * 3] = {
+		0, s, 0,  // 0 top
+		0, 0, s,  // 1 front
+		s, 0, 0,  // 2 right
+		0, 0, -s, // 3 back
+		-s, 0, 0, // 4 left
+		0, -s, 0, // 5 bottom
+	};
+	constexpr u64 nindices = 3 * 8;
+	constexpr u32 indices[nindices] = {
+		1, 2, 0, //
+		2, 3, 0, //
+		3, 4, 0, //
+		4, 1, 0, //
+		1, 5, 2, //
+		2, 5, 3, //
+		3, 5, 4, //
+		4, 5, 1, //
+	};
+	m_vertex_editor_icon.icon.init(verts, nverts, { 3 }, indices, nindices);
 }
 app_ctx::~app_ctx()
 {
@@ -282,6 +305,27 @@ void app_ctx::set_selected_light(light* const l)
 light* app_ctx::get_selected_light()
 {
 	return sel_type == global_selection_type::light ? m_selected_light : nullptr;
+}
+void app_ctx::draw_vertex_editor_icon()
+{
+	if (m_vertex_editor_icon.show)
+	{
+		static f32 rot_y = 0.f;
+		const auto& vei_mat = m_vertex_editor_icon.transform * tmat_util::rotation_y<space::OBJECT>(rot_y);
+		const mat<space::OBJECT, space::CLIP>& mvp = preview_cam.get_view_proj() * vei_mat;
+		m_vertex_editor_icon.shaders.uniform_mat4("u_mvp", mvp.e);
+		m_vertex_editor_icon.shaders.uniform_mat4("u_model", vei_mat.e);
+		m_vertex_editor_icon.shaders.uniform_3fv("u_cam_pos", preview_cam.get_pos().e);
+		m_vertex_editor_icon.shaders.uniform_3fv("u_cam_dir", preview_cam.get_view().k);
+		mgl_ctx.draw(m_vertex_editor_icon.icon, m_vertex_editor_icon.shaders);
+		m_vertex_editor_icon.show = false;
+		rot_y += .02f;
+	}
+}
+void app_ctx::set_vertex_editor_icon_position(const point<space::WORLD>& p)
+{
+	m_vertex_editor_icon.transform = tmat_util::translation<space::OBJECT, space::WORLD>(p);
+	m_vertex_editor_icon.show = true;
 }
 
 

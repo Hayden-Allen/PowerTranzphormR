@@ -32,6 +32,7 @@ bool preview_layer::on_frame(const f32 dt)
 	m_app_ctx->scene.update();
 	const scene_ctx_uniforms& uniforms = { mvp, mv, obj, normal, m_app_ctx->preview_cam.get_pos() };
 	m_app_ctx->scene.draw(m_app_ctx->mgl_ctx, uniforms);
+	m_app_ctx->draw_vertex_editor_icon();
 	m_app_ctx->preview_fb.unbind();
 
 	return false;

@@ -117,7 +117,7 @@ void vertex_editor_window::handle_frame()
 		{
 			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::unordered_map<const vertex_t*, u64> inserted;
-			std::vector<std::vector<std::tuple<const face_t*, u32, u64>>> vec;
+			std::vector<std::vector<std::tuple<const face_t*, u32, u64, const vertex_t*>>> vec;
 			u64 vert_id = 0;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
@@ -127,11 +127,11 @@ void vertex_editor_window::handle_frame()
 					const vertex_t* v = e->vert;
 					if (inserted.contains(v))
 					{
-						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id });
+						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id, v });
 					}
 					else
 					{
-						vec.push_back({ { f, e.idx(), vert_id } });
+						vec.push_back({ { f, e.idx(), vert_id, v } });
 						inserted.insert({ v, vec.size() - 1 });
 					}
 					vert_id++;
@@ -201,13 +201,13 @@ void vertex_editor_window::handle_frame()
 	case vertex_editor_mode::UV:
 		{
 			const mesh_t* const mesh = selected_node->get_gen()->mesh;
-			std::vector<std::pair<const face_t*, u32>> vec;
+			std::vector<std::tuple<const face_t*, u32, const vertex_t*>> vec;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
 				const mesh_t::face_t* const f = *i;
 				for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 				{
-					vec.push_back({ f, e.idx() });
+					vec.push_back({ f, e.idx(), e->vert });
 				}
 			}
 
