@@ -308,7 +308,7 @@ void sgnode::recompute(scene_ctx* const scene)
 					m_gen->clear();
 					m_gen->set_mesh(new_mesh);
 				}
-				catch (carve::exception& ex)
+				catch (std::exception& ex)
 				{
 					std::cerr << "carve::exception happened: " << ex.what() << "\n";
 				}

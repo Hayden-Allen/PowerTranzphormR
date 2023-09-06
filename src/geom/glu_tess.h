@@ -29,21 +29,17 @@ struct mesh_vertex
 			   w0 == o.w0 && w1 == o.w1 && w2 == o.w2 && w3 == o.w3 &&
 			   r == o.r && g == o.g && b == o.b && a == o.a;
 	}
-	u32 hash() const
+	std::string hash_all() const
 	{
-		// hash all elements except normals
-		std::vector<f32> v = { x, y, z };
-		for (u32 i = 0; i < 24; i++)
-			v.push_back(*(&u0 + i));
-		// https://cs.stackexchange.com/questions/37952/hash-function-floating-point-inputs-for-genetic-algorithm
-		u32 h = 1;
-		for (u64 i = 0; i < v.size(); i++)
-		{
-			s32 sf = *(s32*)&v[i];
-			h = 31 * h + sf;
-		}
-		h ^= (h >> 20) ^ (h >> 12);
-		return h ^ (h >> 7) ^ (h >> 4);
+		char buf[512] = { 0 };
+		sprintf_s(buf, 512, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", x, y, z, nx, ny, nz, u0, v0, uo0, vo0, u1, v1, uo1, vo1, u2, v2, uo2, vo2, u3, v3, uo3, vo3, w0, w1, w2, w3, r, g, b, a);
+		return buf;
+	}
+	std::string hash_pos() const
+	{
+		char buf[512] = { 0 };
+		sprintf_s(buf, 512, "%f %f %f", x, y, z);
+		return buf;
 	}
 };
 struct tess_vtx
@@ -118,5 +114,9 @@ static void tess_callback_end(void)
 
 static void tess_callback_edge_flag(GLboolean flag)
 {
-	//
+}
+
+static void tess_callback_error(GLenum err)
+{
+	printf("TESS ERROR: '%s'\n", gluErrorString(err));
 }

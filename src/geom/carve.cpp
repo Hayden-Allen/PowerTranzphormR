@@ -83,24 +83,42 @@ mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_at
 	std::vector<face_t*> faces;
 	faces.reserve(6);
 	// front
-	faces.push_back(new face_t(&v[2], &v[3], &v[0], &v[1]));
+	// faces.push_back(new face_t(&v[2], &v[3], &v[0], &v[1]));
+	faces.push_back(new face_t(&v[2], &v[3], &v[0]));
+	faces.push_back(new face_t(&v[2], &v[0], &v[1]));
 	// left
-	faces.push_back(new face_t(&v[6], &v[2], &v[1], &v[5]));
+	// faces.push_back(new face_t(&v[6], &v[2], &v[1], &v[5]));
+	faces.push_back(new face_t(&v[6], &v[2], &v[1]));
+	faces.push_back(new face_t(&v[6], &v[1], &v[5]));
 	// back
-	faces.push_back(new face_t(&v[7], &v[6], &v[5], &v[4]));
+	// faces.push_back(new face_t(&v[7], &v[6], &v[5], &v[4]));
+	faces.push_back(new face_t(&v[7], &v[6], &v[5]));
+	faces.push_back(new face_t(&v[7], &v[5], &v[4]));
 	// right
-	faces.push_back(new face_t(&v[3], &v[7], &v[4], &v[0]));
+	// faces.push_back(new face_t(&v[3], &v[7], &v[4], &v[0]));
+	faces.push_back(new face_t(&v[3], &v[7], &v[4]));
+	faces.push_back(new face_t(&v[3], &v[4], &v[0]));
 	// top
-	faces.push_back(new face_t(&v[1], &v[0], &v[4], &v[5]));
+	// faces.push_back(new face_t(&v[1], &v[0], &v[4], &v[5]));
+	faces.push_back(new face_t(&v[1], &v[0], &v[4]));
+	faces.push_back(new face_t(&v[1], &v[4], &v[5]));
 	// bottom
-	faces.push_back(new face_t(&v[6], &v[7], &v[3], &v[2]));
+	// faces.push_back(new face_t(&v[6], &v[7], &v[3], &v[2]));
+	faces.push_back(new face_t(&v[6], &v[7], &v[3]));
+	faces.push_back(new face_t(&v[6], &v[3], &v[2]));
 
-	for (s32 i = 0; i < 6; ++i)
+	for (s32 i = 0; i < faces.size(); ++i)
 	{
 		vert_attrs.set_attribute(faces[i], 0, options, tex_coord_t(0.f, 0.f));
-		vert_attrs.set_attribute(faces[i], 1, options, tex_coord_t(1.f, 0.f));
-		vert_attrs.set_attribute(faces[i], 2, options, tex_coord_t(1.f, 1.f));
-		vert_attrs.set_attribute(faces[i], 3, options, tex_coord_t(0.f, 1.f));
+		if (i % 2 == 0)
+			vert_attrs.set_attribute(faces[i], 1, options, tex_coord_t(1.f, 0.f));
+		else
+			vert_attrs.set_attribute(faces[i], 1, options, tex_coord_t(1.f, 1.f));
+		if (i % 2 == 0)
+			vert_attrs.set_attribute(faces[i], 2, options, tex_coord_t(1.f, 1.f));
+		else
+			vert_attrs.set_attribute(faces[i], 2, options, tex_coord_t(0.f, 1.f));
+
 		mtl_id_attr.setAttribute(faces[i], mtl_id);
 	}
 
@@ -119,11 +137,14 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 	const f32 DTHETA = c::TWO_PI / STEPS;
 	const f32 radii[2] = { options.bottom_radius, options.top_radius };
 	std::vector<vertex_t> raw_vertices;
+	// vertices on circle boundaries, vertices at circle centers
+	const u32 num_verts = (STEPS * 2) + 2;
 	std::vector<vertex_t*> vertices;
-	vertices.reserve(2 * STEPS);
+	vertices.reserve(2 * STEPS + 2);
 	// vertices are the circles defining the cylinder
 	for (int i = 0; i < 2; i++)
 	{
+		const f32 y = (i * 2.f - 1.f) * .5f;
 		// top and bottom circle can have different radii
 		const f32 r = radii[i];
 		// generate a circle with current radius
@@ -132,42 +153,75 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 			// generate clockwise from x-axis
 			const f32 x = r * cosf(j * DTHETA), z = r * sinf(j * DTHETA);
 			// make cylinder vertically centered on the local origin
-			const f32 y = (i * 2.f - 1.f) * .5f;
 			raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 		}
+		raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, y, 0).transform_copy(options.transform)));
 	}
 	for (u64 i = 0; i < raw_vertices.size(); i++)
 		vertices.push_back(raw_vertices.data() + i);
 
+	// const u32 num_faces = STEPS + 2;
+	// wall tris, top face tris, bottom face tris
+	const u32 num_faces = (STEPS * 2) + (STEPS) + (STEPS);
 	std::vector<face_t*> faces;
-	faces.reserve(STEPS + 2);
+	faces.reserve(num_faces);
 	// circular faces
 	// bottom face is wound clockwise from below
-	faces.push_back(new face_t(vertices.begin(), vertices.begin() + STEPS));
+	// faces.push_back(new face_t(vertices.begin(), vertices.begin() + STEPS));
 	// top face is wound clockwise from above
-	faces.push_back(new face_t(vertices.rbegin(), vertices.rbegin() + STEPS));
-	for (const face_t* const face : faces)
+	// faces.push_back(new face_t(vertices.rbegin(), vertices.rbegin() + STEPS));
+	// for (const face_t* const face : faces)
+	//{
+	//	for (u32 i = 0; i < STEPS; i++)
+	//	{
+	//		// map each vertex to where it lies within the texture
+	//		// (don't stretch rectangle texture to fit circle, just take subtexture that fits)
+	//		const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
+	//		vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
+	//	}
+	//}
+	for (u32 j = 0; j < 2; j++)
 	{
+		const u32 offset = j * (STEPS + 1);
 		for (u32 i = 0; i < STEPS; i++)
 		{
-			// map each vertex to where it lies within the texture
-			// (don't stretch rectangle texture to fit circle, just take subtexture that fits)
-			const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-			vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
+			const u32 ia = STEPS + offset;
+			u32 ib = i + offset, ic = (i + 1) % STEPS + offset;
+			// ordering different for top/bottom face to maintain cw
+			if (j % 2 == 1)
+				std::swap(ib, ic);
+
+			face_t* const f = new face_t(vertices[ia], vertices[ib], vertices[ic]);
+			faces.push_back(f);
+
+			f32 ub = (cosf(i * DTHETA) + 1) / 2, vb = (sinf(i * DTHETA) + 1) / 2;
+			f32 uc = (cosf(((i + 1) % STEPS) * DTHETA) + 1) / 2, vc = (sinf(((i + 1) % STEPS) * DTHETA) + 1) / 2;
+			if (j % 2 == 1)
+			{
+				std::swap(ub, uc);
+				std::swap(vb, vc);
+			}
+			vert_attrs.set_attribute(f, 0, options, tex_coord_t(.5f, .5f));
+			vert_attrs.set_attribute(f, 1, options, tex_coord_t(ub, vb));
+			vert_attrs.set_attribute(f, 2, options, tex_coord_t(uc, vc));
 		}
 	}
 	// vertical strips
 	for (u32 i = 0; i < STEPS; i++)
 	{
 		const u32 a = i, b = (i + 1) % STEPS;
-		const u32 c = i + STEPS, d = b + STEPS;
+		const u32 c = i + STEPS + 1, d = b + STEPS + 1;
 		// wound clockwise
-		face_t* face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
-		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
-		vert_attrs.set_attribute(face, 1, options, tex_coord_t(1.f * i / STEPS, 1.f));
-		vert_attrs.set_attribute(face, 2, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 1.f));
-		vert_attrs.set_attribute(face, 3, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 0.f));
-		faces.push_back(face);
+		face_t* face1 = new face_t(vertices[a], vertices[c], vertices[d]);
+		vert_attrs.set_attribute(face1, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
+		vert_attrs.set_attribute(face1, 1, options, tex_coord_t(1.f * i / STEPS, 1.f));
+		vert_attrs.set_attribute(face1, 2, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 1.f));
+		faces.push_back(face1);
+		face_t* face2 = new face_t(vertices[a], vertices[d], vertices[b]);
+		vert_attrs.set_attribute(face2, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
+		vert_attrs.set_attribute(face2, 1, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 1.f));
+		vert_attrs.set_attribute(face2, 2, options, tex_coord_t(1.f * (i + 1.f) / STEPS, 0.f));
+		faces.push_back(face2);
 	}
 
 	for (const face_t* const face : faces)
@@ -184,8 +238,10 @@ mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr
 	const u32 STEPS = options.num_steps;
 	const f32 DTHETA = c::TWO_PI / STEPS;
 	std::vector<vertex_t> raw_vertices;
+	// base verts + circle center + point
+	const u32 num_verts = STEPS + 2;
 	std::vector<vertex_t*> vertices;
-	vertices.reserve(STEPS + 1);
+	vertices.reserve(num_verts);
 	for (u32 j = 0; j < STEPS; j++)
 	{
 		const f32 x = .5f * cosf(j * DTHETA), z = .5f * sinf(j * DTHETA);
@@ -193,27 +249,45 @@ mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr
 		const f32 y = -.5f;
 		raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
 	}
+	// circle center
+	raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, -.5f, 0).transform_copy(options.transform)));
 	// top point of cone
 	raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform)));
 	for (u64 i = 0; i < raw_vertices.size(); i++)
 		vertices.push_back(raw_vertices.data() + i);
 
+	// vertical faces + base faces
+	const u32 num_faces = STEPS * 2;
 	std::vector<face_t*> faces;
-	faces.reserve(STEPS + 1);
+	faces.reserve(num_faces);
 	// single face for cirular base of cone (wound clockwise)
-	face_t* face = new face_t(vertices.begin(), vertices.begin() + STEPS);
-	faces.push_back(face);
-	// same as for textured_cylinder, take subtexture that fits on the circle
-	for (uint32_t i = 0; i < STEPS; i++)
-	{
-		const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-		vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
-	}
-	// generate vertical strips for cone
+	// face_t* face = new face_t(vertices.begin(), vertices.begin() + STEPS);
+	// faces.push_back(face);
+	//// same as for textured_cylinder, take subtexture that fits on the circle
+	// for (uint32_t i = 0; i < STEPS; i++)
+	//{
+	//	const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
+	//	vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
+	// }
 	for (u32 i = 0; i < STEPS; i++)
 	{
-		const u32 a = i, b = (i + 1) % STEPS, c = STEPS;
-		face = new face_t(vertices[a], vertices[c], vertices[b]);
+		const u32 ia = STEPS;
+		const u32 ib = i, ic = (i + 1) % STEPS;
+		face_t* const face = new face_t(vertices[ia], vertices[ib], vertices[ic]);
+		faces.push_back(face);
+
+		const f32 ub = (cosf(i * DTHETA) + 1) / 2, vb = (sinf(i * DTHETA) + 1) / 2;
+		const f32 uc = (cosf(((i + 1) % STEPS) * DTHETA) + 1) / 2, vc = (sinf(((i + 1) % STEPS) * DTHETA) + 1) / 2;
+		vert_attrs.set_attribute(face, 0, options, tex_coord_t(.5f, .5f));
+		vert_attrs.set_attribute(face, 1, options, tex_coord_t(uc, vc));
+		vert_attrs.set_attribute(face, 2, options, tex_coord_t(ub, vb));
+	}
+
+	//  generate vertical strips for cone
+	for (u32 i = 0; i < STEPS; i++)
+	{
+		const u32 a = i, b = (i + 1) % STEPS, c = STEPS + 1;
+		face_t* const face = new face_t(vertices[a], vertices[c], vertices[b]);
 		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
 		vert_attrs.set_attribute(face, 1, options, tex_coord_t(.5f, 1.f));
 		vert_attrs.set_attribute(face, 2, options, tex_coord_t(1.f * (i + 1) / STEPS, 0.f));
@@ -242,8 +316,9 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 	// resolution of each circle
 	const f32 DPHI = c::TWO_PI / TUBE_STEPS;
 	std::vector<vertex_t> raw_vertices;
+	const u32 num_verts = TUBE_STEPS * CENTER_STEPS;
 	std::vector<vertex_t*> vertices;
-	vertices.reserve(TUBE_STEPS * CENTER_STEPS);
+	vertices.reserve(num_verts);
 	for (u32 i = 0; i < CENTER_STEPS; i++)
 	{
 		const f32 ct = cosf(i * DTHETA), st = sinf(i * DTHETA);
@@ -272,13 +347,18 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 			const u32 mj = (j + 1) % TUBE_STEPS;
 			const u32 a = cur + j, b = cur + mj;
 			const u32 c = next + j, d = next + mj;
-			face_t* const face = new face_t(vertices[a], vertices[b], vertices[d], vertices[c]);
-			vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
-			vert_attrs.set_attribute(face, 1, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
-			vert_attrs.set_attribute(face, 2, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
-			vert_attrs.set_attribute(face, 3, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
-			mtl_id_attr.setAttribute(face, mtl_id);
-			faces.push_back(face);
+			face_t* const face1 = new face_t(vertices[a], vertices[b], vertices[d]);
+			vert_attrs.set_attribute(face1, 0, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
+			vert_attrs.set_attribute(face1, 1, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			vert_attrs.set_attribute(face1, 2, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			mtl_id_attr.setAttribute(face1, mtl_id);
+			faces.push_back(face1);
+			face_t* const face2 = new face_t(vertices[a], vertices[d], vertices[c]);
+			vert_attrs.set_attribute(face2, 0, options, tex_coord_t(1.f * i / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
+			vert_attrs.set_attribute(face2, 1, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * (j + 1) / TUBE_STEPS)));
+			vert_attrs.set_attribute(face2, 2, options, tex_coord_t((i + 1.f) / CENTER_STEPS, (1 - 1.f * j / TUBE_STEPS)));
+			mtl_id_attr.setAttribute(face2, mtl_id);
+			faces.push_back(face2);
 		}
 	}
 
@@ -375,13 +455,18 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			const f32 ctx = 1.f * ix / nh, ntx = 1.f * (ix + 1) / nh;
 			const u32 a = ix + cur_off, b = (ix + 1) % nh + cur_off;
 			const u32 c = ix + next_off, d = (ix + 1) % nh + next_off;
-			face_t* const face = new face_t(vertices[a], vertices[c], vertices[d], vertices[b]);
-			vert_attrs.set_attribute(face, 0, options, tex_coord_t(ctx, cty));
-			vert_attrs.set_attribute(face, 1, options, tex_coord_t(ctx, nty));
-			vert_attrs.set_attribute(face, 2, options, tex_coord_t(ntx, nty));
-			vert_attrs.set_attribute(face, 3, options, tex_coord_t(ntx, cty));
-			mtl_id_attr.setAttribute(face, mtl_id);
-			faces.push_back(face);
+			face_t* const face1 = new face_t(vertices[a], vertices[c], vertices[d]);
+			vert_attrs.set_attribute(face1, 0, options, tex_coord_t(ctx, cty));
+			vert_attrs.set_attribute(face1, 1, options, tex_coord_t(ctx, nty));
+			vert_attrs.set_attribute(face1, 2, options, tex_coord_t(ntx, nty));
+			mtl_id_attr.setAttribute(face1, mtl_id);
+			faces.push_back(face1);
+			face_t* const face2 = new face_t(vertices[a], vertices[d], vertices[b]);
+			vert_attrs.set_attribute(face2, 0, options, tex_coord_t(ctx, cty));
+			vert_attrs.set_attribute(face2, 1, options, tex_coord_t(ntx, nty));
+			vert_attrs.set_attribute(face2, 2, options, tex_coord_t(ntx, cty));
+			mtl_id_attr.setAttribute(face2, mtl_id);
+			faces.push_back(face2);
 		}
 	}
 

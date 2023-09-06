@@ -28,4 +28,5 @@ void main()
 	vec3 spec = RdV * vec3(1);
 	vec3 diff = min(1, v_NdL + .33) * mixed_res;
 	o_col = clamp(vec4(diff + spec * 0.0, 1.0), vec4(vec3(0), 1), vec4(1));
+	// o_col = vec4(v_uv0.xy, 0, 1);
 }

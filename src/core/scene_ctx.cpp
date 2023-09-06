@@ -295,6 +295,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
 	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
 	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
+	gluTessCallback(tess, GLU_TESS_ERROR, (GLUTessCallback)tess_callback_error);
 	if (mesh)
 	{
 		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
@@ -332,152 +333,178 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 
 	for (auto& pair : out_verts_for_mtl)
 	{
-		std::vector<mesh_vertex>& input_verts = pair.second;
-		std::vector<u32> output_vert2index;
-		std::unordered_map<u32, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
-		std::vector<mesh_vertex> unique_verts;
-		std::vector<u32>& indices = out_indices_for_mtl[pair.first];
-		u32 index_count = 0;
-		assert(input_verts.size() % 3 == 0);
-		for (u32 i = 0; i < input_verts.size(); i += 3)
-		{
-			const mesh_vertex& va = input_verts[i + 0];
-			const mesh_vertex& vb = input_verts[i + 1];
-			const mesh_vertex& vc = input_verts[i + 2];
-			// vertex positions of current triangle
-			const vec<space::OBJECT> pa(va.x, va.y, va.z);
-			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
-			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
-			// sides of current triangle
-			const vec<space::OBJECT>& ab = pa - pb;
-			const vec<space::OBJECT>& ac = pa - pc;
-			// face normal of current triangle
-			const direction<space::OBJECT> norm(ab.cross_copy(ac));
+		// std::vector<mesh_vertex>& input_verts = pair.second;
+		// std::vector<u32> output_vert2index;
+		// std::unordered_map<u32, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
+		// std::vector<mesh_vertex> unique_verts;
+		// std::vector<u32>& indices = out_indices_for_mtl[pair.first];
+		// u32 index_count = 0;
+		// assert(input_verts.size() % 3 == 0);
+		// for (u32 i = 0; i < input_verts.size(); i += 3)
+		//{
+		//	const mesh_vertex& va = input_verts[i + 0];
+		//	const mesh_vertex& vb = input_verts[i + 1];
+		//	const mesh_vertex& vc = input_verts[i + 2];
+		//	// vertex positions of current triangle
+		//	const vec<space::OBJECT> pa(va.x, va.y, va.z);
+		//	const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
+		//	const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
+		//	// sides of current triangle
+		//	const vec<space::OBJECT>& ab = pa - pb;
+		//	const vec<space::OBJECT>& ac = pa - pc;
+		//	// face normal of current triangle
+		//	const direction<space::OBJECT> norm(ab.cross_copy(ac));
 
-			// go through the verts in current face
-			for (u32 j = 0; j < 3; j++)
-			{
-				const mesh_vertex& mv = input_verts[i + j];
-				const u32 key = mv.hash();
-				const auto& it = vert2index.find(key);
-				// this vertex has been seen before, try to match it to existing instance
-				bool found = false;
-				if (it != vert2index.end())
-				{
-					// check existing instances of this vertex
-					for (auto& instance : it->second)
-					{
-						// printf("CHECK %u\n", instance.first);
-						// check all faces that each instance is part of
-						for (u32 k = 0; k < instance.second.size(); k++)
-						{
-							const auto& face_norm = instance.second.at(k);
-							const f32 angle = norm.angle_to(face_norm);
-							if (s_snap_all)
-							{
-								// current vertex cannot be added to this instance (ALL)
-								if (fabs(angle) >= s_snap_angle)
-								{
-									// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
-									break;
-								}
-								// made it to the end of the list, current vertex is part of this instance
-								if (k == instance.second.size() - 1)
-								{
-									vert2index.at(key).at(instance.first).push_back(norm);
-									instance.second.push_back(norm);
-									indices.push_back(instance.first);
-									found = true;
-									// need to break here because we're adding to instance.second, so this loop will go forever
-									break;
-								}
-							}
-							else
-							{
-								// current vertex can be added to this instance (ANY)
-								if (fabs(angle) < s_snap_angle)
-								{
-									vert2index.at(key).at(instance.first).push_back(norm);
-									instance.second.push_back(norm);
-									indices.push_back(instance.first);
-									found = true;
-									// need to break here because we're adding to instance.second, so this loop will go forever
-									break;
-								}
-							}
-						}
-						// current vertex inserted, stop
-						if (found)
-							break;
-					}
-				}
-				// either this vertex hasn't been seen before or it doesn't match any existing instances, so make a new one
-				if (!found)
-				{
-					// totally new vertex, need to create map
-					if (!vert2index.contains(key))
-					{
-						vert2index.insert({
-							key,
-							{ { index_count, { norm } } },
-						});
-					}
-					// at least one instance of this vertex already exists, just add to the map
-					else
-					{
-						vert2index.at(key).insert({ index_count, { norm } });
-					}
-					indices.push_back(index_count);
-					output_vert2index.push_back(index_count);
-					index_count++;
-					unique_verts.push_back(mv);
-				}
-			}
-		}
+		//	// go through the verts in current face
+		//	for (u32 j = 0; j < 3; j++)
+		//	{
+		//		const mesh_vertex& mv = input_verts[i + j];
+		//		const u32 key = mv.hash();
+		//		const auto& it = vert2index.find(key);
+		//		// this vertex has been seen before, try to match it to existing instance
+		//		bool found = false;
+		//		if (it != vert2index.end())
+		//		{
+		//			// check existing instances of this vertex
+		//			for (auto& instance : it->second)
+		//			{
+		//				// printf("CHECK %u\n", instance.first);
+		//				// check all faces that each instance is part of
+		//				for (u32 k = 0; k < instance.second.size(); k++)
+		//				{
+		//					const auto& face_norm = instance.second.at(k);
+		//					const f32 angle = norm.angle_to(face_norm);
+		//					if (s_snap_all)
+		//					{
+		//						// current vertex cannot be added to this instance (ALL)
+		//						if (fabs(angle) >= s_snap_angle)
+		//						{
+		//							// printf("!!! %s => %u (%f)\n", mv.to_string().c_str(), instance.first, angle);
+		//							break;
+		//						}
+		//						// made it to the end of the list, current vertex is part of this instance
+		//						if (k == instance.second.size() - 1)
+		//						{
+		//							vert2index.at(key).at(instance.first).push_back(norm);
+		//							instance.second.push_back(norm);
+		//							indices.push_back(instance.first);
+		//							found = true;
+		//							// need to break here because we're adding to instance.second, so this loop will go forever
+		//							break;
+		//						}
+		//					}
+		//					else
+		//					{
+		//						// current vertex can be added to this instance (ANY)
+		//						if (fabs(angle) < s_snap_angle)
+		//						{
+		//							vert2index.at(key).at(instance.first).push_back(norm);
+		//							instance.second.push_back(norm);
+		//							indices.push_back(instance.first);
+		//							found = true;
+		//							// need to break here because we're adding to instance.second, so this loop will go forever
+		//							break;
+		//						}
+		//					}
+		//				}
+		//				// current vertex inserted, stop
+		//				if (found)
+		//					break;
+		//			}
+		//		}
+		//		// either this vertex hasn't been seen before or it doesn't match any existing instances, so make a new one
+		//		if (!found)
+		//		{
+		//			// totally new vertex, need to create map
+		//			if (!vert2index.contains(key))
+		//			{
+		//				vert2index.insert({
+		//					key,
+		//					{ { index_count, { norm } } },
+		//				});
+		//			}
+		//			// at least one instance of this vertex already exists, just add to the map
+		//			else
+		//			{
+		//				vert2index.at(key).insert({ index_count, { norm } });
+		//			}
+		//			indices.push_back(index_count);
+		//			output_vert2index.push_back(index_count);
+		//			index_count++;
+		//			unique_verts.push_back(mv);
+		//		}
+		//	}
+		//}
 
-		// compute weighted norms
-		std::unordered_map<u32, vec<space::OBJECT>> norms;
-		for (u32 i = 0; i < indices.size(); i += 3)
-		{
-			// indices of unique vertices of current triangle
-			const u32 ia = indices[i + 0];
-			const u32 ib = indices[i + 1];
-			const u32 ic = indices[i + 2];
-			// vertices of current triangle
-			const mesh_vertex& va = unique_verts[ia];
-			const mesh_vertex& vb = unique_verts[ib];
-			const mesh_vertex& vc = unique_verts[ic];
-			// vertex positions of current triangle
-			const vec<space::OBJECT> pa(va.x, va.y, va.z);
-			const vec<space::OBJECT> pb(vb.x, vb.y, vb.z);
-			const vec<space::OBJECT> pc(vc.x, vc.y, vc.z);
-			// sides of current triangle
-			const vec<space::OBJECT>& ab = pa - pb;
-			const vec<space::OBJECT>& ac = pa - pc;
-			// face normal of current triangle
-			const vec<space::OBJECT> norm = ab.cross_copy(ac);
-			// add face normal to each vertex. Note that `norm` is not actually normalized, so this inherently weights each normal by the size of the face it is from
-			norms[ia] += norm;
-			norms[ib] += norm;
-			norms[ic] += norm;
-		}
-		// average weighted norms
-		for (auto& pair : norms)
-		{
-			pair.second.normalize();
-		}
+		for (u32 i = 0; i < pair.second.size(); i++)
+			out_indices_for_mtl[pair.first].push_back(i);
 
-		// write norms
-		for (u64 i = 0; i < unique_verts.size(); i++)
-		{
-			mesh_vertex& mv = unique_verts[i];
-			const auto& norm = norms[output_vert2index[i]];
-			mv.nx = norm.x;
-			mv.ny = norm.y;
-			mv.nz = norm.z;
-		}
-		input_verts.clear();
-		input_verts = unique_verts;
+		// std::vector<mesh_vertex>& input_verts = pair.second;
+		// std::unordered_map<std::string, u32> vert2index;
+		// std::vector<mesh_vertex> unique_verts;
+		// std::vector<u32>& indices = out_indices_for_mtl[pair.first];
+		// u32 next_index = 0;
+		// for (u64 i = 0; i < input_verts.size(); i++)
+		//{
+		//	const mesh_vertex& mv = input_verts[i];
+		//	const std::string hash = mv.hash_all();
+		//	if (vert2index.contains(hash))
+		//	{
+		//		indices.push_back(vert2index.at(hash));
+		//	}
+		//	else
+		//	{
+		//		unique_verts.push_back(mv);
+		//		indices.push_back(next_index);
+		//		vert2index.insert({ hash, next_index });
+		//		next_index++;
+		//	}
+		// }
+
+		//// compute weighted norms
+		// std::unordered_map<std::string, vec<space::OBJECT>> norms;
+		// for (u32 i = 0; i < indices.size(); i += 3)
+		//{
+		//	// indices of unique vertices of current triangle
+		//	const u32 ia = indices[i + 0];
+		//	const u32 ib = indices[i + 1];
+		//	const u32 ic = indices[i + 2];
+		//	// vertices of current triangle
+		//	const mesh_vertex& va = unique_verts[ia];
+		//	const mesh_vertex& vb = unique_verts[ib];
+		//	const mesh_vertex& vc = unique_verts[ic];
+		//	// vertex positions of current triangle
+		//	const point<space::OBJECT> pa(va.x, va.y, va.z);
+		//	const point<space::OBJECT> pb(vb.x, vb.y, vb.z);
+		//	const point<space::OBJECT> pc(vc.x, vc.y, vc.z);
+		//	// sides of current triangle
+		//	const vec<space::OBJECT>& ab = pa - pb;
+		//	const vec<space::OBJECT>& ac = pa - pc;
+		//	// face normal of current triangle
+		//	const vec<space::OBJECT> norm = ab.cross_copy(ac);
+		//	// add face normal to each vertex. Note that `norm` is not actually normalized, so this inherently weights each normal by the size of the face it is from
+		//	norms[va.hash_pos()] += norm;
+		//	norms[vb.hash_pos()] += norm;
+		//	norms[vc.hash_pos()] += norm;
+		// }
+		//// average weighted norms
+		// for (auto& pair : norms)
+		//{
+		//	pair.second.normalize();
+		//	pair.second.print();
+		// }
+
+		//// write norms
+		// for (u32 i = 0; i < unique_verts.size(); i++)
+		//{
+		//	mesh_vertex& mv = unique_verts[i];
+		//	const auto& norm = norms[mv.hash_pos()];
+		//	mv.nx = norm.x;
+		//	mv.ny = norm.y;
+		//	mv.nz = norm.z;
+		// }
+		// input_verts.clear();
+		// input_verts = unique_verts;
 	}
 }
 void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros)
