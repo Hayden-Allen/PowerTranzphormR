@@ -56,7 +56,7 @@ void properties_window::handle_sgnode_transform(sgnode* const selected)
 	{
 		dirty = true;
 	}
-	if (ImGui::DragFloat3("Rotation", rot, 0.01f))
+	if (ImGui::DragFloat3("Rotation", rot, 0.2f))
 	{
 		dirty = true;
 	}
