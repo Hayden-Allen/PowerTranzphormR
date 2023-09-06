@@ -1,4 +1,7 @@
 imgui.ini
+*.phorm
+*.xport
+
 .vs
 bin
 bin-int
