@@ -22,11 +22,19 @@ void vertex_editor_window::handle_frame()
 		return;
 	}
 
+	if (selected_node && m_mode == vertex_editor_mode::POSITION) // disable position for sgnodes since carve crashes
+	{
+		m_mode = vertex_editor_mode::COLOR;
+	}
 	if (ImGui::BeginCombo("##VEW_COMBO", vertex_editor_mode_string(m_mode).c_str()))
 	{
 		for (s32 i = 0; i < (s32)vertex_editor_mode::COUNT; i++)
 		{
 			const vertex_editor_mode mode = (vertex_editor_mode)((s32)vertex_editor_mode::POSITION + i);
+			if (selected_node && mode == vertex_editor_mode::POSITION) // disable position for sgnodes since carve crashes
+			{
+				continue;
+			}
 			const bool is_selected = (m_mode == mode);
 			if (ImGui::Selectable(vertex_editor_mode_string(mode).c_str(), is_selected))
 				m_mode = mode;
@@ -37,6 +45,10 @@ void vertex_editor_window::handle_frame()
 	}
 
 	auto& vert_attrs = m_app_ctx->scene.get_vert_attrs();
+	const f32 item_spacing_x = ImGui::GetStyle().ItemSpacing.x;
+	const f32 half_item_spacing_x = item_spacing_x * 0.5f;
+	const s32 col_vert_id_width = 56;
+	const f32 col_position_width = 300.0f, col_color_width = 300.0f, col_uv_width = 300.0f;
 	bool found_activated = false;
 
 	switch (m_mode)
@@ -45,27 +57,70 @@ void vertex_editor_window::handle_frame()
 		{
 			mesh_t* const mesh = selected_node->get_gen()->mesh;
 			auto& verts = selected_node->get_local_verts();
-			for (u64 i = 0; i < verts.size(); i++)
+
+			if (ImGui::BeginTable("vew_pos", 2))
 			{
-				// ImGui::Text("%d %f %f %f", i, verts[i].v.x, verts[i].v.y, verts[i].v.z);
-				ImGui::PushID("##VEW_POS");
-				ImGui::PushID((s32)i);
+				ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, col_vert_id_width);
+				ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_WidthFixed, col_position_width);
+				const f32 drag_float_width = (col_position_width - half_item_spacing_x * 2.0f) / 3.0f;
 
-				ImGui::Text("%d", (s32)i);
-				ImGui::SameLine();
-				if (ImGui::DragFloat3("", verts[i].e, .01f))
+				for (s32 vert_i = 0; vert_i < (s32)verts.size(); ++vert_i)
 				{
-					selected_node->set_gen_dirty();
-				}
-				if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
-				{
-					m_app_ctx->set_vertex_editor_icon_position(verts[i].transform_copy(selected_node->accumulate_mats()));
-					if (ImGui::IsItemActive())
-						found_activated = true;
+					f32 editable_pos[3] = { verts[vert_i].x, verts[vert_i].y, verts[vert_i].z };
+					bool pos_dirty = false;
+
+					ImGui::TableNextRow();
+
+					ImGui::TableNextColumn();
+					ImGui::PushID(vert_i);
+
+					ImGui::PushID("id");
+					ImGui::Text("%d", vert_i);
+					ImGui::PopID();
+
+					ImGui::TableNextColumn();
+
+					ImGui::BeginGroup();
+
+					for (s32 comp = 0; comp < 3; comp++)
+					{
+						if (comp > 0)
+						{
+							ImGui::SameLine();
+							ImGui::SetCursorPosX(ImGui::GetCursorPosX() - half_item_spacing_x);
+						}
+
+						ImGui::PushID(comp);
+
+						ImGui::SetNextItemWidth(drag_float_width);
+						if (ImGui::DragFloat("", &editable_pos[comp], 0.01f))
+						{
+							pos_dirty = true;
+						}
+
+						ImGui::PopID();
+					}
+
+					ImGui::EndGroup();
+					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+					{
+						m_app_ctx->set_vertex_editor_icon_position(verts[vert_i].transform_copy(selected_node->accumulate_mats()));
+						if (ImGui::IsItemActive())
+							found_activated = true;
+					}
+
+					if (pos_dirty)
+					{
+						verts[vert_i].x = editable_pos[0];
+						verts[vert_i].y = editable_pos[1];
+						verts[vert_i].z = editable_pos[2];
+						selected_node->set_dirty();
+					}
+
+					ImGui::PopID();
 				}
 
-				ImGui::PopID();
-				ImGui::PopID();
+				ImGui::EndTable();
 			}
 		}
 		break;
@@ -94,34 +149,74 @@ void vertex_editor_window::handle_frame()
 				}
 			}
 
-			for (const auto& list : vec)
+
+			if (ImGui::BeginTable("vew_col", 2))
 			{
-				color_t color = vert_attrs.color.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
-				// ImGui::Text("%d %f %f %f %f", std::get<2>(list[0]), color.r, color.g, color.b, color.a);
-				ImGui::PushID("##VEW_COL");
-				ImGui::PushID((s32)std::get<2>(list[0]));
+				ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, col_vert_id_width);
+				ImGui::TableSetupColumn("Color", ImGuiTableColumnFlags_WidthFixed, col_color_width);
+				const f32 drag_float_width = (col_uv_width - half_item_spacing_x * 3.0f) * 0.25f;
 
-				ImGui::Text("%d", (s32)std::get<2>(list[0]));
-				ImGui::SameLine();
-
-				if (ImGui::ColorEdit4("", &color.r))
+				for (s32 vert_i = 0; vert_i < (s32)vec.size(); ++vert_i)
 				{
-					for (const auto& tuple : list)
+					const auto& list = vec[vert_i];
+					const color_t& color = vert_attrs.color.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
+					f32 editable_color[4] = { color.r, color.g, color.b, color.a };
+					bool color_dirty = false;
+
+					ImGui::TableNextRow();
+
+					ImGui::TableNextColumn();
+					ImGui::PushID(vert_i);
+
+					ImGui::PushID("id");
+					ImGui::Text("%d", vert_i);
+					ImGui::PopID();
+
+					ImGui::TableNextColumn();
+
+					ImGui::BeginGroup();
+
+					for (s32 comp = 0; comp < 4; comp++)
 					{
-						vert_attrs.color.setAttribute(std::get<0>(tuple), std::get<1>(tuple), color);
+						if (comp > 0)
+						{
+							ImGui::SameLine();
+							ImGui::SetCursorPosX(ImGui::GetCursorPosX() - half_item_spacing_x);
+						}
+
+						ImGui::PushID(comp);
+
+						ImGui::SetNextItemWidth(drag_float_width);
+						if (ImGui::DragFloat("", &editable_color[comp], 0.01f, 0.0f, 1.0f))
+						{
+							color_dirty = true;
+						}
+
+						ImGui::PopID();
 					}
-					selected_node->set_gen_dirty();
-				}
-				if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
-				{
-					const vertex_t* v = std::get<3>(list[0]);
-					m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
-					if (ImGui::IsItemActive())
-						found_activated = true;
+
+					ImGui::EndGroup();
+					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+					{
+						const vertex_t* v = std::get<3>(list[0]);
+						m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
+						if (ImGui::IsItemActive())
+							found_activated = true;
+					}
+
+					if (color_dirty)
+					{
+						for (const auto& tuple : list)
+						{
+							vert_attrs.color.setAttribute(std::get<0>(tuple), std::get<1>(tuple), color_t(editable_color[0], editable_color[1], editable_color[2], editable_color[3]));
+						}
+						selected_node->set_dirty();
+					}
+
+					ImGui::PopID();
 				}
 
-				ImGui::PopID();
-				ImGui::PopID();
+				ImGui::EndTable();
 			}
 		}
 		break;
@@ -138,25 +233,122 @@ void vertex_editor_window::handle_frame()
 				}
 			}
 
-			s32 i = 0;
-			for (const auto& tuple : vec)
+			if (ImGui::BeginTable("vew_uv", 5))
 			{
-				const tex_coord_t& uv0 = vert_attrs.uv0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-				const tex_coord_t& uv1 = vert_attrs.uv1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-				const tex_coord_t& uv2 = vert_attrs.uv2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-				const tex_coord_t& uv3 = vert_attrs.uv3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-				ImGui::Text("%d (%f %f %f %f) (%f %f %f %f) (%f %f %f %f) (%f %f %f %f)", i++,
-					uv0.u, uv0.v, uv0.uo, uv0.vo,
-					uv1.u, uv1.v, uv1.uo, uv1.vo,
-					uv2.u, uv2.v, uv2.uo, uv2.vo,
-					uv3.u, uv3.v, uv3.uo, uv3.vo);
-				if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+				ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, col_vert_id_width);
+				ImGui::TableSetupColumn("Tex0", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
+				ImGui::TableSetupColumn("Tex1", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
+				ImGui::TableSetupColumn("Tex2", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
+				ImGui::TableSetupColumn("Tex3", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
+				const f32 drag_float_width = (col_uv_width - half_item_spacing_x * 4.0f) * 0.2f;
+
+				for (s32 vert_i = 0; vert_i < (s32)vec.size(); ++vert_i)
 				{
-					const vertex_t* v = std::get<2>(tuple);
-					m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
-					if (ImGui::IsItemActive())
-						found_activated = true;
+					const auto& tuple = vec[vert_i];
+					const tex_coord_t& uv0 = vert_attrs.uv0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w0 = vert_attrs.w0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const tex_coord_t& uv1 = vert_attrs.uv1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w1 = vert_attrs.w1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const tex_coord_t& uv2 = vert_attrs.uv2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w2 = vert_attrs.w2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const tex_coord_t& uv3 = vert_attrs.uv3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w3 = vert_attrs.w3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					f32 editable_uvw[4][5] = {
+						{ uv0.u, uv0.v, uv0.uo, uv0.vo, (f32)w0 },
+						{ uv1.u, uv1.v, uv1.uo, uv1.vo, (f32)w1 },
+						{ uv2.u, uv2.v, uv2.uo, uv2.vo, (f32)w2 },
+						{ uv3.u, uv3.v, uv3.uo, uv3.vo, (f32)w3 },
+					};
+
+					ImGui::TableNextRow();
+
+					ImGui::TableNextColumn();
+					ImGui::PushID(vert_i);
+
+					ImGui::PushID("id");
+					ImGui::Text("%d", vert_i);
+					ImGui::PopID();
+
+					for (s32 chan = 0; chan < 4; ++chan)
+					{
+						bool chan_dirty = false;
+
+						ImGui::TableNextColumn();
+						ImGui::PushID(chan);
+
+						ImGui::BeginGroup();
+
+						for (s32 comp = 0; comp < 5; ++comp)
+						{
+							if (comp > 0)
+							{
+								ImGui::SameLine();
+								ImGui::SetCursorPosX(ImGui::GetCursorPosX() - half_item_spacing_x);
+							}
+
+							ImGui::PushID(comp);
+
+							ImGui::SetNextItemWidth(drag_float_width);
+							if (ImGui::DragFloat("", &editable_uvw[chan][comp], 0.01f, 0.0f, comp == 4 ? 1.0f : 0.0f))
+							{
+								chan_dirty = true;
+							}
+
+							ImGui::PopID();
+						}
+
+						ImGui::EndGroup();
+						if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+						{
+							const vertex_t* v = std::get<2>(tuple);
+							m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
+							if (ImGui::IsItemActive())
+								found_activated = true;
+						}
+
+						ImGui::PopID();
+
+						if (chan_dirty)
+						{
+							tex_coord_t new_tc(editable_uvw[chan][0], editable_uvw[chan][1], editable_uvw[chan][2], editable_uvw[chan][3]);
+							switch (chan)
+							{
+							case 0:
+								{
+									vert_attrs.uv0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
+								}
+								break;
+							case 1:
+								{
+									vert_attrs.uv1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
+								}
+								break;
+							case 2:
+								{
+									vert_attrs.uv2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
+								}
+								break;
+							case 3:
+								{
+									vert_attrs.uv3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
+								}
+								break;
+							default:
+								assert(false);
+								break;
+							}
+							selected_node->set_dirty();
+						}
+					}
+
+					ImGui::PopID();
 				}
+
+				ImGui::EndTable();
 			}
 		}
 		break;

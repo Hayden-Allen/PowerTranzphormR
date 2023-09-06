@@ -3,6 +3,7 @@
 #include "nlohmann/json.hpp"
 
 #define MAX_VALUE(x) std::numeric_limits<decltype(x)>::max()
+#define MAX_VALUE_TYPE(x) std::numeric_limits<x>::max()
 
 namespace u
 {
