@@ -49,6 +49,7 @@ void vertex_editor_window::handle_frame()
 	const f32 half_item_spacing_x = item_spacing_x * 0.5f;
 	const s32 col_vert_id_width = 56;
 	const f32 col_position_width = 300.0f, col_color_width = 300.0f, col_uv_width = 300.0f;
+	bool found_activated = false;
 
 	switch (m_mode)
 	{
@@ -79,6 +80,8 @@ void vertex_editor_window::handle_frame()
 
 					ImGui::TableNextColumn();
 
+					ImGui::BeginGroup();
+
 					for (s32 comp = 0; comp < 3; comp++)
 					{
 						if (comp > 0)
@@ -96,6 +99,14 @@ void vertex_editor_window::handle_frame()
 						}
 
 						ImGui::PopID();
+					}
+
+					ImGui::EndGroup();
+					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+					{
+						m_app_ctx->set_vertex_editor_icon_position(verts[vert_i].transform_copy(selected_node->accumulate_mats()));
+						if (ImGui::IsItemActive())
+							found_activated = true;
 					}
 
 					if (pos_dirty)
@@ -117,7 +128,7 @@ void vertex_editor_window::handle_frame()
 		{
 			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::unordered_map<const vertex_t*, u64> inserted;
-			std::vector<std::vector<std::tuple<const face_t*, u32, u64>>> vec;
+			std::vector<std::vector<std::tuple<const face_t*, u32, u64, const vertex_t*>>> vec;
 			u64 vert_id = 0;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
@@ -127,11 +138,11 @@ void vertex_editor_window::handle_frame()
 					const vertex_t* v = e->vert;
 					if (inserted.contains(v))
 					{
-						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id });
+						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id, v });
 					}
 					else
 					{
-						vec.push_back({ { f, e.idx(), vert_id } });
+						vec.push_back({ { f, e.idx(), vert_id, v } });
 						inserted.insert({ v, vec.size() - 1 });
 					}
 					vert_id++;
@@ -163,6 +174,8 @@ void vertex_editor_window::handle_frame()
 
 					ImGui::TableNextColumn();
 
+					ImGui::BeginGroup();
+
 					for (s32 comp = 0; comp < 4; comp++)
 					{
 						if (comp > 0)
@@ -180,6 +193,15 @@ void vertex_editor_window::handle_frame()
 						}
 
 						ImGui::PopID();
+					}
+
+					ImGui::EndGroup();
+					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+					{
+						const vertex_t* v = std::get<3>(list[0]);
+						m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
+						if (ImGui::IsItemActive())
+							found_activated = true;
 					}
 
 					if (color_dirty)
@@ -201,13 +223,13 @@ void vertex_editor_window::handle_frame()
 	case vertex_editor_mode::UV:
 		{
 			const mesh_t* const mesh = selected_node->get_gen()->mesh;
-			std::vector<std::pair<const face_t*, u32>> vec;
+			std::vector<std::tuple<const face_t*, u32, const vertex_t*>> vec;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
 				const mesh_t::face_t* const f = *i;
 				for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 				{
-					vec.push_back({ f, e.idx() });
+					vec.push_back({ f, e.idx(), e->vert });
 				}
 			}
 
@@ -222,15 +244,15 @@ void vertex_editor_window::handle_frame()
 
 				for (s32 vert_i = 0; vert_i < (s32)vec.size(); ++vert_i)
 				{
-					const auto& pair = vec[vert_i];
-					const tex_coord_t& uv0 = vert_attrs.uv0.getAttribute(pair.first, pair.second);
-					const f64 w0 = vert_attrs.w0.getAttribute(pair.first, pair.second);
-					const tex_coord_t& uv1 = vert_attrs.uv1.getAttribute(pair.first, pair.second);
-					const f64 w1 = vert_attrs.w1.getAttribute(pair.first, pair.second);
-					const tex_coord_t& uv2 = vert_attrs.uv2.getAttribute(pair.first, pair.second);
-					const f64 w2 = vert_attrs.w2.getAttribute(pair.first, pair.second);
-					const tex_coord_t& uv3 = vert_attrs.uv3.getAttribute(pair.first, pair.second);
-					const f64 w3 = vert_attrs.w3.getAttribute(pair.first, pair.second);
+					const auto& tuple = vec[vert_i];
+					const tex_coord_t& uv0 = vert_attrs.uv0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w0 = vert_attrs.w0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const tex_coord_t& uv1 = vert_attrs.uv1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w1 = vert_attrs.w1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const tex_coord_t& uv2 = vert_attrs.uv2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w2 = vert_attrs.w2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const tex_coord_t& uv3 = vert_attrs.uv3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
+					const f64 w3 = vert_attrs.w3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
 					f32 editable_uvw[4][5] = {
 						{ uv0.u, uv0.v, uv0.uo, uv0.vo, (f32)w0 },
 						{ uv1.u, uv1.v, uv1.uo, uv1.vo, (f32)w1 },
@@ -254,6 +276,8 @@ void vertex_editor_window::handle_frame()
 						ImGui::TableNextColumn();
 						ImGui::PushID(chan);
 
+						ImGui::BeginGroup();
+
 						for (s32 comp = 0; comp < 5; ++comp)
 						{
 							if (comp > 0)
@@ -273,6 +297,15 @@ void vertex_editor_window::handle_frame()
 							ImGui::PopID();
 						}
 
+						ImGui::EndGroup();
+						if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+						{
+							const vertex_t* v = std::get<2>(tuple);
+							m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
+							if (ImGui::IsItemActive())
+								found_activated = true;
+						}
+
 						ImGui::PopID();
 
 						if (chan_dirty)
@@ -282,26 +315,26 @@ void vertex_editor_window::handle_frame()
 							{
 							case 0:
 								{
-									vert_attrs.uv0.setAttribute(pair.first, pair.second, new_tc);
-									vert_attrs.w0.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+									vert_attrs.uv0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
 								}
 								break;
 							case 1:
 								{
-									vert_attrs.uv1.setAttribute(pair.first, pair.second, new_tc);
-									vert_attrs.w1.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+									vert_attrs.uv1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
 								}
 								break;
 							case 2:
 								{
-									vert_attrs.uv2.setAttribute(pair.first, pair.second, new_tc);
-									vert_attrs.w2.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+									vert_attrs.uv2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
 								}
 								break;
 							case 3:
 								{
-									vert_attrs.uv3.setAttribute(pair.first, pair.second, new_tc);
-									vert_attrs.w3.setAttribute(pair.first, pair.second, editable_uvw[chan][4]);
+									vert_attrs.uv3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
+									vert_attrs.w3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
 								}
 								break;
 							default:
