@@ -14,6 +14,14 @@ enum class global_selection_type
 	light
 };
 
+struct vertex_editor_icon
+{
+	mgl::static_render_object icon;
+	mgl::shaders shaders = mgl::shaders("src/glsl/vei.vert", "src/glsl/vei.frag");
+	tmat<space::OBJECT, space::WORLD> transform;
+	bool show = false;
+};
+
 struct app_ctx
 {
 public:
@@ -59,6 +67,8 @@ public:
 	void add_light();
 	void set_selected_light(light* const l);
 	light* get_selected_light();
+	void draw_vertex_editor_icon();
+	void set_vertex_editor_icon_position(const point<space::WORLD>& p);
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -94,4 +104,5 @@ private:
 	light* m_selected_light = nullptr;
 	scene_graph_window* m_sg_window = nullptr;
 	materials_list_window* m_mtls_window = nullptr;
+	vertex_editor_icon m_vertex_editor_icon;
 };
