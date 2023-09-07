@@ -2,7 +2,7 @@
 #include "hats/hats.h"
 #include "nlohmann/json.hpp"
 
-#define MAX_VALUE(x) std::numeric_limits<decltype(x)>::max()
+#define MAX_VALUE(x)	  std::numeric_limits<decltype(x)>::max()
 #define MAX_VALUE_TYPE(x) std::numeric_limits<x>::max()
 
 namespace u
@@ -67,4 +67,51 @@ namespace u
 
 		return unif(rng);
 	}
+
+	static void reset_imgui_io(GLFWwindow* const window)
+	{
+		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+		GLFWwindow* fake_window = glfwCreateWindow(1, 1, "PowerTranzphormR - Reset Focus", nullptr, nullptr);
+		glfwFocusWindow(fake_window);
+		glfwDestroyWindow(fake_window);
+		glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+		glfwFocusWindow(window);
+	}
+
+	static std::string open_save_dialog_base(GLFWwindow* const window, const std::string& label, const std::string& exts, const bool save)
+	{
+		nfdchar_t* nfd_path = nullptr;
+		nfdfilteritem_t nfd_filters[1] = { { label.c_str(), exts.c_str() } };
+		nfdresult_t nfd_res;
+		if (save)
+			nfd_res = NFD_SaveDialog(&nfd_path, nfd_filters, 1, nullptr, nullptr);
+		else
+			nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);
+		std::string ret = "";
+		if (nfd_res == NFD_OKAY)
+		{
+			ret = nfd_path;
+			NFD_FreePath(nfd_path);
+		}
+		reset_imgui_io(window);
+		return ret;
+	}
+
+	static std::string open_dialog(GLFWwindow* const window, const std::string& label, const std::string& exts)
+	{
+		return open_save_dialog_base(window, label, exts, false);
+	}
+
+	static std::string save_dialog(GLFWwindow* const window, const std::string& label, const std::string& exts)
+	{
+		return open_save_dialog_base(window, label, exts, true);
+	}
+
+	static s32 confirm_message_box(GLFWwindow* const window, LPCWSTR const msg, LPCWSTR const title)
+	{
+		const s32 res = MessageBox(glfwGetWin32Window(window), msg, title, MB_YESNOCANCEL | MB_ICONQUESTION);
+		reset_imgui_io(window);
+		return res;
+	}
+
 } // namespace u

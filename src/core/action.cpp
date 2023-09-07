@@ -128,15 +128,20 @@ create_action::create_action(sgnode* const new_node, sgnode* const _parent, cons
 {}
 create_action::create_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
 	action(obj, nodes),
-	parent(nodes.at(obj["p"]))
-{}
+	parent(nullptr)
+{
+	if (obj.contains("p"))
+		parent = nodes.at(obj["p"]);
+}
 void create_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
-	parent->add_child(target);
+	if (parent)
+		parent->add_child(target);
 }
 void create_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 {
-	parent->remove_child(target);
+	if (parent)
+		parent->remove_child(target);
 }
 bool create_action::redo_conflict(const sgnode* const selected) const
 {
@@ -151,13 +156,15 @@ nlohmann::json create_action::save() const
 	nlohmann::json obj = action::save();
 	obj["type"] = 2;
 	obj["t"] = target->get_id();
-	obj["p"] = parent->get_id();
+	if (parent)
+		obj["p"] = parent->get_id();
 	return obj;
 }
 void create_action::all_nodes(std::unordered_set<const sgnode*>& nodes) const
 {
 	action::all_nodes(nodes);
-	nodes.insert(parent);
+	if (parent)
+		nodes.insert(parent);
 }
 
 

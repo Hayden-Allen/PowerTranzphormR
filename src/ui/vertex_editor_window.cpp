@@ -22,19 +22,11 @@ void vertex_editor_window::handle_frame()
 		return;
 	}
 
-	if (selected_node && m_mode == vertex_editor_mode::POSITION) // disable position for sgnodes since carve crashes
-	{
-		m_mode = vertex_editor_mode::COLOR;
-	}
 	if (ImGui::BeginCombo("##VEW_COMBO", vertex_editor_mode_string(m_mode).c_str()))
 	{
 		for (s32 i = 0; i < (s32)vertex_editor_mode::COUNT; i++)
 		{
 			const vertex_editor_mode mode = (vertex_editor_mode)((s32)vertex_editor_mode::POSITION + i);
-			if (selected_node && mode == vertex_editor_mode::POSITION) // disable position for sgnodes since carve crashes
-			{
-				continue;
-			}
 			const bool is_selected = (m_mode == mode);
 			if (ImGui::Selectable(vertex_editor_mode_string(mode).c_str(), is_selected))
 				m_mode = mode;

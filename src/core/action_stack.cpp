@@ -131,6 +131,8 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	// find all nodes
 	std::unordered_set<const sgnode*> nodes;
 	nodes.insert(root);
+	if (m_app_ctx->clipboard)
+		nodes.insert(m_app_ctx->clipboard);
 	for (action* const a : all)
 		a->all_nodes(nodes);
 

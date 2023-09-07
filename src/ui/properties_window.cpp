@@ -195,13 +195,8 @@ void properties_window::handle_material_texture(scene_material* const selected_m
 	ImGui::SetCursorPosX(win_min.x + (win_w - img_dim.x) * 0.5f);
 	if (ImGui::ImageButton(name.c_str(), selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)))
 	{
-		nfdchar_t* nfd_path = nullptr;
-		nfdfilteritem_t nfd_filters[1] = { { "Image file", "png,jpg,bmp" } };
-		nfdresult_t nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);
-		if (nfd_res == NFD_OKAY)
-		{
-			selected_mtl->set_texture(name, nfd_path);
-			NFD_FreePath(nfd_path);
-		}
+		const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp");
+		if (!fp.empty())
+			selected_mtl->set_texture(name, fp);
 	}
 }

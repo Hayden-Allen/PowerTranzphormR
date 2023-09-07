@@ -153,7 +153,6 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 			{
 				if (ImGui::MenuItem("Unphreeze!"))
 					m_app_ctx->unfreeze_action(node);
-				ImGui::Separator();
 			}
 			// if the current node is NOT a clone of an original frozen node
 			else if (!node->is_frozen())

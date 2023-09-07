@@ -55,8 +55,7 @@ void app_ctx::clear()
 	loaded_filename = "";
 	actions.clear();
 	scene.clear();
-	set_selected_sgnode(nullptr);
-	set_selected_material(nullptr);
+	deselect_all();
 	NFD_Quit(); // Should happen before GLFW destroyed
 }
 bool app_ctx::save() const
@@ -79,11 +78,6 @@ void app_ctx::save(const std::string& fp) const
 
 	actions.save(out, scene.get_sg_root());
 
-	/*out << frozen2unfrozen.size();
-	for (const auto& pair : frozen2unfrozen)
-	{
-		out << pair.first->get_id() << " " << pair.second->get_id() << "\n";
-	}*/
 	nlohmann::json f2u;
 	f2u["n"] = frozen2unfrozen.size();
 	std::vector<nlohmann::json::array_t> pairs;
@@ -98,37 +92,24 @@ void app_ctx::save(const std::string& fp) const
 }
 bool app_ctx::save_as() const
 {
-	nfdchar_t* nfd_path = nullptr;
-	nfdfilteritem_t nfd_filters[1] = { { "PowerTranzphormR Scene", "phorm" } };
-	nfdresult_t nfd_res = NFD_SaveDialog(&nfd_path, nfd_filters, 1, nullptr, nullptr);
-	if (nfd_res == NFD_OKAY)
+	const std::string& fp = u::save_dialog(mgl_ctx.window, "PowerTranzphormR Scene", "phorm");
+	if (!fp.empty())
 	{
-		save(nfd_path);
-		NFD_FreePath(nfd_path);
+		save(fp);
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 bool app_ctx::export_as() const
 {
-	nfdchar_t* nfd_path = nullptr;
-	nfdfilteritem_t nfd_filters[1] = { { "PowerTranzphormR X-Port", "xport" } };
-	nfdresult_t nfd_res = NFD_SaveDialog(&nfd_path, nfd_filters, 1, nullptr, nullptr);
-	if (nfd_res == NFD_OKAY)
+	const std::string& fp = u::save_dialog(mgl_ctx.window, "PowerTranzphormR X-Port", "xport");
+	if (!fp.empty())
 	{
-		mgl::output_file out(nfd_path);
+		mgl::output_file out(fp);
 		scene.save_xport(out);
-
-		NFD_FreePath(nfd_path);
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 bool app_ctx::confirm_unsaved_changes()
 {
@@ -136,7 +117,7 @@ bool app_ctx::confirm_unsaved_changes()
 	{
 		return true; // Safe to continue if no unsaved changes
 	}
-	s32 res = MessageBox(glfwGetWin32Window(mgl_ctx.window), L"Do you want to save your changes?", L"PowerTranzphormR", MB_YESNOCANCEL | MB_ICONQUESTION);
+	const s32 res = u::confirm_message_box(mgl_ctx.window, L"Do you want to save your changes?", L"PowerTranzphormR");
 	if (res == IDYES)
 	{
 		return save(); // Only continue if save was successful
@@ -161,7 +142,6 @@ void app_ctx::load(const std::string& fp)
 
 	const nlohmann::json& f2u = u::next_line_json(in);
 	const nlohmann::json::array_t& f2us = f2u["p"];
-	frozen2unfrozen.reserve(f2u["n"]);
 	for (u64 i = 0; i < f2u["n"]; i++)
 	{
 		assert(nodes.contains(f2us[i][0]) && nodes.contains(f2us[i][1]));
@@ -169,6 +149,7 @@ void app_ctx::load(const std::string& fp)
 	}
 
 	scene.load(in);
+	deselect_all();
 }
 void app_ctx::undo()
 {
@@ -269,7 +250,7 @@ std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
 	}
 	std::sort(sorted_mtls.begin(), sorted_mtls.end(), [](const auto& a, const auto& b)
 		{
-			return a.second->name < b.second->name;
+			return _strnicmp(a.second->name.c_str(), b.second->name.c_str(), std::max(a.second->name.size(), b.second->name.size())) < 0;
 		});
 	sorted_mtls.emplace(sorted_mtls.begin(), std::make_pair(0, unordered_mtls.at(0)));
 	return sorted_mtls;
@@ -300,7 +281,11 @@ void app_ctx::add_light()
 }
 void app_ctx::set_selected_light(light* const l)
 {
-	m_selected_light = l;
+	if (m_selected_light != l)
+	{
+		m_selected_light = l;
+		m_imgui_needs_select_unfocused_light = m_selected_light;
+	}
 }
 light* app_ctx::get_selected_light()
 {
@@ -326,6 +311,22 @@ void app_ctx::set_vertex_editor_icon_position(const point<space::WORLD>& p)
 {
 	m_vertex_editor_icon.transform = tmat_util::translation<space::OBJECT, space::WORLD>(p);
 	m_vertex_editor_icon.show = true;
+}
+void app_ctx::set_selected_static_mesh(generated_mesh* const m)
+{
+	if (m_selected_static_mesh != m)
+	{
+		m_selected_static_mesh = m;
+		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
+	}
+}
+void app_ctx::deselect_all()
+{
+	set_selected_sgnode(nullptr);
+	set_selected_material(nullptr);
+	set_selected_light(nullptr);
+	set_selected_static_mesh(nullptr);
+	set_sel_type(global_selection_type::sgnode);
 }
 
 
@@ -479,14 +480,9 @@ void app_ctx::file_menu()
 			{
 				return;
 			}
-			nfdchar_t* nfd_path = nullptr;
-			nfdfilteritem_t nfd_filters[1] = { { "PowerTranzphormR Scene", "phorm" } };
-			nfdresult_t nfd_res = NFD_OpenDialog(&nfd_path, nfd_filters, 1, nullptr);
-			if (nfd_res == NFD_OKAY)
-			{
-				load(std::string(nfd_path));
-				NFD_FreePath(nfd_path);
-			}
+			const std::string& fp = u::open_dialog(mgl_ctx.window, "PowerTranzphormR Scene", "phorm");
+			if (!fp.empty())
+				load(fp);
 		},
 		[]()
 		{
@@ -706,6 +702,14 @@ void app_ctx::phorm_menu()
 		{
 			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this);
+
+			if (selected->is_frozen())
+			{
+				// transfer ownership of unfrozen node to new clone
+				sgnode* const unfrozen = frozen2unfrozen.at(selected);
+				frozen2unfrozen.erase(selected);
+				frozen2unfrozen.insert({ clipboard, unfrozen });
+			}
 			destroy_action(selected);
 		},
 		[&]()
@@ -723,6 +727,13 @@ void app_ctx::phorm_menu()
 		{
 			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this);
+			if (selected->is_frozen())
+			{
+				sgnode* const unfrozen = frozen2unfrozen.at(selected);
+				sgnode* const unfrozen_clone = unfrozen->clone(this);
+				create_action(unfrozen_clone, nullptr);
+				frozen2unfrozen.insert({ clipboard, unfrozen_clone });
+			}
 		},
 		[&]()
 		{
@@ -737,16 +748,24 @@ void app_ctx::phorm_menu()
 		[&]()
 		{
 			sgnode* const selected = get_selected_sgnode();
+			sgnode* clone = nullptr;
 			if (selected->is_operation())
 			{
-				sgnode* const clone = clipboard->clone_self_and_insert(this, selected);
-				set_selected_sgnode(clone);
+				clone = clipboard->clone_self_and_insert(this, selected);
 			}
 			else
 			{
 				assert(selected->get_parent());
-				sgnode* const clone = clipboard->clone_self_and_insert(this, selected->get_parent());
-				set_selected_sgnode(clone);
+				clone = clipboard->clone_self_and_insert(this, selected->get_parent());
+			}
+			set_selected_sgnode(clone);
+
+			if (clipboard->is_frozen())
+			{
+				assert(frozen2unfrozen.contains(clipboard));
+				sgnode* const unfrozen = frozen2unfrozen.at(clipboard);
+				sgnode* const unfrozen_clone = unfrozen->clone_self_and_insert(this, nullptr);
+				frozen2unfrozen.insert({ clone, unfrozen_clone });
 			}
 		},
 		[&]()

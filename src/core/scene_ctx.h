@@ -5,6 +5,7 @@
 
 class sgnode;
 class generated_mesh;
+class generated_heightmap;
 struct scene_material;
 
 struct scene_ctx_uniforms
@@ -82,7 +83,7 @@ private:
 	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
 	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_hm_ros_for_mtl;
-	std::vector<mesh_t*> m_hms;
+	std::vector<generated_mesh*> m_static_meshes;
 	std::vector<light> m_lights;
 	sgnode* m_sg_root = nullptr;
 	// sgnode* m_selected_node = nullptr;
