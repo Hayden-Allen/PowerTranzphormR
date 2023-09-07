@@ -38,7 +38,7 @@ public:
 	virtual std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
 	virtual void recompute(scene_ctx* const scene);
 	// for operation nodes
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	virtual generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const;
 	virtual nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const;
 	virtual GLuint get_material() const;
 	virtual void set_material(scene_ctx* const scene, const GLuint mat);
@@ -84,7 +84,7 @@ public:
 public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 protected:
 	primitive_options* get_options() const override;
@@ -103,7 +103,7 @@ public:
 public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 protected:
 	primitive_options* get_options() const override;
@@ -122,7 +122,7 @@ public:
 public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 protected:
 	primitive_options* get_options() const override;
@@ -141,7 +141,7 @@ public:
 public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 protected:
 	primitive_options* get_options() const override;
@@ -160,7 +160,7 @@ public:
 public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 protected:
 	primitive_options* get_options() const override;
@@ -179,7 +179,7 @@ public:
 public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	void recompute(scene_ctx* const scene) override;
-	virtual generated_mesh* clone(scene_ctx* const scene) const;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 protected:
 	primitive_options* get_options() const override;
@@ -198,7 +198,7 @@ public:
 public:
 	void set_material(scene_ctx* const scene, const GLuint new_mat) override;
 	void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat) override;
-	generated_mesh* clone(scene_ctx* const scene) const override;
+	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 	void set_dirty() override;
 };

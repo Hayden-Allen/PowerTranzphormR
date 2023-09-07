@@ -31,7 +31,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_mesh::get_pa
 	return {};
 }
 void generated_mesh::recompute(scene_ctx* const scene) {}
-generated_mesh* generated_mesh::clone(scene_ctx* const scene) const
+generated_mesh* generated_mesh::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_mesh(nullptr);
 }
@@ -210,7 +210,7 @@ void generated_cuboid::recompute(scene_ctx* const scene)
 	generated_primitive::recompute(scene);
 	mesh = scene->create_textured_cuboid(m_material, m_options);
 }
-generated_mesh* generated_cuboid::clone(scene_ctx* const scene) const
+generated_mesh* generated_cuboid::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_cuboid(m_material, m_options);
 }
@@ -262,7 +262,7 @@ void generated_ellipsoid::recompute(scene_ctx* const scene)
 	generated_primitive::recompute(scene);
 	mesh = scene->create_textured_ellipsoid(m_material, m_options);
 }
-generated_mesh* generated_ellipsoid::clone(scene_ctx* const scene) const
+generated_mesh* generated_ellipsoid::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_ellipsoid(m_material, m_options);
 }
@@ -318,7 +318,7 @@ void generated_cylinder::recompute(scene_ctx* const scene)
 	generated_primitive::recompute(scene);
 	mesh = scene->create_textured_cylinder(m_material, m_options);
 }
-generated_mesh* generated_cylinder::clone(scene_ctx* const scene) const
+generated_mesh* generated_cylinder::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_cylinder(m_material, m_options);
 }
@@ -371,7 +371,7 @@ void generated_cone::recompute(scene_ctx* const scene)
 	generated_primitive::recompute(scene);
 	mesh = scene->create_textured_cone(m_material, m_options);
 }
-generated_mesh* generated_cone::clone(scene_ctx* const scene) const
+generated_mesh* generated_cone::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_cone(m_material, m_options);
 }
@@ -426,7 +426,7 @@ void generated_torus::recompute(scene_ctx* const scene)
 	generated_primitive::recompute(scene);
 	mesh = scene->create_textured_torus(m_material, m_options);
 }
-generated_mesh* generated_torus::clone(scene_ctx* const scene) const
+generated_mesh* generated_torus::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_torus(m_material, m_options);
 }
@@ -477,7 +477,7 @@ void generated_heightmap::recompute(scene_ctx* const scene)
 	generated_primitive::recompute(scene);
 	mesh = scene->create_textured_heightmap(m_material, m_options);
 }
-generated_mesh* generated_heightmap::clone(scene_ctx* const scene) const
+generated_mesh* generated_heightmap::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_heightmap(m_material, m_options);
 }
@@ -584,9 +584,9 @@ void generated_static_mesh::replace_material(scene_ctx* const scene, const GLuin
 		}
 	}
 }
-generated_mesh* generated_static_mesh::clone(scene_ctx* const scene) const
+generated_mesh* generated_static_mesh::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
-	return new generated_static_mesh(carve_clone(mesh, scene));
+	return new generated_static_mesh(carve_clone(mesh, scene, inv_mat));
 }
 nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {

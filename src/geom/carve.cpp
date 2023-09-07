@@ -2,7 +2,7 @@
 #include "carve.h"
 #include "core/scene_ctx.h"
 
-mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
+mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& vert_attrs = scene->get_vert_attrs();
@@ -12,7 +12,10 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene)
 	for (size_t i = 0; i < mesh->vertex_storage.size(); ++i)
 	{
 		const auto& v = mesh->vertex_storage[i];
-		verts_map.insert({ &mesh->vertex_storage[i], vertex_t(carve::geom::VECTOR(v.v.x, v.v.y, v.v.z)) });
+		verts_map.insert({
+			&mesh->vertex_storage[i],
+			hats2carve(hats::point<space::WORLD>(v.v.x, v.v.y, v.v.z).transform_copy(inv_mat)),
+		});
 	}
 
 	std::vector<face_t*> faces;

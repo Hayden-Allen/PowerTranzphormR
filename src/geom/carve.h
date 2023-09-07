@@ -43,7 +43,7 @@ static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
 {
 	return carve::geom::VECTOR(p.x, p.y, p.z);
 }
-mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene);
+mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>());
 
 struct primitive_options
 {
