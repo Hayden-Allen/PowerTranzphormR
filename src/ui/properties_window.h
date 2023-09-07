@@ -18,5 +18,6 @@ private:
 	void handle_sgnode_mesh(sgnode* const selected);
 private:
 	void handle_material_frame(scene_material* const selected);
-	void handle_material_texture(scene_material* const selected_mtl, const std::string& name);
+	void handle_material_texture(scene_material* const selected_mtl, const std::string& name, bool is_button);
+	void handle_material_autotexture(scene_material* const selected_mtl, const std::string& name);
 };

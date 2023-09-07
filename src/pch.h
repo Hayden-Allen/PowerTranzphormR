@@ -15,6 +15,7 @@
 // absolutely hilarious
 #undef APIENTRY
 #include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "ImGuizmo.h"

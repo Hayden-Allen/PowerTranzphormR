@@ -177,26 +177,83 @@ void properties_window::handle_material_frame(scene_material* const selected)
 {
 	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
 		{
-			handle_material_texture(selected, name);
+			if (ImGui::CollapsingHeader(name.c_str()))
+			{
+				ImGui::PushID(name.c_str());
+				autotexture_params& at_params = selected->get_autotexture_params(name);
+				bool at_enabled = at_params.enabled;
+				if (ImGui::Checkbox("Autotexture", &at_enabled))
+				{
+					if (m_app_ctx->loaded_filename.empty())
+					{
+						at_params.enabled = false;
+						u::info_message_box(m_app_ctx->mgl_ctx.window, L"You must save the scene before enabling autotexture.", L"PowerTranzphormR - Error");
+					}
+					else
+					{
+						at_params.enabled = at_enabled;
+					}
+				}
+				ImGui::SameLine();
+				const f32 reset_width = 80.0f;
+				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - reset_width);
+				if (ImGui::Button("Reset", ImVec2(reset_width, 0)))
+				{
+					at_params.enabled = false;
+					selected->set_texture(name, g::null_tex_fp);
+				}
+				else
+				{
+					if (at_params.enabled)
+					{
+						handle_material_autotexture(selected, name);
+						handle_material_texture(selected, name, false);
+					}
+					else
+					{
+						handle_material_texture(selected, name, true);
+					}
+				}
+				ImGui::PopID();
+			}
 		});
 }
-void properties_window::handle_material_texture(scene_material* const selected_mtl, const std::string& name)
+void properties_window::handle_material_texture(scene_material* const selected_mtl, const std::string& name, bool is_button)
 {
 	const ImVec2 win_min = ImGui::GetWindowContentRegionMin(), win_max = ImGui::GetWindowContentRegionMax();
 	const f32 win_w = win_max.x - win_min.x;
 	const f32 img_w = std::min(win_w, m_app_ctx->mgl_ctx.get_height() * 0.3f);
 	const ImVec2 img_dim(img_w, img_w);
-	const f32 btn_w = std::min(win_w, 100.0f);
-	ImGui::SetCursorPosX(win_min.x + (win_w - btn_w) * 0.5f);
-	if (ImGui::Button("Reset", ImVec2(btn_w, 0)))
-	{
-		selected_mtl->set_texture(name, g::null_tex_fp);
-	}
 	ImGui::SetCursorPosX(win_min.x + (win_w - img_dim.x) * 0.5f);
-	if (ImGui::ImageButton(name.c_str(), selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)))
+	if (is_button)
 	{
-		const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp");
-		if (!fp.empty())
-			selected_mtl->set_texture(name, fp);
+		if (ImGui::ImageButton("imgbtn", selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)))
+		{
+			const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp");
+			if (!fp.empty())
+				selected_mtl->set_texture(name, fp);
+		}
+	}
+	else
+	{
+		ImGui::Image(selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	}
+}
+
+void properties_window::handle_material_autotexture(scene_material* const selected_mtl, const std::string& name)
+{
+	autotexture_params& at_params = selected_mtl->get_autotexture_params(name);
+	ImGui::DragInt2("Size", at_params.dims, 1.0f, 0, 512);
+	ImGui::DragInt("Seed", &at_params.seed, 99.0f + ((float)rand() / RAND_MAX) * 1000.0f, 0, MAX_VALUE_TYPE(s32));
+	ImGui::InputText("Prompt", &at_params.prompt);
+	ImGui::InputText("Negative Prompt", &at_params.prompt);
+	if (ImGui::Button("Randomize & Generate"))
+	{
+		//
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Generate"))
+	{
+		//
 	}
 }
