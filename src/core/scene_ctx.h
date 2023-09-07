@@ -34,8 +34,8 @@ public:
 	void update();
 	void clear(bool ready_for_default_material = true);
 	void destroy();
-	void save(std::ofstream& out) const;
-	void load(std::ifstream& in);
+	void save(std::ofstream& out, const std::string& out_fp) const;
+	void load(std::ifstream& in, const std::string& in_fp);
 	void save_xport(mgl::output_file& out) const;
 public:
 	sgnode* get_sg_root();

@@ -93,7 +93,7 @@ void app_ctx::save(const std::string& fp) const
 	f2u["n"] = pairs.size();
 	out << f2u << "\n";
 
-	scene.save(out);
+	scene.save(out, fp);
 }
 bool app_ctx::save_as() const
 {
@@ -153,7 +153,7 @@ void app_ctx::load(const std::string& fp)
 		frozen2unfrozen.insert({ nodes.at(f2us[i][0]), nodes.at(f2us[i][1]) });
 	}
 
-	scene.load(in);
+	scene.load(in, fp);
 	deselect_all();
 }
 void app_ctx::undo()

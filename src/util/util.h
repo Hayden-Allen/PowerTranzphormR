@@ -38,10 +38,14 @@ namespace u
 		return "<ERROR>";
 	}
 
-	static std::string absolute_to_relative(const std::string& fp)
+	static std::string absolute_to_relative(const std::string& fp, const std::string& base)
 	{
-		const auto& cwd = std::filesystem::current_path();
-		return std::filesystem::relative(fp, cwd).string();
+		return std::filesystem::relative(fp, base).string();
+	}
+
+	static std::string relative_to_absolute(const std::string& fp, const std::string& base)
+	{
+		return std::filesystem::absolute(std::filesystem::path(base) / std::filesystem::path(fp)).string();
 	}
 
 	static nlohmann::json next_line_json(std::ifstream& in)

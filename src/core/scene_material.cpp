@@ -13,7 +13,7 @@ scene_material::scene_material(const scene_material& o) noexcept :
 	name(o.name),
 	shaders(o.shaders)
 {}
-scene_material::scene_material(const nlohmann::json& obj, mgl::shaders* const s) :
+scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const s) :
 	name(obj["name"]),
 	shaders(s)
 {
@@ -22,10 +22,16 @@ scene_material::scene_material(const nlohmann::json& obj, mgl::shaders* const s)
 	{
 		const std::string& tname = tex[0];
 		const std::string& fname = tex[1];
-		m_tex_name_to_filename.insert({ tname, fname });
-		// TODO hack
-		if (fname != g::null_tex_fp)
-			g::texlib->load(fname);
+		if (fname == g::null_tex_fp)
+		{
+			m_tex_name_to_filename.insert({ tname, g::null_tex_fp });
+		}
+		else
+		{
+			const std::string& abs_fname = u::relative_to_absolute(fname, phorm_fp);
+			m_tex_name_to_filename.insert({ tname, abs_fname });
+			g::texlib->load(abs_fname);
+		}
 	}
 }
 scene_material::~scene_material()
@@ -69,7 +75,7 @@ void scene_material::for_each_texture(const std::function<void(const std::string
 		l(pair.first, get_texture(pair.first));
 	}
 }
-nlohmann::json scene_material::save(std::ofstream& out) const
+nlohmann::json scene_material::save(std::ofstream& out, const std::string& out_fp) const
 {
 	nlohmann::json obj;
 	obj["name"] = name;
@@ -79,7 +85,7 @@ nlohmann::json scene_material::save(std::ofstream& out) const
 	{
 		// TODO hack
 		if (pair.second != g::null_tex_fp)
-			texs.push_back({ pair.first, u::absolute_to_relative(pair.second) });
+			texs.push_back({ pair.first, u::absolute_to_relative(pair.second, out_fp) });
 		else
 			texs.push_back({ pair.first, pair.second });
 	}
