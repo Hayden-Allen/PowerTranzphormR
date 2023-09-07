@@ -96,7 +96,7 @@ void vertex_editor_window::handle_frame()
 					ImGui::EndGroup();
 					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
 					{
-						m_app_ctx->set_vertex_editor_icon_position(verts[vert_i].transform_copy(selected_node->accumulate_mats()));
+						m_app_ctx->set_vertex_editor_icon_position(verts[vert_i].transform_copy(selected_node->accumulate_mats()), vert_i);
 						if (ImGui::IsItemActive())
 							found_activated = true;
 					}
@@ -191,7 +191,7 @@ void vertex_editor_window::handle_frame()
 					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
 					{
 						const vertex_t* v = std::get<3>(list[0]);
-						m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
+						m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z), vert_i);
 						if (ImGui::IsItemActive())
 							found_activated = true;
 					}
@@ -293,7 +293,7 @@ void vertex_editor_window::handle_frame()
 						if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
 						{
 							const vertex_t* v = std::get<2>(tuple);
-							m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z));
+							m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z), vert_i);
 							if (ImGui::IsItemActive())
 								found_activated = true;
 						}
@@ -345,4 +345,6 @@ void vertex_editor_window::handle_frame()
 		}
 		break;
 	}
+
+	m_app_ctx->check_vertex_editor_icon_switched();
 }

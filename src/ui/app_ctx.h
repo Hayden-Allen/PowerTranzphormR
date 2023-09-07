@@ -20,7 +20,9 @@ struct vertex_editor_icon
 	mgl::static_render_object icon;
 	mgl::shaders shaders = mgl::shaders("src/glsl/vei.vert", "src/glsl/vei.frag");
 	tmat<space::OBJECT, space::WORLD> transform;
+	s32 cur_selected_vtx = -1, prev_selected_vtx = -1;
 	bool show = false;
+	f32 switch_time = 0.f;
 };
 
 struct app_ctx
@@ -69,9 +71,11 @@ public:
 	void set_selected_light(light* const l);
 	light* get_selected_light();
 	void draw_vertex_editor_icon();
-	void set_vertex_editor_icon_position(const point<space::WORLD>& p);
+	void set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx);
+	void check_vertex_editor_icon_switched();
 	void set_selected_static_mesh(generated_mesh* const m);
 	void deselect_all();
+	void clear_clipboard();
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);

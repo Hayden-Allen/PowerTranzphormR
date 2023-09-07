@@ -21,13 +21,13 @@ app_ctx::app_ctx() :
 
 	constexpr u64 nverts = 6;
 	constexpr f32 s = .1f;
-	constexpr f32 verts[nverts * 3] = {
-		0, s, 0,  // 0 top
-		0, 0, s,  // 1 front
-		s, 0, 0,  // 2 right
-		0, 0, -s, // 3 back
-		-s, 0, 0, // 4 left
-		0, -s, 0, // 5 bottom
+	constexpr f32 verts[nverts * 6] = {
+		0, s, 0, 0, 1, 0,	// 0 top
+		0, 0, s, 0, 0, 1,	// 1 front
+		s, 0, 0, 1, 0, 0,	// 2 right
+		0, 0, -s, 0, 0, -1, // 3 back
+		-s, 0, 0, -1, 0, 0, // 4 left
+		0, -s, 0, 0, -1, 0, // 5 bottom
 	};
 	constexpr u64 nindices = 3 * 8;
 	constexpr u32 indices[nindices] = {
@@ -40,7 +40,7 @@ app_ctx::app_ctx() :
 		3, 5, 4, //
 		4, 5, 1, //
 	};
-	m_vertex_editor_icon.icon.init(verts, nverts, { 3 }, indices, nindices);
+	m_vertex_editor_icon.icon.init(verts, nverts, { 3, 3 }, indices, nindices);
 }
 app_ctx::~app_ctx()
 {
@@ -56,6 +56,8 @@ void app_ctx::clear()
 	actions.clear();
 	scene.clear();
 	deselect_all();
+	clear_clipboard();
+	frozen2unfrozen.clear();
 	NFD_Quit(); // Should happen before GLFW destroyed
 }
 bool app_ctx::save() const
@@ -79,13 +81,16 @@ void app_ctx::save(const std::string& fp) const
 	actions.save(out, scene.get_sg_root());
 
 	nlohmann::json f2u;
-	f2u["n"] = frozen2unfrozen.size();
 	std::vector<nlohmann::json::array_t> pairs;
 	for (const auto& pair : frozen2unfrozen)
 	{
-		pairs.push_back({ pair.first->get_id(), pair.second->get_id() });
+		if (pair.first != clipboard)
+		{
+			pairs.push_back({ pair.first->get_id(), pair.second->get_id() });
+		}
 	}
 	f2u["p"] = pairs;
+	f2u["n"] = pairs.size();
 	out << f2u << "\n";
 
 	scene.save(out);
@@ -293,29 +298,59 @@ light* app_ctx::get_selected_light()
 }
 void app_ctx::draw_vertex_editor_icon()
 {
+	glDisable(GL_CULL_FACE);
+	static f32 rot_x = 0.f, rot_y = 0.f, rot_z = 0.f;
 	if (m_vertex_editor_icon.show)
 	{
-		static f32 rot_y = 0.f;
-		const auto& vei_mat = m_vertex_editor_icon.transform * tmat_util::rotation_y<space::OBJECT>(rot_y);
+		const auto& vei_mat = m_vertex_editor_icon.transform * tmat_util::rotation_yxz<space::OBJECT>(rot_x, rot_y, rot_z);
+		const tmat<space::OBJECT, space::WORLD> normal = vei_mat.invert_copy().transpose_copy();
 		const mat<space::OBJECT, space::CLIP>& mvp = preview_cam.get_view_proj() * vei_mat;
 		m_vertex_editor_icon.shaders.uniform_mat4("u_mvp", mvp.e);
 		m_vertex_editor_icon.shaders.uniform_mat4("u_model", vei_mat.e);
+		m_vertex_editor_icon.shaders.uniform_mat4("u_normal", normal.e);
 		m_vertex_editor_icon.shaders.uniform_3fv("u_cam_pos", preview_cam.get_pos().e);
 		m_vertex_editor_icon.shaders.uniform_3fv("u_cam_dir", preview_cam.get_view().k);
+		m_vertex_editor_icon.shaders.uniform_1f("u_time", mgl_ctx.time.now);
+		m_vertex_editor_icon.shaders.uniform_1f("u_switch_time", m_vertex_editor_icon.switch_time);
 		mgl_ctx.draw(m_vertex_editor_icon.icon, m_vertex_editor_icon.shaders);
 		m_vertex_editor_icon.show = false;
-		rot_y += .02f;
+		const f32 dt = mgl_ctx.time.now - m_vertex_editor_icon.switch_time;
+		const f32 base_speed = .02f;
+		const f32 e = expf(-dt * 5);
+		const f32 xz_coeff = .1f * (dt > .5f);
+		rot_x += (base_speed + e * .05f) * xz_coeff;
+		rot_y += base_speed + e * .225f;
+		rot_z += (base_speed + e * .05f) * xz_coeff;
 	}
+	else
+	{
+		rot_x = 0.f;
+		rot_z = 0.f;
+		m_vertex_editor_icon.cur_selected_vtx = -1;
+		m_vertex_editor_icon.prev_selected_vtx = -1;
+	}
+	glEnable(GL_CULL_FACE);
 }
-void app_ctx::set_vertex_editor_icon_position(const point<space::WORLD>& p)
+void app_ctx::set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx)
 {
+	m_vertex_editor_icon.cur_selected_vtx = cur_idx;
 	m_vertex_editor_icon.transform = tmat_util::translation<space::OBJECT, space::WORLD>(p);
 	m_vertex_editor_icon.show = true;
+}
+void app_ctx::check_vertex_editor_icon_switched()
+{
+	if (m_vertex_editor_icon.cur_selected_vtx != m_vertex_editor_icon.prev_selected_vtx)
+	{
+		m_vertex_editor_icon.switch_time = mgl_ctx.time.now;
+		m_vertex_editor_icon.prev_selected_vtx = m_vertex_editor_icon.cur_selected_vtx;
+	}
 }
 void app_ctx::set_selected_static_mesh(generated_mesh* const m)
 {
 	if (m_selected_static_mesh != m)
 	{
+		m_vertex_editor_icon.cur_selected_vtx = -1;
+		m_vertex_editor_icon.prev_selected_vtx = -1;
 		m_selected_static_mesh = m;
 		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
 	}
@@ -327,6 +362,19 @@ void app_ctx::deselect_all()
 	set_selected_light(nullptr);
 	set_selected_static_mesh(nullptr);
 	set_sel_type(global_selection_type::sgnode);
+}
+void app_ctx::clear_clipboard()
+{
+	if (clipboard)
+	{
+		if (clipboard->is_frozen())
+		{
+			sgnode* const unfrozen = frozen2unfrozen.at(clipboard);
+			delete unfrozen;
+			frozen2unfrozen.erase(clipboard);
+		}
+		delete clipboard;
+	}
 }
 
 
@@ -700,9 +748,9 @@ void app_ctx::phorm_menu()
 		"Cut",
 		[&]()
 		{
+			clear_clipboard();
 			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this);
-
 			if (selected->is_frozen())
 			{
 				// transfer ownership of unfrozen node to new clone
@@ -725,13 +773,13 @@ void app_ctx::phorm_menu()
 		"Copy",
 		[&]()
 		{
+			clear_clipboard();
 			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this);
 			if (selected->is_frozen())
 			{
 				sgnode* const unfrozen = frozen2unfrozen.at(selected);
 				sgnode* const unfrozen_clone = unfrozen->clone(this);
-				create_action(unfrozen_clone, nullptr);
 				frozen2unfrozen.insert({ clipboard, unfrozen_clone });
 			}
 		},
