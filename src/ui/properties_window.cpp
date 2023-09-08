@@ -255,17 +255,13 @@ void properties_window::handle_autotexture_server()
 	}
 
 	ImGui::PushID("PowerTextuReConfig");
-	if (ImGui::InputText("URL", &m_autotex_url))
+	bool needs_save = false;
+	needs_save = ImGui::InputText("URL", &m_autotex_url);
+	needs_save = ImGui::InputText("Username", &m_autotex_username) || needs_save;
+	needs_save = ImGui::InputText("Password", &m_autotex_password, ImGuiInputTextFlags_Password) || needs_save;
+	if (needs_save)
 	{
-		m_autotex_needs_save = true;
-	}
-	if (ImGui::InputText("Username", &m_autotex_username))
-	{
-		m_autotex_needs_save = true;
-	}
-	if (ImGui::InputText("Password", &m_autotex_password, ImGuiInputTextFlags_Password))
-	{
-		m_autotex_needs_save = true;
+		save_autotex_settings();
 	}
 	ImGui::PopID();
 }
@@ -291,11 +287,6 @@ void properties_window::handle_material_autotexture(scene_material* const select
 
 void properties_window::handle_material_autotexture_generate(scene_material* const selected_mtl, const std::string& name)
 {
-	if (m_autotex_needs_save)
-	{
-		save_autotex_settings();
-	}
-
 	//
 	// TODO
 	//
@@ -332,5 +323,4 @@ void properties_window::save_autotex_settings()
 	j["username"] = m_autotex_username;
 	j["password"] = m_autotex_password;
 	outf << j.dump() << "\n";
-	m_autotex_needs_save = false;
 }

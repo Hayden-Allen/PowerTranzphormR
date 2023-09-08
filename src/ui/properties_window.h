@@ -27,5 +27,5 @@ private:
 	void save_autotex_settings();
 private:
 	std::string m_autotex_url, m_autotex_username, m_autotex_password;
-	bool m_autotex_needs_load = true, m_autotex_needs_save = false;
+	bool m_autotex_needs_load = true;
 };
