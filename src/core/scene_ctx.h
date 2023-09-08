@@ -52,6 +52,9 @@ public:
 	std::vector<light>& get_lights();
 	void add_light();
 public:
+	const std::vector<generated_mesh*>& get_static_meshes();
+	void add_heightmap();
+public:
 	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
 	mesh_t* create_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options = {});
 	mesh_t* create_textured_cylinder(const GLuint mtl_id, const cylinder_options& options = {});
@@ -86,11 +89,9 @@ private:
 	std::vector<generated_mesh*> m_static_meshes;
 	std::vector<light> m_lights;
 	sgnode* m_sg_root = nullptr;
-	// sgnode* m_selected_node = nullptr;
-	// scene_material* m_selected_mtl = nullptr;
-	bool m_hms_dirty = false;
 private:
 	void m_build_sg_vaos();
+	void m_build_sm_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl);
 	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros);
 };

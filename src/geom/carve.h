@@ -78,8 +78,7 @@ struct torus_options : public primitive_options
 };
 struct heightmap_options : public primitive_options
 {
-	u32 width_steps = 0, depth_steps = 0;
-	std::string map_path;
+	u32 width_steps = 2, depth_steps = 2;
 };
 
 struct carve_vert_attrs

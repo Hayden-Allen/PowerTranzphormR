@@ -355,6 +355,10 @@ void app_ctx::set_selected_static_mesh(generated_mesh* const m)
 		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
 	}
 }
+generated_mesh* app_ctx::get_selected_static_mesh()
+{
+	return m_selected_static_mesh;
+}
 void app_ctx::deselect_all()
 {
 	set_selected_sgnode(nullptr);
@@ -422,18 +426,9 @@ void app_ctx::create_torus_action()
 {
 	create_shape_action(&scene_ctx::generated_textured_torus, "Torus");
 }
-void app_ctx::create_heightmap_action()
+void app_ctx::create_heightmap()
 {
-	assert(false);
-	// FIXME: Heightmaps are not sgnodes
-	/*
-	sgnode* const selected = get_selected_sgnode();
-	asset(selected);
-	mesh_t* m = textured_heightmap(scene.get_tex_coord_attr(), scene.get_mtl_attr(), 1);
-	sgnode* n = new sgnode(nullptr, m, "Heightmap");
-	create_action(n, selected);
-	set_selected_sgnode(n);
-	*/
+	scene.add_heightmap();
 }
 void app_ctx::create_union_action()
 {

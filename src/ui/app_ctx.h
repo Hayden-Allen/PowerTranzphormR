@@ -74,6 +74,7 @@ public:
 	void set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx);
 	void check_vertex_editor_icon_switched();
 	void set_selected_static_mesh(generated_mesh* const m);
+	generated_mesh* get_selected_static_mesh();
 	void deselect_all();
 	void clear_clipboard();
 public:
@@ -87,7 +88,7 @@ public:
 	void create_cylinder_action();
 	void create_cone_action();
 	void create_torus_action();
-	void create_heightmap_action();
+	void create_heightmap();
 	void create_union_action();
 	void create_subtract_action();
 	void create_intersect_action();

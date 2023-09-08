@@ -120,6 +120,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::g
 void generated_primitive::recompute(scene_ctx* const scene)
 {
 	delete mesh;
+	dirty = false;
 }
 GLuint generated_primitive::get_material() const
 {
@@ -466,11 +467,15 @@ generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
 	const auto& opts = obj["opts"];
 	m_options.width_steps = opts["nw"];
 	m_options.depth_steps = opts["nd"];
-	m_options.map_path = opts["path"];
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_heightmap::get_params() const
 {
-	return generated_primitive::get_params();
+	auto m = generated_primitive::get_params();
+	std::vector<std::pair<std::string, generated_mesh_param>> t = {
+		{ "Steps", { generated_mesh_param_type::UINT_2_DIRECT, (void*)&m_options.width_steps, 2, 64, 1 } },
+	};
+	m.insert(m.end(), t.begin(), t.end());
+	return m;
 }
 void generated_heightmap::recompute(scene_ctx* const scene)
 {
@@ -489,7 +494,6 @@ nlohmann::json generated_heightmap::save(scene_ctx* const scene, const tmat<spac
 	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["nw"] = m_options.width_steps;
 	obj["opts"]["nd"] = m_options.depth_steps;
-	obj["opts"]["path"] = m_options.map_path;
 	return obj;
 }
 primitive_options* generated_heightmap::get_options() const

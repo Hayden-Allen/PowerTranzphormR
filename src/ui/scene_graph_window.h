@@ -17,6 +17,7 @@ public:
 private:
 	rect handle_node(sgnode* const node);
 	void handle_lights();
+	void handle_heightmaps();
 private:
 	sgnode* m_show_add_child = nullptr;
 	sgnode* m_renaming = nullptr;

@@ -30,6 +30,7 @@ void scene_graph_window::handle_frame()
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+	handle_heightmaps();
 	handle_lights();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
@@ -134,7 +135,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 			if (ImGui::MenuItem("Add Torus"))
 				m_app_ctx->create_torus_action();
 			if (ImGui::MenuItem("Add Heightmap"))
-				m_app_ctx->create_heightmap_action();
+				m_app_ctx->create_heightmap();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Add Union"))
 				m_app_ctx->create_union_action();
@@ -234,6 +235,38 @@ void scene_graph_window::handle_lights()
 			if (ImGui::MenuItem(light->name.c_str(), "", m_app_ctx->get_selected_light() == light))
 			{
 				m_app_ctx->set_selected_light(light);
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+void scene_graph_window::handle_heightmaps()
+{
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	const bool open = ImGui::TreeNodeEx("##SGW_HMS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Heightmaps");
+	ImGui::PopStyleVar();
+
+	ImGui::PushID("##SGW_HMS");
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::MenuItem("Add Heightmap"))
+		{
+			m_app_ctx->create_heightmap();
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (open)
+	{
+		auto& sms = m_app_ctx->scene.get_static_meshes();
+		for (u32 i = 0; i < sms.size(); i++)
+		{
+			generated_mesh* const sm = sms.at(i);
+			if (ImGui::Selectable("Static Mesh", "", m_app_ctx->get_selected_static_mesh() == sm))
+			{
+				m_app_ctx->set_selected_static_mesh(sm);
 			}
 		}
 		ImGui::TreePop();

@@ -13,6 +13,10 @@ public:
 		delete m_deftex;
 	}
 public:
+	bool has(const std::string& fp) const
+	{
+		return (fp == g::null_tex_fp) || m_lib.contains(fp);
+	}
 	void init_deftex()
 	{
 		u8 deftex_pixels[12] = { 255, 0, 255, 0, 0, 0, 0, 0, 0, 255, 0, 255 };

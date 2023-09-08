@@ -41,29 +41,18 @@ void scene_ctx::update()
 		m_build_sg_vaos();
 	}
 
-	if (m_hms_dirty)
+	bool any_sms_dirty = false;
+	for (const generated_mesh* sm : m_static_meshes)
 	{
-		std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
-		std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
-		for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
+		if (sm->is_dirty())
 		{
-			verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
-			indices_for_mtl.insert(std::make_pair(it->first, std::vector<u32>()));
+			any_sms_dirty = true;
+			break;
 		}
-
-		for (const auto& sm : m_static_meshes)
-			m_tesselate(sm->mesh, verts_for_mtl, indices_for_mtl);
-
-		m_hm_ros_for_mtl.clear();
-		for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
-		{
-			const auto& verts = verts_for_mtl.at(it->first);
-			const auto& indices = indices_for_mtl.at(it->first);
-			mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
-			m_hm_ros_for_mtl.emplace(it->first, std::move(ro));
-		}
-
-		m_hms_dirty = false;
+	}
+	if (any_sms_dirty)
+	{
+		m_build_sm_vaos();
 	}
 }
 void scene_ctx::clear(bool ready_for_default_material)
@@ -207,6 +196,15 @@ void scene_ctx::add_light()
 {
 	m_lights.emplace_back();
 }
+const std::vector<generated_mesh*>& scene_ctx::get_static_meshes()
+{
+	return m_static_meshes;
+}
+void scene_ctx::add_heightmap()
+{
+	m_static_meshes.push_back(generated_textured_heightmap(0));
+	m_build_sm_vaos();
+}
 
 
 
@@ -284,6 +282,32 @@ void scene_ctx::m_build_sg_vaos()
 		const auto& indices = indices_for_mtl.at(it->first);
 		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
 		m_sg_ros_for_mtl.emplace(it->first, std::move(ro));
+	}
+}
+void scene_ctx::m_build_sm_vaos()
+{
+	std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
+	std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
+	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
+	{
+		verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
+		indices_for_mtl.insert(std::make_pair(it->first, std::vector<u32>()));
+	}
+
+	for (generated_mesh* const sm : m_static_meshes)
+	{
+		if (sm->is_dirty())
+			sm->recompute(this);
+		m_tesselate(sm->mesh, verts_for_mtl, indices_for_mtl);
+	}
+
+	m_hm_ros_for_mtl.clear();
+	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
+	{
+		const auto& verts = verts_for_mtl.at(it->first);
+		const auto& indices = indices_for_mtl.at(it->first);
+		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
+		m_hm_ros_for_mtl.emplace(it->first, std::move(ro));
 	}
 }
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl)

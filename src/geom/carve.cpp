@@ -478,19 +478,11 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 
 mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)
 {
-	assert(false);
-	return nullptr;
+	assert(options.width_steps > 1);
+	assert(options.depth_steps > 1);
 
-	/*
-	assert(options.u_scale > 0.f);
-	assert(options.v_scale > 0.f);
-	assert(options.width_steps > 0.f);
-	assert(options.depth_steps > 0.f);
-
-	const mgl::texture2d_rgb_u8* const map = g::texlib->get_or_load(options.map_path);
-	const u32 mw = map->get_width(), mh = map->get_height();
-	const u32 x_steps = options.width_steps == 0 ? mw : options.width_steps;
-	const u32 z_steps = options.depth_steps == 0 ? mh : options.depth_steps;
+	const u32 x_steps = options.width_steps;
+	const u32 z_steps = options.depth_steps;
 	const f32 x_step = 1.f / (x_steps - 1);
 	const f32 z_step = 1.f / (z_steps - 1);
 	std::vector<vertex_t> raw_vertices;
@@ -519,23 +511,26 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			// square with current vertex (ix, iz) as bottom left
 			const u32 bl = iz * x_steps + ix, br = bl + 1;
 			const u32 tl = (iz + 1) * x_steps + ix, tr = tl + 1;
+			const f32 blu = 1.f * ix / (x_steps - 1), blv = 1.f - 1.f * iz / (z_steps - 1);
+			const f32 bru = 1.f * (ix + 1) / (x_steps - 1), brv = 1.f - 1.f * iz / (z_steps - 1);
+			const f32 tlu = 1.f * ix / (x_steps - 1), tlv = 1.f - 1.f * (iz + 1) / (z_steps - 1);
+			const f32 tru = 1.f * (ix + 1) / (x_steps - 1), trv = 1.f - 1.f * (iz + 1) / (z_steps - 1);
 			// bottom right triangle
 			face_t* face = new face_t(vertices[bl], vertices[tr], vertices[br]);
-			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * ix / x_steps, options.v_scale * (1.f - 1.f * iz / z_steps)));
-			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.v_scale * (1.f - 1.f * (iz + 1) / z_steps)));
-			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.v_scale * (1.f - 1.f * iz / z_steps)));
+			vert_attrs.set_attribute(face, 0, options, tex_coord_t(blu, blv));
+			vert_attrs.set_attribute(face, 1, options, tex_coord_t(tru, trv));
+			vert_attrs.set_attribute(face, 2, options, tex_coord_t(bru, brv));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 			// top left triangle
 			face = new face_t(vertices[bl], vertices[tl], vertices[tr]);
-			vert_attrs.set_attribute(face, 0, tex_coord_t(options.u_scale * ix / x_steps, options.u_scale * (1.f - 1.f * iz / z_steps)));
-			vert_attrs.set_attribute(face, 1, tex_coord_t(options.u_scale * ix / x_steps, options.u_scale * (1.f - 1.f * (iz + 1) / z_steps)));
-			vert_attrs.set_attribute(face, 2, tex_coord_t(options.u_scale * (ix + 1) / x_steps, options.u_scale * (1.f - 1.f * (iz + 1) / z_steps)));
+			vert_attrs.set_attribute(face, 0, options, tex_coord_t(blu, blv));
+			vert_attrs.set_attribute(face, 1, options, tex_coord_t(tlu, tlv));
+			vert_attrs.set_attribute(face, 2, options, tex_coord_t(tru, trv));
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}
 	}
 
 	return new mesh_t(faces);
-	*/
 }
