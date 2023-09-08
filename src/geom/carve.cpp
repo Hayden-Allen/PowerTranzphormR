@@ -14,7 +14,7 @@ mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene, const tmat
 		const auto& v = mesh->vertex_storage[i];
 		verts_map.insert({
 			&mesh->vertex_storage[i],
-			hats2carve(hats::point<space::WORLD>(v.v.x, v.v.y, v.v.z).transform_copy(inv_mat)),
+			u::hats2carve(hats::point<space::WORLD>(v.v.x, v.v.y, v.v.z).transform_copy(inv_mat)),
 		});
 	}
 
@@ -66,21 +66,21 @@ mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_at
 	std::vector<vertex_t> v;
 	v.reserve(8);
 	// 0 - ftr
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(+w, +h, +d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(+w, +h, +d));
 	// 1 - ftl
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(-w, +h, +d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(-w, +h, +d));
 	// 2 - fbl
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(-w, -h, +d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(-w, -h, +d));
 	// 3 - fbr
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(+w, -h, +d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(+w, -h, +d));
 	// 4 - btr
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(+w, +h, -d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(+w, +h, -d));
 	// 5 - btl
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(-w, +h, -d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(-w, +h, -d));
 	// 6 - bbl
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(-w, -h, -d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(-w, -h, -d));
 	// 7 - bbr
-	v.push_back(vertex_t(hats2carve(point<space::OBJECT>(+w, -h, -d).transform_copy(options.transform))));
+	v.emplace_back(carve::geom::VECTOR(+w, -h, -d));
 
 	// facez are wound cw
 	std::vector<face_t*> faces;
@@ -156,9 +156,9 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 			// generate clockwise from x-axis
 			const f32 x = r * cosf(j * DTHETA), z = r * sinf(j * DTHETA);
 			// make cylinder vertically centered on the local origin
-			raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
+			raw_vertices.emplace_back(carve::geom::VECTOR(x, y, z));
 		}
-		raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, y, 0).transform_copy(options.transform)));
+		raw_vertices.emplace_back(carve::geom::VECTOR(0, y, 0));
 	}
 	for (u64 i = 0; i < raw_vertices.size(); i++)
 		vertices.push_back(raw_vertices.data() + i);
@@ -170,19 +170,6 @@ mesh_t* textured_cylinder(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_
 	faces.reserve(num_faces);
 	// circular faces
 	// bottom face is wound clockwise from below
-	// faces.push_back(new face_t(vertices.begin(), vertices.begin() + STEPS));
-	// top face is wound clockwise from above
-	// faces.push_back(new face_t(vertices.rbegin(), vertices.rbegin() + STEPS));
-	// for (const face_t* const face : faces)
-	//{
-	//	for (u32 i = 0; i < STEPS; i++)
-	//	{
-	//		// map each vertex to where it lies within the texture
-	//		// (don't stretch rectangle texture to fit circle, just take subtexture that fits)
-	//		const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-	//		vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
-	//	}
-	//}
 	for (u32 j = 0; j < 2; j++)
 	{
 		const u32 offset = j * (STEPS + 1);
@@ -250,12 +237,12 @@ mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr
 		const f32 x = .5f * cosf(j * DTHETA), z = .5f * sinf(j * DTHETA);
 		// make cone vertically centered on the origin
 		const f32 y = -.5f;
-		raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
+		raw_vertices.emplace_back(carve::geom::VECTOR(x, y, z));
 	}
 	// circle center
-	raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, -.5f, 0).transform_copy(options.transform)));
+	raw_vertices.emplace_back(carve::geom::VECTOR(0, -.5f, 0));
 	// top point of cone
-	raw_vertices.emplace_back(hats2carve(point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform)));
+	raw_vertices.emplace_back(carve::geom::VECTOR(0, .5f, 0));
 	for (u64 i = 0; i < raw_vertices.size(); i++)
 		vertices.push_back(raw_vertices.data() + i);
 
@@ -264,14 +251,6 @@ mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr
 	std::vector<face_t*> faces;
 	faces.reserve(num_faces);
 	// single face for cirular base of cone (wound clockwise)
-	// face_t* face = new face_t(vertices.begin(), vertices.begin() + STEPS);
-	// faces.push_back(face);
-	//// same as for textured_cylinder, take subtexture that fits on the circle
-	// for (uint32_t i = 0; i < STEPS; i++)
-	//{
-	//	const f32 u = (cosf(i * DTHETA) + 1) / 2, v = (sinf(i * DTHETA) + 1) / 2;
-	//	vert_attrs.set_attribute(face, i, options, tex_coord_t(u, v));
-	// }
 	for (u32 i = 0; i < STEPS; i++)
 	{
 		const u32 ia = STEPS;
@@ -333,7 +312,7 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 			const f32 x = (options.center_radius + options.tube_radius * cp) * ct;
 			const f32 y = options.tube_radius * sp;
 			const f32 z = (options.center_radius + options.tube_radius * cp) * st;
-			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, y, z).transform_copy(options.transform)));
+			raw_vertices.emplace_back(carve::geom::VECTOR(x, y, z));
 		}
 	}
 	for (u64 i = 0; i < raw_vertices.size(); i++)
@@ -411,12 +390,12 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			const f32 nx = sx * u::rand(0.f, options.noise);
 			const f32 ny = sy * u::rand(0.f, options.noise);
 			const f32 nz = sz * u::rand(0.f, options.noise);
-			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x + nx, y + ny, z + nz).transform_copy(options.transform)));
+			raw_vertices.emplace_back(carve::geom::VECTOR(x + nx, y + ny, z + nz));
 		}
 	}
 	// poles
-	raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(0, -.5f, 0).transform_copy(options.transform)));
-	raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(0, .5f, 0).transform_copy(options.transform)));
+	raw_vertices.emplace_back(carve::geom::VECTOR(0, -.5f, 0));
+	raw_vertices.emplace_back(carve::geom::VECTOR(0, .5f, 0));
 	for (u64 i = 0; i < raw_vertices.size(); i++)
 		vertices.push_back(raw_vertices.data() + i);
 
@@ -497,7 +476,7 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 		for (u32 ix = 0; ix < x_steps; ix++)
 		{
 			const f32 x = ix * x_step - .5f;
-			raw_vertices.emplace_back(hats2carve(hats::point<space::OBJECT>(x, 0, z).transform_copy(options.transform)));
+			raw_vertices.emplace_back(carve::geom::VECTOR(x, 0, z));
 		}
 	}
 	for (u64 i = 0; i < raw_vertices.size(); i++)

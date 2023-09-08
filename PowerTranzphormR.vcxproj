@@ -359,6 +359,7 @@
     </ClCompile>
     <ClCompile Include="src\core\action.cpp" />
     <ClCompile Include="src\core\action_stack.cpp" />
+    <ClCompile Include="src\core\smnode.cpp" />
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
     <ClCompile Include="src\ui\vertex_editor_window.cpp" />
@@ -389,6 +390,7 @@
     <ClInclude Include="src\core\action.h" />
     <ClInclude Include="src\core\action_stack.h" />
     <ClInclude Include="src\core\light.h" />
+    <ClInclude Include="src\core\smnode.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />

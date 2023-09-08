@@ -124,4 +124,9 @@ namespace u
 		return res;
 	}
 
+	template<space SPACE>
+	static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
+	{
+		return carve::geom::VECTOR(p.x, p.y, p.z);
+	}
 } // namespace u

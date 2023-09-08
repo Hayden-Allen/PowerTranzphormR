@@ -16,12 +16,28 @@ void vertex_editor_window::handle_focused(const bool focused)
 void vertex_editor_window::handle_frame()
 {
 	sgnode* const selected_node = m_app_ctx->get_selected_sgnode();
-	if (!(selected_node && selected_node->is_frozen()))
+	generated_mesh* const selected_sm = m_app_ctx->get_selected_static_mesh();
+	if (!(selected_node && selected_node->is_frozen() || selected_sm))
 	{
 		ImGui::TextDisabled("Select a Phrozen Node to Edit Vertices");
 		return;
 	}
+	if (selected_node)
+	{
+		if (handle_frame_base(selected_node->get_gen()->mesh))
+			selected_node->set_dirty();
+	}
+	else
+	{
+		if (handle_frame_base(selected_sm->mesh))
+			selected_sm->set_dirty();
+	}
+}
 
+
+
+bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh)
+{
 	if (ImGui::BeginCombo("##VEW_COMBO", vertex_editor_mode_string(m_mode).c_str()))
 	{
 		for (s32 i = 0; i < (s32)vertex_editor_mode::COUNT; i++)
@@ -42,12 +58,12 @@ void vertex_editor_window::handle_frame()
 	const s32 col_vert_id_width = 56;
 	const f32 col_position_width = 300.0f, col_color_width = 300.0f, col_uv_width = 300.0f;
 	bool found_activated = false;
+	bool changed = false;
 
 	switch (m_mode)
 	{
-	case vertex_editor_mode::POSITION:
+	/*case vertex_editor_mode::POSITION:
 		{
-			mesh_t* const mesh = selected_node->get_gen()->mesh;
 			auto& verts = selected_node->get_local_verts();
 
 			if (ImGui::BeginTable("vew_pos", 2))
@@ -106,7 +122,7 @@ void vertex_editor_window::handle_frame()
 						verts[vert_i].x = editable_pos[0];
 						verts[vert_i].y = editable_pos[1];
 						verts[vert_i].z = editable_pos[2];
-						selected_node->set_dirty();
+						changed = true;
 					}
 
 					ImGui::PopID();
@@ -115,10 +131,9 @@ void vertex_editor_window::handle_frame()
 				ImGui::EndTable();
 			}
 		}
-		break;
+		break;*/
 	case vertex_editor_mode::COLOR:
 		{
-			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::unordered_map<const vertex_t*, u64> inserted;
 			std::vector<std::vector<std::tuple<const face_t*, u32, u64, const vertex_t*>>> vec;
 			u64 vert_id = 0;
@@ -202,7 +217,7 @@ void vertex_editor_window::handle_frame()
 						{
 							vert_attrs.color.setAttribute(std::get<0>(tuple), std::get<1>(tuple), color_t(editable_color[0], editable_color[1], editable_color[2], editable_color[3]));
 						}
-						selected_node->set_dirty();
+						changed = true;
 					}
 
 					ImGui::PopID();
@@ -214,7 +229,6 @@ void vertex_editor_window::handle_frame()
 		break;
 	case vertex_editor_mode::UV:
 		{
-			const mesh_t* const mesh = selected_node->get_gen()->mesh;
 			std::vector<std::tuple<const face_t*, u32, const vertex_t*>> vec;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
@@ -333,7 +347,7 @@ void vertex_editor_window::handle_frame()
 								assert(false);
 								break;
 							}
-							selected_node->set_dirty();
+							changed = true;
 						}
 					}
 
@@ -347,4 +361,5 @@ void vertex_editor_window::handle_frame()
 	}
 
 	m_app_ctx->check_vertex_editor_icon_switched();
+	return changed;
 }

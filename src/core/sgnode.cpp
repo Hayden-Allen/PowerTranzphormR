@@ -389,7 +389,7 @@ void sgnode::transform_verts()
 	assert(m_gen->mesh);
 	m_gen->mesh->transform([&](vertex_t::vector_t& v)
 		{
-			const auto& out = hats2carve(m_local_verts[i].transform_copy(m));
+			const auto& out = u::hats2carve(m_local_verts[i].transform_copy(m));
 			++i;
 			return out;
 		});

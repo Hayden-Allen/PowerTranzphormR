@@ -70,10 +70,14 @@ public:
 	void add_light();
 	void set_selected_light(light* const l);
 	light* get_selected_light();
+	void unset_imgui_needs_select_unfocused_light();
+	light* get_imgui_needs_select_unfocused_light();
 	void draw_vertex_editor_icon();
 	void set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx);
 	void check_vertex_editor_icon_switched();
 	void set_selected_static_mesh(generated_mesh* const m);
+	generated_mesh* get_imgui_needs_select_unfocused_static_mesh();
+	void unset_imgui_needs_select_unfocused_static_mesh();
 	generated_mesh* get_selected_static_mesh();
 	void deselect_all();
 	void clear_clipboard();

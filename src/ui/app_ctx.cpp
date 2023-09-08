@@ -186,16 +186,37 @@ void app_ctx::set_sel_type(const global_selection_type t)
 	if (sel_type == global_selection_type::sgnode)
 	{
 		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
+		m_selected_mtl = nullptr;
+		m_selected_light = nullptr;
+		m_selected_static_mesh = nullptr;
 	}
 	else if (sel_type == global_selection_type::material)
 	{
 		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
+		m_selected_sgnode = nullptr;
+		m_selected_mtl = nullptr;
+		m_selected_light = nullptr;
+	}
+	else if (sel_type == global_selection_type::light)
+	{
+		m_imgui_needs_select_unfocused_light = m_selected_light;
+		m_selected_sgnode = nullptr;
+		m_selected_mtl = nullptr;
+		m_selected_static_mesh = nullptr;
+	}
+	else if (sel_type == global_selection_type::static_mesh)
+	{
+		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
+		m_selected_sgnode = nullptr;
+		m_selected_mtl = nullptr;
+		m_selected_light = nullptr;
 	}
 }
 void app_ctx::set_selected_sgnode(sgnode* const node)
 {
 	if (m_selected_sgnode != node)
 	{
+		set_sel_type(global_selection_type::sgnode);
 		m_selected_sgnode = node;
 		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
 	}
@@ -216,6 +237,7 @@ void app_ctx::set_selected_material(scene_material* const mtl)
 {
 	if (m_selected_mtl != mtl)
 	{
+		set_sel_type(global_selection_type::material);
 		m_selected_mtl = mtl;
 		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
 	}
@@ -288,6 +310,7 @@ void app_ctx::set_selected_light(light* const l)
 {
 	if (m_selected_light != l)
 	{
+		set_sel_type(global_selection_type::light);
 		m_selected_light = l;
 		m_imgui_needs_select_unfocused_light = m_selected_light;
 	}
@@ -295,6 +318,14 @@ void app_ctx::set_selected_light(light* const l)
 light* app_ctx::get_selected_light()
 {
 	return sel_type == global_selection_type::light ? m_selected_light : nullptr;
+}
+void app_ctx::unset_imgui_needs_select_unfocused_light()
+{
+	m_imgui_needs_select_unfocused_light = nullptr;
+}
+light* app_ctx::get_imgui_needs_select_unfocused_light()
+{
+	return m_imgui_needs_select_unfocused_light;
 }
 void app_ctx::draw_vertex_editor_icon()
 {
@@ -349,15 +380,24 @@ void app_ctx::set_selected_static_mesh(generated_mesh* const m)
 {
 	if (m_selected_static_mesh != m)
 	{
+		set_sel_type(global_selection_type::static_mesh);
 		m_vertex_editor_icon.cur_selected_vtx = -1;
 		m_vertex_editor_icon.prev_selected_vtx = -1;
 		m_selected_static_mesh = m;
 		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
 	}
 }
+generated_mesh* app_ctx::get_imgui_needs_select_unfocused_static_mesh()
+{
+	return m_imgui_needs_select_unfocused_static_mesh;
+}
+void app_ctx::unset_imgui_needs_select_unfocused_static_mesh()
+{
+	m_imgui_needs_select_unfocused_static_mesh = nullptr;
+}
 generated_mesh* app_ctx::get_selected_static_mesh()
 {
-	return m_selected_static_mesh;
+	return sel_type == global_selection_type::static_mesh ? m_selected_static_mesh : nullptr;
 }
 void app_ctx::deselect_all()
 {

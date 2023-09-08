@@ -87,7 +87,7 @@ mesh_t* generated_mesh::clone_mesh_to_local(scene_ctx* const scene, const tmat<s
 	mesh_t* const clone = carve_clone(mesh, scene);
 	clone->transform([&](vertex_t::vector_t& v)
 		{
-			return hats2carve(point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv));
+			return u::hats2carve(point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv));
 		});
 	return clone;
 }
@@ -144,7 +144,7 @@ nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<spac
 	const primitive_options* const opts = get_options();
 	nlohmann::json obj;
 	obj["opts"] = {
-		{ "t", opts->transform.e },
+		// { "t", opts->transform.e },
 		{ "uv0", { opts->u0, opts->v0, opts->uo0, opts->vo0 } },
 		{ "uv1", { opts->u1, opts->v1, opts->uo1, opts->vo1 } },
 		{ "uv2", { opts->u2, opts->v2, opts->uo2, opts->vo2 } },
@@ -162,7 +162,7 @@ void generated_primitive::set_options(const nlohmann::json& obj)
 {
 	primitive_options* const options = get_options();
 	const auto& opts = obj["opts"];
-	options->transform = u::json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
+	// options->transform = u::json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 	options->u0 = opts["uv0"][0];
 	options->v0 = opts["uv0"][1];
 	options->uo0 = opts["uv0"][2];

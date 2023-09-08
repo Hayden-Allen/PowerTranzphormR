@@ -1,5 +1,6 @@
 #pragma once
 #include "imgui_window.h"
+#include "geom/carve.h"
 
 enum class vertex_editor_mode
 {
@@ -30,4 +31,6 @@ public:
 	void handle_frame() override;
 private:
 	vertex_editor_mode m_mode = vertex_editor_mode::POSITION;
+private:
+	bool handle_frame_base(const mesh_t* const mesh);
 };
