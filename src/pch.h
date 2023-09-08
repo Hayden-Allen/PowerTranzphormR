@@ -25,6 +25,8 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"
 #include "nfd.h"
+#include "base64.h"
+#include "httplib.h"
 // absolutely hilarious
 #undef min
 #undef max

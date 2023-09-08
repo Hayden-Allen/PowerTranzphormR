@@ -5,7 +5,9 @@ struct autotexture_params
 {
 	bool enabled = false;
 	std::string prompt, neg_prompt;
-	s32 seed = 0;
+	std::string sampler = "Euler";
+	s32 seed = 0, steps = 20;
+	f32 cfg_scale = 7.5f;
 	s32 dims[2] = { 512, 512 };
 };
 
