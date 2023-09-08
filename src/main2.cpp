@@ -10,53 +10,6 @@
 #include "core/scene_material.h"
 #include "ui/vertex_editor_window.h"
 
-/*
-void make_scene(scene_ctx* const out_scene)
-{
-	mgl::shaders* s1 = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
-	auto t1 = load_texture_rgb_u8("res/1.png");
-	scene_material* mtl1 = new scene_material;
-	mtl1->name = "Material 1";
-	mtl1->shaders = s1;
-	mtl1->texs = { { "u_tex", t1 } };
-	out_scene->add_material(mtl1);
-
-	auto& csg = out_scene->get_csg();
-
-	sgnode* n1 = textured_cuboid_node(
-		out_scene, 1,
-		{});
-
-	sgnode* n2 = textured_ellipsoid_node(
-		out_scene, 1,
-		{ .transform = tmat_util::translation<space::OBJECT, space::PARENT>(0.0f, 0.5f, 0.0f) });
-
-	sgnode* na = new sgnode(csg, nullptr, carve::csg::CSG::A_MINUS_B);
-	na->add_child(n1);
-	na->add_child(n2);
-
-	sgnode* sg = out_scene->get_sg_root();
-	sg->add_child(na);
-
-	mgl::shaders* s2 = new mgl::shaders("src/glsl/csg_hm.vert", "src/glsl/csg_hm.frag");
-	mgl::retained_texture2d_rgb_u8* hm_tex = load_retained_texture_rgb_u8("res/hm.bmp");
-	mgl::texture2d_rgb_u8* t3 = load_texture_rgb_u8("res/3.png");
-	scene_material mtl3("mtl3", { { "u_tex", t3 }, { "u_heightmap", hm_tex } }, s2);
-	out_scene->add_material(mtl3);
-	for (s32 i = 0; i < 10; i++)
-	{
-		mesh_t* heightmap = textured_heightmap(tex_coord_attr, mtl_id_attr, 3, hm_tex,
-			{
-				.max_height = 10.f,
-				.width_steps = 10,
-				.depth_steps = 10,
-				.transform = tmat_util::translation<space::OBJECT>(i, -2, 2),
-			});
-		out_scene->add_heightmap(heightmap);
-	}
-}
-*/
-
 int main(int argc, char** argv)
 {
 	app_ctx a_ctx;

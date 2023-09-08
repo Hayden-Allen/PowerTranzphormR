@@ -5,6 +5,7 @@
 
 class scene_graph_window;
 class materials_list_window;
+class smnode;
 
 enum class global_selection_type
 {
@@ -70,10 +71,15 @@ public:
 	void add_light();
 	void set_selected_light(light* const l);
 	light* get_selected_light();
+	void unset_imgui_needs_select_unfocused_light();
+	light* get_imgui_needs_select_unfocused_light();
 	void draw_vertex_editor_icon();
 	void set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx);
 	void check_vertex_editor_icon_switched();
-	void set_selected_static_mesh(generated_mesh* const m);
+	void set_selected_static_mesh(smnode* const m);
+	smnode* get_imgui_needs_select_unfocused_static_mesh();
+	void unset_imgui_needs_select_unfocused_static_mesh();
+	smnode* get_selected_static_mesh();
 	void deselect_all();
 	void clear_clipboard();
 public:
@@ -87,7 +93,7 @@ public:
 	void create_cylinder_action();
 	void create_cone_action();
 	void create_torus_action();
-	void create_heightmap_action();
+	void create_heightmap();
 	void create_union_action();
 	void create_subtract_action();
 	void create_intersect_action();
@@ -110,8 +116,8 @@ private:
 	scene_material* m_imgui_needs_select_unfocused_mtl = nullptr;
 	light* m_selected_light = nullptr;
 	light* m_imgui_needs_select_unfocused_light = nullptr;
-	generated_mesh* m_selected_static_mesh = nullptr;
-	generated_mesh* m_imgui_needs_select_unfocused_static_mesh = nullptr;
+	smnode* m_selected_static_mesh = nullptr;
+	smnode* m_imgui_needs_select_unfocused_static_mesh = nullptr;
 	scene_graph_window* m_sg_window = nullptr;
 	materials_list_window* m_mtls_window = nullptr;
 	vertex_editor_icon m_vertex_editor_icon;

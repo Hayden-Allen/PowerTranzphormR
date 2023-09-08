@@ -87,7 +87,7 @@ mesh_t* generated_mesh::clone_mesh_to_local(scene_ctx* const scene, const tmat<s
 	mesh_t* const clone = carve_clone(mesh, scene);
 	clone->transform([&](vertex_t::vector_t& v)
 		{
-			return hats2carve(point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv));
+			return u::hats2carve(point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv));
 		});
 	return clone;
 }
@@ -120,6 +120,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::g
 void generated_primitive::recompute(scene_ctx* const scene)
 {
 	delete mesh;
+	dirty = false;
 }
 GLuint generated_primitive::get_material() const
 {
@@ -143,7 +144,7 @@ nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<spac
 	const primitive_options* const opts = get_options();
 	nlohmann::json obj;
 	obj["opts"] = {
-		{ "t", opts->transform.e },
+		// { "t", opts->transform.e },
 		{ "uv0", { opts->u0, opts->v0, opts->uo0, opts->vo0 } },
 		{ "uv1", { opts->u1, opts->v1, opts->uo1, opts->vo1 } },
 		{ "uv2", { opts->u2, opts->v2, opts->uo2, opts->vo2 } },
@@ -161,7 +162,7 @@ void generated_primitive::set_options(const nlohmann::json& obj)
 {
 	primitive_options* const options = get_options();
 	const auto& opts = obj["opts"];
-	options->transform = u::json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
+	// options->transform = u::json2tmat<space::OBJECT, space::PARENT>(opts["t"]);
 	options->u0 = opts["uv0"][0];
 	options->v0 = opts["uv0"][1];
 	options->uo0 = opts["uv0"][2];
@@ -466,11 +467,15 @@ generated_heightmap::generated_heightmap(const nlohmann::json& obj) :
 	const auto& opts = obj["opts"];
 	m_options.width_steps = opts["nw"];
 	m_options.depth_steps = opts["nd"];
-	m_options.map_path = opts["path"];
 }
 std::vector<std::pair<std::string, generated_mesh_param>> generated_heightmap::get_params() const
 {
-	return generated_primitive::get_params();
+	auto m = generated_primitive::get_params();
+	std::vector<std::pair<std::string, generated_mesh_param>> t = {
+		{ "Steps", { generated_mesh_param_type::UINT_2_DIRECT, (void*)&m_options.width_steps, 2, 64, 1 } },
+	};
+	m.insert(m.end(), t.begin(), t.end());
+	return m;
 }
 void generated_heightmap::recompute(scene_ctx* const scene)
 {
@@ -489,7 +494,6 @@ nlohmann::json generated_heightmap::save(scene_ctx* const scene, const tmat<spac
 	obj["opts"] = generated_primitive::save(scene, mat)["opts"];
 	obj["opts"]["nw"] = m_options.width_steps;
 	obj["opts"]["nd"] = m_options.depth_steps;
-	obj["opts"]["path"] = m_options.map_path;
 	return obj;
 }
 primitive_options* generated_heightmap::get_options() const

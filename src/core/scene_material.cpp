@@ -92,7 +92,6 @@ nlohmann::json scene_material::save(std::ofstream& out, const std::string& out_f
 	obj["texs"] = texs;
 	return obj;
 }
-
 autotexture_params& scene_material::get_autotexture_params(const std::string& tex_name)
 {
 	return m_autotexture_params[tex_name];

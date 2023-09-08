@@ -38,16 +38,10 @@ typedef carve::interpolate::FaceVertexAttr<f64> attr_tex_weight_t;
 typedef carve::interpolate::FaceVertexAttr<color_t> attr_tex_color_t;
 typedef carve::interpolate::FaceAttr<GLuint> attr_material_t;
 
-template<space SPACE>
-static carve::geom3d::Vector hats2carve(const point<SPACE>& p)
-{
-	return carve::geom::VECTOR(p.x, p.y, p.z);
-}
 mesh_t* carve_clone(const mesh_t* const mesh, scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>());
 
 struct primitive_options
 {
-	tmat<space::OBJECT, space::PARENT> transform;
 	f32 u0 = 1.f, v0 = 1.f, uo0 = 0.f, vo0 = 0.f;
 	f32 u1 = 1.f, v1 = 1.f, uo1 = 0.f, vo1 = 0.f;
 	f32 u2 = 1.f, v2 = 1.f, uo2 = 0.f, vo2 = 0.f;
@@ -78,8 +72,7 @@ struct torus_options : public primitive_options
 };
 struct heightmap_options : public primitive_options
 {
-	u32 width_steps = 0, depth_steps = 0;
-	std::string map_path;
+	u32 width_steps = 2, depth_steps = 2;
 };
 
 struct carve_vert_attrs

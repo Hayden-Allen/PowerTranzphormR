@@ -1,9 +1,13 @@
 #pragma once
 #include "imgui_window.h"
+#include "geom/generated_mesh.h"
 
 class sgnode;
 struct autotexture_params;
 struct scene_material;
+struct light;
+class generated_mesh;
+class smnode;
 
 class properties_window : public imgui_window
 {
@@ -22,6 +26,11 @@ private:
 	void handle_material_texture(scene_material* const selected_mtl, const std::string& name, bool is_button);
 	void handle_autotexture_server();
 	void handle_material_autotexture(scene_material* const selected_mtl, const std::string& name);
+private:
+	void handle_light_frame(light* const selected);
+	void handle_static_mesh_frame(smnode* const selected);
+	u32 material_combo_box(const u32 selected);
+	bool draw_params(const std::vector<std::pair<std::string, generated_mesh_param>>& params);
 	void handle_material_autotexture_generate(scene_material* const selected_mtl, const std::string& name);
 private:
 	void load_autotex_settings();
