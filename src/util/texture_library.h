@@ -73,6 +73,31 @@ public:
 			m_counts.erase(fp);
 			delete m_lib[fp];
 			m_lib.erase(fp);
+
+			bool should_delete = false;
+			std::filesystem::path fspath(fp);
+			while (!fspath.filename().empty())
+			{
+				if (std::filesystem::is_directory(fspath))
+				{
+					if (fspath.filename() == "_PowerTextuRe_")
+					{
+						should_delete = true;
+					}
+				}
+				fspath = fspath.parent_path();
+			}
+			if (should_delete)
+			{
+				try
+				{
+					std::filesystem::remove(fp);
+				}
+				catch (const std::exception&)
+				{
+					std::cerr << "Unable to delete file: " << fp << "\n";
+				}
+			}
 		}
 	}
 private:
