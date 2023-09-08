@@ -7,7 +7,12 @@
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")
-{}
+{
+	if (m_autotex_needs_load)
+	{
+		load_autotex_settings();
+	}
+}
 
 
 
@@ -97,12 +102,12 @@ void properties_window::handle_material_frame(scene_material* const selected)
 				ImGui::PushID(name.c_str());
 				autotexture_params& at_params = selected->get_autotexture_params(name);
 				bool at_enabled = at_params.enabled;
-				if (ImGui::Checkbox("Autotexture", &at_enabled))
+				if (ImGui::Checkbox("PowerTextuRe", &at_enabled))
 				{
 					if (m_app_ctx->loaded_filename.empty())
 					{
 						at_params.enabled = false;
-						u::info_message_box(m_app_ctx->mgl_ctx.window, L"You must save the scene before enabling autotexture.", L"PowerTranzphormR - Error");
+						u::info_message_box(m_app_ctx->mgl_ctx.window, L"You must save the scene before enabling PowerTextuRe.", L"PowerTranzphormR - Error");
 					}
 					else
 					{
@@ -132,6 +137,8 @@ void properties_window::handle_material_frame(scene_material* const selected)
 				ImGui::PopID();
 			}
 		});
+
+	handle_autotexture_server();
 }
 void properties_window::handle_material_texture(scene_material* const selected_mtl, const std::string& name, bool is_button)
 {
@@ -154,21 +161,40 @@ void properties_window::handle_material_texture(scene_material* const selected_m
 		ImGui::Image(selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 	}
 }
+void properties_window::handle_autotexture_server()
+{
+	if (!ImGui::CollapsingHeader("PowerTextuRe Settings"))
+	{
+		return;
+	}
+
+	ImGui::PushID("PowerTextuReConfig");
+	bool needs_save = false;
+	needs_save = ImGui::InputText("URL", &m_autotex_url);
+	needs_save = ImGui::InputText("Username", &m_autotex_username) || needs_save;
+	needs_save = ImGui::InputText("Password", &m_autotex_password, ImGuiInputTextFlags_Password) || needs_save;
+	if (needs_save)
+	{
+		save_autotex_settings();
+	}
+	ImGui::PopID();
+}
 void properties_window::handle_material_autotexture(scene_material* const selected_mtl, const std::string& name)
 {
 	autotexture_params& at_params = selected_mtl->get_autotexture_params(name);
 	ImGui::DragInt2("Size", at_params.dims, 1.0f, 0, 512);
-	ImGui::DragInt("Seed", &at_params.seed, 99.0f + ((float)rand() / RAND_MAX) * 1000.0f, 0, MAX_VALUE_TYPE(s32));
+	ImGui::DragInt("Seed", &at_params.seed, u::rand(99.0f, 1999.0f), 0, MAX_VALUE_TYPE(s32));
 	ImGui::InputText("Prompt", &at_params.prompt);
-	ImGui::InputText("Negative Prompt", &at_params.prompt);
+	ImGui::InputText("Negative Prompt", &at_params.neg_prompt);
 	if (ImGui::Button("Randomize & Generate"))
 	{
-		//
+		at_params.seed = (s32)u::rand(0.0f, (f32)MAX_VALUE_TYPE(s32));
+		handle_material_autotexture_generate(selected_mtl, name);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Generate"))
 	{
-		//
+		handle_material_autotexture_generate(selected_mtl, name);
 	}
 }
 void properties_window::handle_light_frame(light* const selected)
@@ -289,4 +315,41 @@ rebalance_end:
 		}
 	}
 	return changed;
+}
+void properties_window::handle_material_autotexture_generate(scene_material* const selected_mtl, const std::string& name)
+{
+	//
+	// TODO
+	//
+}
+void properties_window::load_autotex_settings()
+{
+	m_autotex_needs_load = false;
+
+	std::ifstream inf("autotexture.config.json");
+	if (!inf)
+	{
+		return;
+	}
+
+	try
+	{
+		nlohmann::json j = nlohmann::json::parse(inf);
+		m_autotex_url = j["url"];
+		m_autotex_username = j["username"];
+		m_autotex_password = j["password"];
+	}
+	catch (const std::exception&)
+	{
+		std::cerr << "Unable to parse autotexture configuration file\n";
+	}
+}
+void properties_window::save_autotex_settings()
+{
+	std::ofstream outf("autotexture.config.json");
+	nlohmann::json j;
+	j["url"] = m_autotex_url;
+	j["username"] = m_autotex_username;
+	j["password"] = m_autotex_password;
+	outf << j.dump() << "\n";
 }

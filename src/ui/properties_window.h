@@ -22,10 +22,18 @@ private:
 private:
 	void handle_material_frame(scene_material* const selected);
 	void handle_material_texture(scene_material* const selected_mtl, const std::string& name, bool is_button);
+	void handle_autotexture_server();
 	void handle_material_autotexture(scene_material* const selected_mtl, const std::string& name);
 private:
 	void handle_light_frame(light* const selected);
 	void handle_static_mesh_frame(generated_mesh* const selected);
 	u32 material_combo_box(const u32 selected);
 	bool draw_params(const std::vector<std::pair<std::string, generated_mesh_param>>& params);
+	void handle_material_autotexture_generate(scene_material* const selected_mtl, const std::string& name);
+private:
+	void load_autotex_settings();
+	void save_autotex_settings();
+private:
+	std::string m_autotex_url, m_autotex_username, m_autotex_password;
+	bool m_autotex_needs_load = true;
 };
