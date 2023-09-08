@@ -20,7 +20,7 @@ void main()
 	float NdL = max(0, dot(N, -L));
 
 	vec3 V = normalize(v_pos - u_cam_pos);
-	vec3 R = normalize(reflect(L, v_norm));
+	vec3 R = normalize(reflect(L, normalize(v_norm)));
 	float spec = pow(max(0, dot(V, R)), 16);
 
 	// vec3 color = vec3(.1, .3, .9);

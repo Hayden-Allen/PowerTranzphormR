@@ -331,6 +331,7 @@ light* app_ctx::get_imgui_needs_select_unfocused_light()
 void app_ctx::draw_vertex_editor_icon()
 {
 	glDisable(GL_CULL_FACE);
+	glDepthMask(GL_FALSE);
 	static f32 rot_x = 0.f, rot_y = 0.f, rot_z = 0.f;
 	if (m_vertex_editor_icon.show)
 	{
@@ -361,6 +362,7 @@ void app_ctx::draw_vertex_editor_icon()
 		m_vertex_editor_icon.cur_selected_vtx = -1;
 		m_vertex_editor_icon.prev_selected_vtx = -1;
 	}
+	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 }
 void app_ctx::set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx)
