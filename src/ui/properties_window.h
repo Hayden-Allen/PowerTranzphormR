@@ -2,6 +2,7 @@
 #include "imgui_window.h"
 
 class sgnode;
+struct autotexture_params;
 struct scene_material;
 
 class properties_window : public imgui_window
@@ -25,6 +26,8 @@ private:
 private:
 	void load_autotex_settings();
 	void save_autotex_settings();
+	bool autotex_fetch_post(const std::string& host, const std::string& path, const nlohmann::json& body, nlohmann::json& result, int expect_status = 200);
+	void autotex_sampler_combo(autotexture_params& params, const std::string& sampler_name);
 private:
 	std::string m_autotex_url, m_autotex_username, m_autotex_password;
 	bool m_autotex_needs_load = true;

@@ -117,6 +117,12 @@ namespace u
 		reset_imgui_io(window);
 	}
 
+	static void error_message_box(GLFWwindow* const window, LPCWSTR const msg, LPCWSTR const title)
+	{
+		MessageBox(glfwGetWin32Window(window), msg, title, MB_OK | MB_ICONERROR);
+		reset_imgui_io(window);
+	}
+
 	static s32 confirm_message_box(GLFWwindow* const window, LPCWSTR const msg, LPCWSTR const title)
 	{
 		const s32 res = MessageBox(glfwGetWin32Window(window), msg, title, MB_YESNOCANCEL | MB_ICONQUESTION);
