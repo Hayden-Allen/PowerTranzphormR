@@ -7,6 +7,7 @@ class sgnode;
 class generated_mesh;
 class generated_heightmap;
 struct scene_material;
+class smnode;
 
 struct scene_ctx_uniforms
 {
@@ -52,7 +53,7 @@ public:
 	std::vector<light>& get_lights();
 	void add_light();
 public:
-	const std::vector<generated_mesh*>& get_static_meshes();
+	const std::vector<smnode*>& get_static_meshes();
 	void add_heightmap();
 public:
 	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
@@ -85,8 +86,8 @@ private:
 	attr_material_t m_mtl_id_attr;
 	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
-	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_hm_ros_for_mtl;
-	std::vector<generated_mesh*> m_static_meshes;
+	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_sm_ros_for_mtl;
+	std::vector<smnode*> m_static_meshes;
 	std::vector<light> m_lights;
 	sgnode* m_sg_root = nullptr;
 private:

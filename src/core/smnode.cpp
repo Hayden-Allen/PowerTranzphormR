@@ -45,9 +45,29 @@ void smnode::recompute(scene_ctx* const scene)
 
 	transform_verts();
 }
+std::vector<point<space::OBJECT>>& smnode::get_local_verts()
+{
+	return m_local_verts;
+}
 const std::vector<point<space::OBJECT>>& smnode::get_local_verts() const
 {
 	return m_local_verts;
+}
+const mesh_t* smnode::get_mesh() const
+{
+	return m_gen->mesh;
+}
+std::vector<std::pair<std::string, generated_mesh_param>> smnode::get_params() const
+{
+	return m_gen->get_params();
+}
+u32 smnode::get_material() const
+{
+	return m_gen->get_material();
+}
+const tmat<space::OBJECT, space::WORLD>& smnode::get_mat() const
+{
+	return m_mat;
 }
 
 

@@ -265,8 +265,8 @@ void scene_graph_window::handle_heightmaps()
 		auto& sms = m_app_ctx->scene.get_static_meshes();
 		for (u32 i = 0; i < sms.size(); i++)
 		{
-			generated_mesh* const sm = sms.at(i);
-			generated_mesh* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_static_mesh();
+			smnode* const sm = sms.at(i);
+			smnode* const needs_select = m_app_ctx->get_imgui_needs_select_unfocused_static_mesh();
 			bool selected = m_app_ctx->get_selected_static_mesh() == sm;
 			ImGui::PushID("Static Mesh");
 			ImGui::PushID(i);
@@ -275,13 +275,11 @@ void scene_graph_window::handle_heightmaps()
 			{
 				if (sms[i] == needs_select)
 				{
-					std::cout << "SET FOCUS\n";
 					ImGui::SetKeyboardFocusHere(-1);
 				}
 			}
 			else if (selected)
 			{
-				std::cout << "SET SELECTED\n";
 				m_app_ctx->set_selected_static_mesh(sm);
 			}
 			ImGui::PopID();

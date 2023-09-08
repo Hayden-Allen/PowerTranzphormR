@@ -6,6 +6,7 @@ class sgnode;
 struct scene_material;
 struct light;
 class generated_mesh;
+class smnode;
 
 class properties_window : public imgui_window
 {
@@ -26,7 +27,7 @@ private:
 	void handle_material_autotexture(scene_material* const selected_mtl, const std::string& name);
 private:
 	void handle_light_frame(light* const selected);
-	void handle_static_mesh_frame(generated_mesh* const selected);
+	void handle_static_mesh_frame(smnode* const selected);
 	u32 material_combo_box(const u32 selected);
 	bool draw_params(const std::vector<std::pair<std::string, generated_mesh_param>>& params);
 	void handle_material_autotexture_generate(scene_material* const selected_mtl, const std::string& name);

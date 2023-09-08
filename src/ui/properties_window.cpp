@@ -3,6 +3,7 @@
 #include "geom/generated_mesh.h"
 #include "app_ctx.h"
 #include "core/sgnode.h"
+#include "core/smnode.h"
 #include "core/scene_material.h"
 
 properties_window::properties_window(app_ctx* const a_ctx) :
@@ -30,7 +31,7 @@ void properties_window::handle_frame()
 	if (selected_light)
 		handle_light_frame(selected_light);
 
-	generated_mesh* const selected_static_mesh = m_app_ctx->get_selected_static_mesh();
+	smnode* const selected_static_mesh = m_app_ctx->get_selected_static_mesh();
 	if (selected_static_mesh)
 		handle_static_mesh_frame(selected_static_mesh);
 }
@@ -201,7 +202,7 @@ void properties_window::handle_light_frame(light* const selected)
 {
 	assert(false);
 }
-void properties_window::handle_static_mesh_frame(generated_mesh* const selected)
+void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
 	material_combo_box(selected->get_material());
 	const bool changed = draw_params(selected->get_params());

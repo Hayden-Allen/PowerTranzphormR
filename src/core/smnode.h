@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "geom/generated_mesh.h"
 
 class generated_mesh;
 class scene_ctx;
@@ -15,7 +16,12 @@ public:
 	void set_gen_dirty();
 	bool is_dirty() const;
 	void recompute(scene_ctx* const scene);
+	std::vector<point<space::OBJECT>>& get_local_verts();
 	const std::vector<point<space::OBJECT>>& get_local_verts() const;
+	const mesh_t* get_mesh() const;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
+	u32 get_material() const;
+	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
 private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;

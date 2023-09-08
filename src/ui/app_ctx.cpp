@@ -6,6 +6,7 @@
 #include "core/action.h"
 #include "scene_graph_window.h"
 #include "materials_list_window.h"
+#include "core/smnode.h"
 
 app_ctx::app_ctx() :
 	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
@@ -376,7 +377,7 @@ void app_ctx::check_vertex_editor_icon_switched()
 		m_vertex_editor_icon.prev_selected_vtx = m_vertex_editor_icon.cur_selected_vtx;
 	}
 }
-void app_ctx::set_selected_static_mesh(generated_mesh* const m)
+void app_ctx::set_selected_static_mesh(smnode* const m)
 {
 	if (m_selected_static_mesh != m)
 	{
@@ -387,7 +388,7 @@ void app_ctx::set_selected_static_mesh(generated_mesh* const m)
 		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
 	}
 }
-generated_mesh* app_ctx::get_imgui_needs_select_unfocused_static_mesh()
+smnode* app_ctx::get_imgui_needs_select_unfocused_static_mesh()
 {
 	return m_imgui_needs_select_unfocused_static_mesh;
 }
@@ -395,7 +396,7 @@ void app_ctx::unset_imgui_needs_select_unfocused_static_mesh()
 {
 	m_imgui_needs_select_unfocused_static_mesh = nullptr;
 }
-generated_mesh* app_ctx::get_selected_static_mesh()
+smnode* app_ctx::get_selected_static_mesh()
 {
 	return sel_type == global_selection_type::static_mesh ? m_selected_static_mesh : nullptr;
 }
