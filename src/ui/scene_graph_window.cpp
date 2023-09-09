@@ -235,7 +235,7 @@ void scene_graph_window::handle_lights()
 		for (u32 i = 0; i < lights.size(); i++)
 		{
 			light* light = lights.data() + i;
-			if (ImGui::MenuItem(light->name.c_str(), "", m_app_ctx->get_selected_light() == light))
+			if (ImGui::Selectable(light->name.c_str(), "", m_app_ctx->get_selected_light() == light))
 			{
 				m_app_ctx->set_selected_light(light);
 			}

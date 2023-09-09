@@ -41,7 +41,12 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 	{
 		handle_sgnode_snapping_angle();
 	}
-	handle_sgnode_transform(selected);
+	const bool changed = handle_transform(selected->get_mat().e);
+	if (changed)
+	{
+		selected->set_transform(selected->get_mat().e);
+	}
+
 	if (!selected->is_operation())
 	{
 		handle_sgnode_mesh(selected);
@@ -57,11 +62,11 @@ void properties_window::handle_sgnode_snapping_angle()
 	if (start_angle != scene_ctx::s_snap_angle || start_all != scene_ctx::s_snap_all)
 		m_app_ctx->scene.get_sg_root()->set_dirty();
 }
-void properties_window::handle_sgnode_transform(sgnode* const selected)
+bool properties_window::handle_transform(f32* const elements)
 {
 	bool dirty = false;
 	float trans[3] = { 0.f }, rot[3] = { 0.f }, scale[3] = { 0.f };
-	ImGuizmo::DecomposeMatrixToComponents(selected->get_mat().e, trans, rot, scale);
+	ImGuizmo::DecomposeMatrixToComponents(elements, trans, rot, scale);
 	if (ImGui::DragFloat3("Position", trans, 0.01f))
 	{
 		dirty = true;
@@ -76,9 +81,9 @@ void properties_window::handle_sgnode_transform(sgnode* const selected)
 	}
 	if (dirty)
 	{
-		ImGuizmo::RecomposeMatrixFromComponents(trans, rot, scale, selected->get_mat().e);
-		selected->set_transform(selected->get_mat().e);
+		ImGuizmo::RecomposeMatrixFromComponents(trans, rot, scale, elements);
 	}
+	return dirty;
 }
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
@@ -207,7 +212,8 @@ void properties_window::handle_material_autotexture(scene_material* const select
 }
 void properties_window::handle_light_frame(light* const selected)
 {
-	assert(false);
+	handle_transform(selected->mat.e);
+	draw_params(selected->get_params());
 }
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {

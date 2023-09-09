@@ -19,7 +19,7 @@ public:
 private:
 	void handle_sgnode_frame(sgnode* const selected);
 	void handle_sgnode_snapping_angle();
-	void handle_sgnode_transform(sgnode* const selected);
+	bool handle_transform(f32* const elements);
 	void handle_sgnode_mesh(sgnode* const selected);
 private:
 	void handle_material_frame(scene_material* const selected);
