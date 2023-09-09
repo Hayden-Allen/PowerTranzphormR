@@ -9,6 +9,7 @@ class smnode
 {
 public:
 	smnode(generated_mesh* const gen);
+	smnode(const nlohmann::json& obj, scene_ctx* const scene);
 	virtual ~smnode();
 public:
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
@@ -22,6 +23,9 @@ public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
 	u32 get_material() const;
 	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
+	bool is_static() const;
+	void make_static(scene_ctx* const scene);
+	nlohmann::json save(scene_ctx* const scene) const;
 private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;

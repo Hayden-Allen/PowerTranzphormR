@@ -18,7 +18,7 @@ void vertex_editor_window::handle_frame()
 {
 	sgnode* const selected_node = m_app_ctx->get_selected_sgnode();
 	smnode* const selected_sm = m_app_ctx->get_selected_static_mesh();
-	if (!(selected_node && selected_node->is_frozen() || selected_sm))
+	if (!(selected_node && selected_node->is_frozen() || (selected_sm && selected_sm->is_static())))
 	{
 		ImGui::TextDisabled("Select a Phrozen Node to Edit Vertices");
 		return;

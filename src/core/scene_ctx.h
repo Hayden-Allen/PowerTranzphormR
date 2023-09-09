@@ -31,11 +31,13 @@ public:
 	carve::csg::CSG& get_csg();
 	carve_vert_attrs& get_vert_attrs();
 	attr_material_t& get_mtl_id_attr();
+	const carve_vert_attrs& get_vert_attrs() const;
+	const attr_material_t& get_mtl_id_attr() const;
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
 	void update();
 	void clear(bool ready_for_default_material = true);
 	void destroy();
-	void save(std::ofstream& out, const std::string& out_fp) const;
+	void save(std::ofstream& out, const std::string& out_fp);
 	void load(std::ifstream& in, const std::string& in_fp);
 	void save_xport(mgl::output_file& out) const;
 public:

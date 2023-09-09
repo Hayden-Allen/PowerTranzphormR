@@ -2,6 +2,7 @@
 #include "scene_graph_window.h"
 #include "app_ctx.h"
 #include "core/sgnode.h"
+#include "core/smnode.h"
 #include "geom/generated_mesh.h"
 
 scene_graph_window::scene_graph_window(app_ctx* const a_ctx) :
@@ -282,6 +283,19 @@ void scene_graph_window::handle_heightmaps()
 			{
 				m_app_ctx->set_selected_static_mesh(sm);
 			}
+
+			if (ImGui::BeginPopupContextItem())
+			{
+				m_app_ctx->set_selected_static_mesh(sm);
+				// if the current node is NOT a clone of an original frozen node
+				if (!sm->is_static())
+				{
+					if (ImGui::MenuItem("Phreeze!"))
+						sm->make_static(&m_app_ctx->scene);
+				}
+				ImGui::EndPopup();
+			}
+
 			ImGui::PopID();
 			ImGui::PopID();
 		}

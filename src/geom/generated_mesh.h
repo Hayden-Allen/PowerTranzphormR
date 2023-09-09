@@ -50,6 +50,7 @@ public:
 	void clear();
 	void copy_mesh_from(const generated_mesh* const other, scene_ctx* const scene);
 	virtual mesh_t* clone_mesh_to_local(scene_ctx* const scene, const tmat<space::OBJECT, space::WORLD>& mat) const;
+	virtual bool is_static() const;
 protected:
 	virtual primitive_options* get_options() const;
 };
@@ -202,4 +203,5 @@ public:
 	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 	void set_dirty() override;
+	bool is_static() const override;
 };

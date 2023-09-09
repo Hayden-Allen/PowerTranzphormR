@@ -91,6 +91,10 @@ mesh_t* generated_mesh::clone_mesh_to_local(scene_ctx* const scene, const tmat<s
 		});
 	return clone;
 }
+bool generated_mesh::is_static() const
+{
+	return false;
+}
 
 
 
@@ -516,7 +520,6 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 	generated_mesh(nullptr)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
-	// auto& tex_coord_attr = scene->get_tex_coord_attr();
 	auto& vert_attrs = scene->get_vert_attrs();
 
 	const nlohmann::json::array_t& overts = obj["v"];
@@ -659,3 +662,7 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 	return obj;
 }
 void generated_static_mesh::set_dirty() {}
+bool generated_static_mesh::is_static() const
+{
+	return true;
+}

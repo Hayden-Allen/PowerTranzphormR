@@ -29,6 +29,14 @@ attr_material_t& scene_ctx::get_mtl_id_attr()
 {
 	return m_mtl_id_attr;
 }
+const carve_vert_attrs& scene_ctx::get_vert_attrs() const
+{
+	return m_vert_attrs;
+}
+const attr_material_t& scene_ctx::get_mtl_id_attr() const
+{
+	return m_mtl_id_attr;
+}
 void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
 	m_draw_vaos(glctx, mats, m_sm_ros_for_mtl);
@@ -72,6 +80,9 @@ void scene_ctx::clear(bool ready_for_default_material)
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
+	for (smnode* const sm : m_static_meshes)
+		delete sm;
+	m_static_meshes.clear();
 
 	// needs to happen after mtls are deleted (they unload textures from texlib)
 	// and before new mtl is created (needs new shaders)
@@ -92,28 +103,47 @@ void scene_ctx::destroy()
 		delete pair.second;
 	m_mtls.clear();
 }
-void scene_ctx::save(std::ofstream& out, const std::string& out_fp) const
+void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 {
 	nlohmann::json obj;
-	obj["n"] = m_mtls.size();
+
+	obj["nm"] = m_mtls.size();
 	std::vector<nlohmann::json::array_t> mtls;
 	for (const auto& pair : m_mtls)
 	{
 		mtls.push_back({ pair.first, pair.second->save(out, out_fp) });
 	}
 	obj["m"] = mtls;
+
+	obj["ns"] = m_static_meshes.size();
+	std::vector<nlohmann::json> sms;
+	for (const smnode* const sm : m_static_meshes)
+	{
+		sms.push_back(sm->save(this));
+	}
+	obj["s"] = sms;
+
 	out << obj << "\n";
 }
 void scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 {
 	const nlohmann::json& obj = u::next_line_json(in);
-	m_mtls.reserve(obj["n"]);
+
+	m_mtls.reserve(obj["nm"]);
 	for (const nlohmann::json::array_t& mtl : obj["m"])
 	{
 		const u32 id = mtl[0];
 		scene_material* const sm = new scene_material(in_fp, mtl[1], g::shaders);
 		m_mtls.insert({ id, sm });
 	}
+
+	m_static_meshes.reserve(obj["ns"]);
+	for (const nlohmann::json& sm : obj["s"])
+	{
+		smnode* const node = new smnode(sm, this);
+		m_static_meshes.push_back(node);
+	}
+	m_build_sm_vaos();
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
 {

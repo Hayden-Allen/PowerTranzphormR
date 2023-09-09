@@ -211,10 +211,13 @@ void properties_window::handle_light_frame(light* const selected)
 }
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
-	material_combo_box(selected->get_material());
-	const bool changed = draw_params(selected->get_params());
-	if (changed)
-		selected->set_dirty();
+	if (!selected->is_static())
+	{
+		material_combo_box(selected->get_material());
+		const bool changed = draw_params(selected->get_params());
+		if (changed)
+			selected->set_gen_dirty();
+	}
 }
 u32 properties_window::material_combo_box(const u32 selected)
 {

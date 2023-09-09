@@ -61,7 +61,7 @@ void app_ctx::clear()
 	frozen2unfrozen.clear();
 	NFD_Quit(); // Should happen before GLFW destroyed
 }
-bool app_ctx::save() const
+bool app_ctx::save()
 {
 	if (loaded_filename.size())
 	{
@@ -73,7 +73,7 @@ bool app_ctx::save() const
 		return save_as();
 	}
 }
-void app_ctx::save(const std::string& fp) const
+void app_ctx::save(const std::string& fp)
 {
 	std::ofstream out(fp);
 	assert(out.is_open());
@@ -96,7 +96,7 @@ void app_ctx::save(const std::string& fp) const
 
 	scene.save(out, fp);
 }
-bool app_ctx::save_as() const
+bool app_ctx::save_as()
 {
 	const std::string& fp = u::save_dialog(mgl_ctx.window, "PowerTranzphormR Scene", "phorm");
 	if (!fp.empty())

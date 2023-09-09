@@ -45,9 +45,9 @@ public:
 	~app_ctx();
 public:
 	void clear();
-	bool save() const;
-	void save(const std::string& fp) const;
-	bool save_as() const;
+	bool save();
+	void save(const std::string& fp);
+	bool save_as();
 	bool export_as() const;
 	bool confirm_unsaved_changes();
 	void load(const std::string& fp);
