@@ -208,6 +208,14 @@ void app_ctx::set_sel_type(const global_selection_type t)
 		m_selected_waypoint = nullptr;
 		m_selected_static_mesh = nullptr;
 	}
+	else if (sel_type == global_selection_type::waypoint)
+	{
+		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
+		m_selected_sgnode = nullptr;
+		m_selected_mtl = nullptr;
+		m_selected_light = nullptr;
+		m_selected_static_mesh = nullptr;
+	}
 	else if (sel_type == global_selection_type::static_mesh)
 	{
 		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
@@ -336,12 +344,12 @@ void app_ctx::add_waypoint()
 {
 	set_selected_waypoint(scene.add_waypoint());
 }
-void app_ctx::set_selected_waypoint(waypoint* const l)
+void app_ctx::set_selected_waypoint(waypoint* const w)
 {
-	if (m_selected_waypoint != l)
+	if (m_selected_waypoint != w)
 	{
 		set_sel_type(global_selection_type::waypoint);
-		m_selected_waypoint = l;
+		m_selected_waypoint = w;
 		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
 	}
 }

@@ -144,6 +144,14 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 	}
 	obj["l"] = ls;
 
+	obj["nw"] = m_waypoints.size();
+	std::vector<nlohmann::json> ws;
+	for (const waypoint* const w : m_waypoints)
+	{
+		ws.push_back(w->save());
+	}
+	obj["w"] = ws;
+
 	out << obj << "\n";
 }
 void scene_ctx::load(std::ifstream& in, const std::string& in_fp)

@@ -29,13 +29,24 @@ void scene_graph_window::handle_focused(const bool focused)
 void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
+	ImGui::PushID("hfsgn");
 	handle_node(root);
+	ImGui::PopID();
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+
+	ImGui::PushID("hfhmp");
 	handle_heightmaps();
+	ImGui::PopID();
 	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
+
+	ImGui::PushID("hflit");
 	handle_lights();
+	ImGui::PopID();
 	m_app_ctx->unset_imgui_needs_select_unfocused_light();
+
+	ImGui::PushID("hfway");
 	handle_waypoints();
+	ImGui::PopID();
 	m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
@@ -562,7 +573,7 @@ void scene_graph_window::handle_waypoints()
 	ImGui::PushID("##SGW_WAYS");
 	if (ImGui::BeginPopupContextItem())
 	{
-		if (ImGui::MenuItem("Add waypoint"))
+		if (ImGui::MenuItem("Add Waypoint"))
 		{
 			m_app_ctx->add_waypoint();
 		}
