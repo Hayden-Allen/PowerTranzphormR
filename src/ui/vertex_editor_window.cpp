@@ -25,19 +25,19 @@ void vertex_editor_window::handle_frame()
 	}
 	if (selected_node)
 	{
-		if (handle_frame_base(selected_node->get_gen()->mesh, selected_node->get_local_verts(), selected_node->accumulate_mats()))
+		if (handle_frame_base(selected_node->get_gen()->mesh, selected_node->get_local_verts(), selected_node->accumulate_mats(), selected_node->get_gen()->get_material()))
 			selected_node->set_dirty();
 	}
 	else
 	{
-		if (handle_frame_base(selected_sm->get_mesh(), selected_sm->get_local_verts(), selected_sm->get_mat()))
+		if (handle_frame_base(selected_sm->get_mesh(), selected_sm->get_local_verts(), selected_sm->get_mat(), selected_sm->get_material()))
 			selected_sm->set_dirty();
 	}
 }
 
 
 
-bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vector<point<space::OBJECT>>& local_verts, const tmat<space::OBJECT, space::WORLD>& mat)
+bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vector<point<space::OBJECT>>& local_verts, const tmat<space::OBJECT, space::WORLD>& mat, const GLuint mtl_id)
 {
 	if (ImGui::BeginCombo("##VEW_COMBO", vertex_editor_mode_string(m_mode).c_str()))
 	{
@@ -343,8 +343,7 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 	case vertex_editor_mode::TEX_WEIGHT:
 		{
 			std::vector<std::vector<std::tuple<const face_t*, u32, const vertex_t*>>> vec;
-			bool should_dedup = false;
-			if (should_dedup)
+			if (mtl_id != MAX_VALUE(mtl_id))
 			{
 				std::unordered_map<const vertex_t*, u64> inserted;
 				u64 vert_id = 0;

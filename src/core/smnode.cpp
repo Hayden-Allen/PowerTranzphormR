@@ -105,10 +105,16 @@ void smnode::set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 }
 void smnode::set_material(scene_ctx* const scene, const u32 mat)
 {
-	assert(!is_static());
 	m_material = mat;
 	m_gen->set_material(scene, mat);
-	set_gen_dirty();
+	if (is_static())
+	{
+		set_dirty();
+	}
+	else
+	{
+		set_gen_dirty();
+	}
 }
 bool smnode::is_dirty() const
 {
@@ -133,7 +139,7 @@ void smnode::recompute(scene_ctx* const scene)
 }
 void smnode::make_static(scene_ctx* const scene)
 {
-	generated_static_mesh* new_gen = new generated_static_mesh(carve_clone(m_gen->mesh, scene));
+	generated_static_mesh* new_gen = new generated_static_mesh(carve_clone(m_gen->mesh, scene), scene);
 	delete m_gen;
 	m_gen = new_gen;
 }

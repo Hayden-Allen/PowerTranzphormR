@@ -87,9 +87,9 @@ bool properties_window::handle_transform(f32* const elements)
 }
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
-	if (!selected->is_operation() && !selected->is_frozen())
+	const u32 selected_mtl_id = selected->get_material();
+	if (!selected->is_operation() && selected_mtl_id != MAX_VALUE(selected_mtl_id))
 	{
-		const u32 selected_mtl_id = selected->get_material();
 		const u32 new_mtl_id = material_combo_box(selected_mtl_id);
 		if (new_mtl_id != selected_mtl_id)
 			m_app_ctx->set_material(selected, new_mtl_id);
@@ -251,17 +251,31 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
 	bool changed = false;
 	changed |= handle_transform(selected->get_mat().e);
+
+	const u32 selected_mtl_id = selected->get_material();
+	const u32 new_mtl_id = material_combo_box(selected_mtl_id);
+	if (new_mtl_id != selected_mtl_id)
+	{
+		selected->set_material(&m_app_ctx->scene, new_mtl_id);
+		changed = true;
+	}
+
 	if (!selected->is_static())
 	{
-		const u32 selected_mtl_id = selected->get_material();
-		const u32 new_mtl_id = material_combo_box(selected_mtl_id);
-		if (new_mtl_id != selected_mtl_id)
-			selected->set_material(&m_app_ctx->scene, new_mtl_id);
-
 		changed |= draw_params(selected->get_params());
 	}
+
 	if (changed)
-		selected->set_gen_dirty();
+	{
+		if (selected->is_static())
+		{
+			selected->set_dirty();
+		}
+		else
+		{
+			selected->set_gen_dirty();
+		}
+	}
 }
 u32 properties_window::material_combo_box(const u32 selected)
 {

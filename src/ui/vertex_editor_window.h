@@ -34,5 +34,5 @@ public:
 private:
 	vertex_editor_mode m_mode = vertex_editor_mode::POSITION;
 private:
-	bool handle_frame_base(const mesh_t* const mesh, std::vector<point<space::OBJECT>>& local_verts, const tmat<space::OBJECT, space::WORLD>& mat);
+	bool handle_frame_base(const mesh_t* const mesh, std::vector<point<space::OBJECT>>& local_verts, const tmat<space::OBJECT, space::WORLD>& mat, const GLuint mtl_id);
 };
