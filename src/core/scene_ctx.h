@@ -2,6 +2,7 @@
 #include "geom/carve.h"
 #include "geom/glu_tess.h"
 #include "light.h"
+#include "waypoint.h"
 
 class sgnode;
 class generated_mesh;
@@ -53,10 +54,14 @@ public:
 	scene_material* get_material(const GLuint id);
 public:
 	std::vector<light*>& get_lights();
+	std::vector<waypoint*>& get_waypoints();
 	light* add_light();
 	light* add_light(light* const l);
 	void destroy_light(light* const l);
 	void update_light(const light* const l);
+	waypoint* add_waypoint();
+	waypoint* add_waypoint(waypoint* const w);
+	void destroy_waypoint(waypoint* const w);
 public:
 	const std::vector<smnode*>& get_static_meshes();
 	smnode* const add_heightmap();
@@ -96,6 +101,7 @@ private:
 	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_sm_ros_for_mtl;
 	std::vector<smnode*> m_static_meshes;
 	std::vector<light*> m_lights;
+	std::vector<waypoint*> m_waypoints;
 	sgnode* m_sg_root = nullptr;
 	mgl::static_uniform_buffer m_light_buffer;
 private:

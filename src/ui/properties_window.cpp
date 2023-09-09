@@ -31,6 +31,10 @@ void properties_window::handle_frame()
 	if (selected_light)
 		handle_light_frame(selected_light);
 
+	waypoint* const selected_waypoint = m_app_ctx->get_selected_waypoint();
+	if (selected_waypoint)
+		handle_waypoint_frame(selected_waypoint);
+
 	smnode* const selected_static_mesh = m_app_ctx->get_selected_static_mesh();
 	if (selected_static_mesh)
 		handle_static_mesh_frame(selected_static_mesh);
@@ -246,6 +250,10 @@ void properties_window::handle_light_frame(light* const selected)
 
 	changed |= draw_params(selected->get_params());
 	m_app_ctx->scene.update_light(selected);
+}
+void properties_window::handle_waypoint_frame(waypoint* const selected)
+{
+	handle_transform(selected->get_mat().e);
 }
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {

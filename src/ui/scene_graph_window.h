@@ -18,12 +18,16 @@ public:
 	const smnode* get_renaming_sm() const;
 	void set_renaming_light(light* const l);
 	const light* get_renaming_light() const;
+	void set_renaming_waypoint(waypoint* const w);
+	const waypoint* get_renaming_waypoint() const;
 private:
 	rect handle_node(sgnode* const node);
 	void handle_heightmap(smnode* const hmp);
 	void handle_heightmaps();
 	void handle_light(light* const l);
 	void handle_lights();
+	void handle_waypoint(waypoint* const w);
+	void handle_waypoints();
 private:
 	sgnode* m_show_add_child = nullptr;
 	sgnode* m_renaming = nullptr;
@@ -32,5 +36,7 @@ private:
 	bool m_rename_sm_needs_focus = false;
 	light* m_renaming_light = nullptr;
 	bool m_rename_light_needs_focus = false;
+	waypoint* m_renaming_waypoint = nullptr;
+	bool m_rename_waypoint_needs_focus = false;
 	bool m_was_focused = false;
 };

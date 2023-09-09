@@ -189,6 +189,7 @@ void app_ctx::set_sel_type(const global_selection_type t)
 		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
 		m_selected_mtl = nullptr;
 		m_selected_light = nullptr;
+		m_selected_waypoint = nullptr;
 		m_selected_static_mesh = nullptr;
 	}
 	else if (sel_type == global_selection_type::material)
@@ -197,12 +198,14 @@ void app_ctx::set_sel_type(const global_selection_type t)
 		m_selected_sgnode = nullptr;
 		m_selected_mtl = nullptr;
 		m_selected_light = nullptr;
+		m_selected_waypoint = nullptr;
 	}
 	else if (sel_type == global_selection_type::light)
 	{
 		m_imgui_needs_select_unfocused_light = m_selected_light;
 		m_selected_sgnode = nullptr;
 		m_selected_mtl = nullptr;
+		m_selected_waypoint = nullptr;
 		m_selected_static_mesh = nullptr;
 	}
 	else if (sel_type == global_selection_type::static_mesh)
@@ -211,6 +214,7 @@ void app_ctx::set_sel_type(const global_selection_type t)
 		m_selected_sgnode = nullptr;
 		m_selected_mtl = nullptr;
 		m_selected_light = nullptr;
+		m_selected_waypoint = nullptr;
 	}
 }
 void app_ctx::set_selected_sgnode(sgnode* const node)
@@ -328,6 +332,31 @@ light* app_ctx::get_imgui_needs_select_unfocused_light()
 {
 	return m_imgui_needs_select_unfocused_light;
 }
+void app_ctx::add_waypoint()
+{
+	set_selected_waypoint(scene.add_waypoint());
+}
+void app_ctx::set_selected_waypoint(waypoint* const l)
+{
+	if (m_selected_waypoint != l)
+	{
+		set_sel_type(global_selection_type::waypoint);
+		m_selected_waypoint = l;
+		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
+	}
+}
+waypoint* app_ctx::get_selected_waypoint()
+{
+	return sel_type == global_selection_type::waypoint ? m_selected_waypoint : nullptr;
+}
+void app_ctx::unset_imgui_needs_select_unfocused_waypoint()
+{
+	m_imgui_needs_select_unfocused_waypoint = nullptr;
+}
+waypoint* app_ctx::get_imgui_needs_select_unfocused_waypoint()
+{
+	return m_imgui_needs_select_unfocused_waypoint;
+}
 void app_ctx::draw_vertex_editor_icon()
 {
 	glDisable(GL_CULL_FACE);
@@ -407,6 +436,7 @@ void app_ctx::deselect_all()
 	set_selected_sgnode(nullptr);
 	set_selected_material(nullptr);
 	set_selected_light(nullptr);
+	set_selected_waypoint(nullptr);
 	set_selected_static_mesh(nullptr);
 	set_sel_type(global_selection_type::sgnode);
 }
@@ -441,7 +471,15 @@ void app_ctx::destroy_light(light* const l)
 	}
 	scene.destroy_light(l);
 }
-
+void app_ctx::destroy_waypoint(waypoint* const w)
+{
+	if (w == m_selected_waypoint)
+	{
+		deselect_all();
+		unset_imgui_needs_select_unfocused_waypoint();
+	}
+	scene.destroy_waypoint(w);
+}
 
 
 void app_ctx::transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
@@ -555,6 +593,7 @@ void app_ctx::init_menus()
 	material_menu();
 	static_meshes_menu();
 	lights_menu();
+	waypoints_menu();
 }
 void app_ctx::file_menu()
 {
@@ -1228,4 +1267,59 @@ void app_ctx::lights_menu()
 	light_menu.name = "Lights";
 	light_menu.groups.push_back({ light_create, light_rename, light_destroy });
 	shortcut_menus.push_back(light_menu);
+}
+
+void app_ctx::waypoints_menu()
+{
+	shortcut_menu_item waypoint_create = {
+		"Create",
+		[&]()
+		{
+			add_waypoint();
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+Shift+W",
+		GLFW_KEY_L,
+		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item waypoint_rename = {
+		"Rename",
+		[&]()
+		{
+			assert(m_sg_window);
+			assert(!m_sg_window->get_renaming_waypoint());
+			m_sg_window->set_renaming_waypoint(get_selected_waypoint());
+		},
+		[&]()
+		{
+			return get_selected_waypoint();
+		},
+		"Ctrl+R",
+		GLFW_KEY_R,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item waypoint_destroy = {
+		"Destroy",
+		[&]()
+		{
+			waypoint* const l = get_selected_waypoint();
+			destroy_waypoint(l);
+			set_selected_waypoint(nullptr);
+		},
+		[&]()
+		{
+			return get_selected_waypoint();
+		},
+		"Delete",
+		GLFW_KEY_DELETE,
+		0,
+	};
+
+	shortcut_menu waypoint_menu;
+	waypoint_menu.name = "Waypoints";
+	waypoint_menu.groups.push_back({ waypoint_create, waypoint_rename, waypoint_destroy });
+	shortcut_menus.push_back(waypoint_menu);
 }

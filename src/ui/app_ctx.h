@@ -13,6 +13,7 @@ enum class global_selection_type
 	sgnode,
 	material,
 	light,
+	waypoint,
 	static_mesh
 };
 
@@ -73,6 +74,11 @@ public:
 	light* get_selected_light();
 	void unset_imgui_needs_select_unfocused_light();
 	light* get_imgui_needs_select_unfocused_light();
+	void add_waypoint();
+	void set_selected_waypoint(waypoint* const w);
+	waypoint* get_selected_waypoint();
+	void unset_imgui_needs_select_unfocused_waypoint();
+	waypoint* get_imgui_needs_select_unfocused_waypoint();
 	void draw_vertex_editor_icon();
 	void set_vertex_editor_icon_position(const point<space::WORLD>& p, const s32 cur_idx);
 	void check_vertex_editor_icon_switched();
@@ -84,6 +90,7 @@ public:
 	void clear_clipboard();
 	void destroy_static_mesh(smnode* const n);
 	void destroy_light(light* const l);
+	void destroy_waypoint(waypoint* const w);
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -113,6 +120,7 @@ private:
 	void material_menu();
 	void static_meshes_menu();
 	void lights_menu();
+	void waypoints_menu();
 private:
 	sgnode* m_selected_sgnode = nullptr;
 	sgnode* m_imgui_needs_select_unfocused_sgnode = nullptr;
@@ -120,6 +128,8 @@ private:
 	scene_material* m_imgui_needs_select_unfocused_mtl = nullptr;
 	light* m_selected_light = nullptr;
 	light* m_imgui_needs_select_unfocused_light = nullptr;
+	waypoint* m_selected_waypoint = nullptr;
+	waypoint* m_imgui_needs_select_unfocused_waypoint = nullptr;
 	smnode* m_selected_static_mesh = nullptr;
 	smnode* m_imgui_needs_select_unfocused_static_mesh = nullptr;
 	scene_graph_window* m_sg_window = nullptr;

@@ -35,6 +35,8 @@ void scene_graph_window::handle_frame()
 	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
 	handle_lights();
 	m_app_ctx->unset_imgui_needs_select_unfocused_light();
+	handle_waypoints();
+	m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -65,6 +67,16 @@ void scene_graph_window::set_renaming_light(light* const l)
 const light* scene_graph_window::get_renaming_light() const
 {
 	return m_renaming_light;
+}
+void scene_graph_window::set_renaming_waypoint(waypoint* const w)
+{
+	assert(!m_renaming_waypoint);
+	m_renaming_waypoint = w;
+	m_rename_waypoint_needs_focus = true;
+}
+const waypoint* scene_graph_window::get_renaming_waypoint() const
+{
+	return m_renaming_waypoint;
 }
 scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 {
@@ -453,6 +465,117 @@ void scene_graph_window::handle_lights()
 		for (u32 i = 0; i < lights.size(); i++)
 		{
 			handle_light(lights[i]);
+		}
+		ImGui::TreePop();
+	}
+}
+
+// FIXME
+void scene_graph_window::handle_waypoint(waypoint* const w)
+{
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	if (w == m_renaming_waypoint)
+	{
+		const f32 x = ImGui::GetCursorPosX();
+
+		ImGui::TreeNodeEx(w->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (w == m_app_ctx->get_selected_waypoint() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", w->get_name().c_str());
+
+		constexpr u32 BUF_SIZE = 32;
+		char buf[32] = { 0 };
+		memcpy_s(buf, BUF_SIZE, w->get_name().c_str(), w->get_name().size());
+
+		// FIXME kind of hacky?
+		ImGui::SameLine();
+		const f32 size = ImGui::GetFontSize();
+		ImGui::SetCursorPosX(x + size + padding_x);
+
+		if (ImGui::InputText("##SGW_RENAME_WAY", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			std::string new_name(buf);
+			if (!new_name.empty())
+			{
+				w->set_name(new_name);
+			}
+			m_renaming_waypoint = nullptr;
+		}
+
+		if (m_rename_waypoint_needs_focus)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+			m_rename_waypoint_needs_focus = false;
+		}
+		else if (!ImGui::IsItemActive())
+		{
+			m_renaming_waypoint = nullptr;
+		}
+	}
+	else
+	{
+		ImGui::TreeNodeEx(w->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (w == m_app_ctx->get_selected_waypoint() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", w->get_name().c_str());
+	}
+
+	waypoint* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_waypoint();
+	if (needs_select)
+	{
+		if (w == needs_select)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+		}
+	}
+	else if (ImGui::IsItemFocused())
+	{
+		m_app_ctx->set_selected_waypoint(w);
+	}
+
+	ImGui::PopStyleVar();
+	const ImVec2& cur_min = ImGui::GetItemRectMin();
+	const ImVec2& cur_max = ImGui::GetItemRectMax();
+
+	// handle controls
+	ImGui::PushID(w->get_id().c_str());
+	if (ImGui::BeginPopupContextItem())
+	{
+		m_app_ctx->set_selected_waypoint(w);
+		if (ImGui::MenuItem("Rename"))
+		{
+			set_renaming_waypoint(w);
+		}
+		if (ImGui::MenuItem("Destroy"))
+		{
+			m_app_ctx->destroy_waypoint(w);
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	ImGui::TreePop();
+}
+
+void scene_graph_window::handle_waypoints()
+{
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	const bool open = ImGui::TreeNodeEx("##SGW_WAYS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Waypoints");
+	ImGui::PopStyleVar();
+
+	ImGui::PushID("##SGW_WAYS");
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::MenuItem("Add waypoint"))
+		{
+			m_app_ctx->add_waypoint();
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (open)
+	{
+		auto& waypoints = m_app_ctx->scene.get_waypoints();
+		for (u32 i = 0; i < waypoints.size(); i++)
+		{
+			handle_waypoint(waypoints[i]);
 		}
 		ImGui::TreePop();
 	}

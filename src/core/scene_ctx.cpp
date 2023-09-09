@@ -10,22 +10,6 @@ scene_ctx::scene_ctx() :
 	m_light_buffer(sizeof(mgl::light) * s_num_lights)
 {
 	clear(false);
-	/*mgl::light ml;
-	ml.mat = tmat_util::translation<space::OBJECT, space::WORLD>(0, 0, 5);
-	ml.ca[0] = 1;
-	ml.ca[1] = 1;
-	ml.ca[2] = 1;
-	ml.ca[3] = .2f;
-	ml.cd[0] = 1;
-	ml.cd[1] = 1;
-	ml.cd[2] = 1;
-	ml.cd[3] = 1;
-	ml.cs[0] = 1;
-	ml.cs[1] = 1;
-	ml.cs[2] = 1;
-	ml.cs[3] = 0;
-	ml.sp = 16;
-	add_light(new light(ml, "TEST"));*/
 }
 scene_ctx::~scene_ctx()
 {
@@ -86,6 +70,7 @@ void scene_ctx::clear(bool ready_for_default_material)
 	sgnode::reset_next_id();
 	smnode::reset_next_id();
 	light::reset_next_id();
+	waypoint::reset_next_id();
 	s_next_mtl_id = 1;
 
 	m_csg = carve::csg::CSG();
@@ -107,6 +92,10 @@ void scene_ctx::clear(bool ready_for_default_material)
 	for (light* const l : m_lights)
 		delete l;
 	m_lights.clear();
+
+	for (waypoint* const w : m_waypoints)
+		delete w;
+	m_waypoints.clear();
 
 	// needs to happen after mtls are deleted (they unload textures from texlib)
 	// and before new mtl is created (needs new shaders)
@@ -262,6 +251,10 @@ std::vector<light*>& scene_ctx::get_lights()
 {
 	return m_lights;
 }
+std::vector<waypoint*>& scene_ctx::get_waypoints()
+{
+	return m_waypoints;
+}
 light* scene_ctx::add_light()
 {
 	return add_light(new light());
@@ -292,6 +285,22 @@ void scene_ctx::update_light(const light* const l)
 	assert(it != m_lights.end());
 	const u32 index = u32(it - m_lights.begin());
 	m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), index * sizeof(mgl::light));
+}
+waypoint* scene_ctx::add_waypoint()
+{
+	return add_waypoint(new waypoint());
+}
+waypoint* scene_ctx::add_waypoint(waypoint* const w)
+{
+	m_waypoints.push_back(w);
+	return w;
+}
+void scene_ctx::destroy_waypoint(waypoint* const w)
+{
+	const auto& it = std::find(m_waypoints.begin(), m_waypoints.end(), w);
+	assert(it != m_waypoints.end());
+	m_waypoints.erase(it);
+	delete w;
 }
 const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {

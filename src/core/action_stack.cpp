@@ -6,6 +6,7 @@
 #include "sgnode.h"
 #include "smnode.h"
 #include "light.h"
+#include "waypoint.h"
 
 
 static void all_nodes(const sgnode* const cur, std::unordered_set<const sgnode*>& nodes)
@@ -144,6 +145,7 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	meta["ni"] = sgnode::get_next_id();
 	meta["mi"] = smnode::get_next_id();
 	meta["li"] = light::get_next_id();
+	meta["wi"] = waypoint::get_next_id();
 	out << meta << "\n";
 
 	// write out all nodes
@@ -203,6 +205,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 	sgnode::set_next_id(meta["ni"]);
 	smnode::set_next_id(meta["mi"]);
 	light::set_next_id(meta["li"]);
+	waypoint::set_next_id(meta["wi"]);
 
 	return nodes;
 }
