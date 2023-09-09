@@ -26,6 +26,7 @@ public:
 	bool is_static() const;
 	void make_static(scene_ctx* const scene);
 	nlohmann::json save(scene_ctx* const scene) const;
+	void set_material(scene_ctx* const scene, const u32 mat);
 private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;

@@ -18,6 +18,7 @@ smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene)
 	}
 	m_mat = u::json2tmat<space::OBJECT, space::WORLD>(obj["t"]);
 	copy_local_verts();
+	transform_verts();
 }
 smnode::~smnode()
 {
@@ -99,6 +100,12 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 	obj["m"] = m_gen->save(scene, m_mat.invert_copy());
 	obj["s"] = is_static();
 	return obj;
+}
+void smnode::set_material(scene_ctx* const scene, const u32 mat)
+{
+	assert(!is_static());
+	m_gen->set_material(scene, mat);
+	set_gen_dirty();
 }
 
 

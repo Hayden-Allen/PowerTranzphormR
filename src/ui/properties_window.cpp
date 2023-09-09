@@ -213,7 +213,11 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
 	if (!selected->is_static())
 	{
-		material_combo_box(selected->get_material());
+		const u32 selected_mtl_id = selected->get_material();
+		const u32 new_mtl_id = material_combo_box(selected_mtl_id);
+		if (new_mtl_id != selected_mtl_id)
+			selected->set_material(&m_app_ctx->scene, new_mtl_id);
+
 		const bool changed = draw_params(selected->get_params());
 		if (changed)
 			selected->set_gen_dirty();

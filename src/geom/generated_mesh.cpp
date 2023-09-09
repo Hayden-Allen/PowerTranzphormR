@@ -113,10 +113,10 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::g
 {
 	const primitive_options* const opts = get_options();
 	return {
-		{ "UV0", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u0, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "UV1", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u1, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "UV2", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u2, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "UV3", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u3, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV0", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u0, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV1", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u1, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV2", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u2, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV3", { generated_mesh_param_type::FLOAT_4, (void*)&opts->u3, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "Weights", { generated_mesh_param_type::FLOAT_4_SUM_1, (void*)&opts->w0, 0.0f, 1.0f, DRAG_PARAM_STEP } },
 		{ "Color", { generated_mesh_param_type::COLOR_4, (void*)&opts->r, 0.f, 1.f, DRAG_PARAM_STEP } },
 	};

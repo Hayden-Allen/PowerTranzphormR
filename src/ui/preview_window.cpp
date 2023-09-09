@@ -3,6 +3,7 @@
 #include "app_ctx.h"
 #include "preview_layer.h"
 #include "core/sgnode.h"
+#include "core/smnode.h"
 
 preview_window::preview_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Preview")
@@ -26,52 +27,77 @@ void preview_window::handle_frame()
 	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
 	// if something in the scene graph is selected, and the cursor is not locked, then show a transform gizmo for it
-	sgnode* const target = m_app_ctx->get_selected_sgnode();
-	if (target && !m_app_ctx->mgl_ctx.is_cursor_locked())
+	if (!m_app_ctx->mgl_ctx.is_cursor_locked())
 	{
-		const auto& win_pos = ImGui::GetWindowPos();
-		auto clip_min = win_pos;
-		clip_min.x += img_pos.x;
-		clip_min.y += img_pos.y;
-		auto clip_max = clip_min;
-		clip_max.x += img_dim.x;
-		clip_max.y += img_dim.y;
-		ImGui::PushClipRect(clip_min, clip_max, false);
-
-		ImGuizmo::SetOrthographic(false);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(clip_min.x, clip_min.y, img_dim.x, img_dim.y);
-
-		// make a copy of node's transform so that the gizmo can modify it
-		tmat<space::OBJECT, space::PARENT> current_mat = target->get_mat();
-		const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
-		const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
-		ImGuizmo::Manipulate((view * target->accumulate_parent_mats()).e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
-
-		if (ImGuizmo::IsUsing())
+		sgnode* const sg = m_app_ctx->get_selected_sgnode();
+		smnode* const sm = m_app_ctx->get_selected_static_mesh();
+		if (sg || sm)
 		{
-			// if this is the first frame it's being used, save initial transform
-			if (!was_using_imguizmo)
-			{
-				imguizmo_undo_mat = target->get_mat();
-			}
-			was_using_imguizmo = true;
-			// propagate gizmo's changes to node
-			if (current_mat != target->get_mat())
-				target->set_transform(current_mat);
-		}
-		// ImGuizmo not being used this frame, but was last frame
-		else if (was_using_imguizmo)
-		{
-			was_using_imguizmo = false;
-			// push result of ImGuizmo onto action stack
-			if (target)
-			{
-				m_app_ctx->transform_action(target, imguizmo_undo_mat, target->get_mat());
-			}
-		}
+			const auto& win_pos = ImGui::GetWindowPos();
+			auto clip_min = win_pos;
+			clip_min.x += img_pos.x;
+			clip_min.y += img_pos.y;
+			auto clip_max = clip_min;
+			clip_max.x += img_dim.x;
+			clip_max.y += img_dim.y;
+			ImGui::PushClipRect(clip_min, clip_max, false);
 
-		ImGui::PopClipRect();
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(clip_min.x, clip_min.y, img_dim.x, img_dim.y);
+
+			const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
+			const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
+			if (sg)
+			{
+				// make a copy of node's transform so that the gizmo can modify it
+				tmat<space::OBJECT, space::PARENT> current_mat = sg->get_mat();
+				ImGuizmo::Manipulate((view * sg->accumulate_parent_mats()).e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
+
+				if (ImGuizmo::IsUsing())
+				{
+					// if this is the first frame it's being used, save initial transform
+					if (!m_was_using_imguizmo)
+					{
+						m_imguizmo_undo_mat = sg->get_mat();
+					}
+					m_was_using_imguizmo = true;
+					// propagate gizmo's changes to node
+					if (current_mat != sg->get_mat())
+						sg->set_transform(current_mat);
+				}
+				// ImGuizmo not being used this frame, but was last frame
+				else if (m_was_using_imguizmo)
+				{
+					m_was_using_imguizmo = false;
+					// push result of ImGuizmo onto action stack
+					if (sg)
+					{
+						m_app_ctx->transform_action(sg, m_imguizmo_undo_mat, sg->get_mat());
+					}
+				}
+			}
+			else
+			{
+				// make a copy of node's transform so that the gizmo can modify it
+				tmat<space::OBJECT, space::WORLD> current_mat = sm->get_mat();
+				ImGuizmo::Manipulate(view.e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
+
+				if (ImGuizmo::IsUsing())
+				{
+					m_was_using_imguizmo = true;
+					// propagate gizmo's changes to node
+					if (current_mat != sm->get_mat())
+						sm->set_transform(current_mat);
+				}
+				// ImGuizmo not being used this frame, but was last frame
+				else if (m_was_using_imguizmo)
+				{
+					m_was_using_imguizmo = false;
+				}
+			}
+			ImGui::PopClipRect();
+		}
 	}
 	if (!ImGuizmo::IsUsing() && ImGui::IsItemClicked(GLFW_MOUSE_BUTTON_LEFT))
 	{
