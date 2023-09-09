@@ -127,9 +127,9 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 
 	obj["nl"] = m_lights.size();
 	std::vector<nlohmann::json> ls;
-	for (const light& l : m_lights)
+	for (const auto& l : m_lights)
 	{
-		ls.push_back(l.save());
+		ls.push_back(l->save());
 	}
 	obj["l"] = ls;
 
@@ -158,7 +158,7 @@ void scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	m_lights.reserve(obj["nl"]);
 	for (const nlohmann::json& l : obj["l"])
 	{
-		m_lights.emplace_back(l);
+		m_lights.emplace_back(new light(l));
 	}
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
