@@ -8,6 +8,7 @@ enum class generated_mesh_param_type
 {
 	NONE = -1,
 	FLOAT_1,
+	FLOAT_1_LOG,
 	FLOAT_2,
 	FLOAT_4,
 	FLOAT_4_SUM_1,
