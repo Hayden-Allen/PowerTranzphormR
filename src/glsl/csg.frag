@@ -5,8 +5,8 @@ struct Light
 {
 	mat4 obj2world;
 	vec4 ca, cd, cs;
-	float sp;
-	float pad0, pad1, pad2;
+	float sp, rmax;
+	float pad0, pad1;
 };
 
 layout(std140, binding = 0) uniform LightBlock
@@ -37,7 +37,7 @@ void main()
 	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
 	vec3 V = normalize(world_pos - u_cam_pos);
 	vec3 total_light = vec3(0, 0, 0);
-	vec3 total_diffuse = vec3(0.0);
+	vec3 total_diff = vec3(0.0);
 	vec3 total_spec = vec3(0.0);
 	vec3 total_amb = vec3(0.0);
 	for(uint i = 0; i < u_num_lights; i++)
@@ -46,6 +46,7 @@ void main()
 		float cur_type = cur_light.obj2world[3][3];
 		vec3 light_pos = vec3(cur_light.obj2world[3][0], cur_light.obj2world[3][1], cur_light.obj2world[3][2]);
 		vec3 L = vec3(0, 0, 0);
+		float atten = 1.f;
 
 		// directional light
 		if(cur_type == 0)
@@ -55,6 +56,16 @@ void main()
 		// point light
 		else if(cur_type == 1)
 		{
+			vec3 d_pos = light_pos - v_pos;
+			float d_pos_length2 = dot(d_pos, d_pos);
+			float rmax2 = cur_light.rmax * cur_light.rmax;
+			// current fragment beyond lights AOE
+			if(d_pos_length2 >= rmax2)
+				continue;
+			float d_pos_length = length(d_pos);
+			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
+			atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
+
 			L = normalize(light_pos - v_pos);
 		}
 
@@ -62,14 +73,14 @@ void main()
 		float RdV = max(0, dot(V, R));
 		float NdL = max(0, dot(N, L));
 
-		vec4 amb  = cur_light.ca;
-		vec4 diff = NdL * cur_light.cd;
-		vec4 spec = pow(RdV, cur_light.sp) * cur_light.cs;
-		total_diffuse += diff.rgb * diff.a;
-		total_spec += spec.rgb * spec.a;
+		vec4 amb  = atten * cur_light.ca;
+		vec4 diff = atten * NdL * cur_light.cd;
+		vec4 spec = atten * pow(RdV, cur_light.sp) * cur_light.cs;
 		total_amb += amb.rgb * amb.a;
+		total_diff += diff.rgb * diff.a;
+		total_spec += spec.rgb * spec.a;
 	}
 	
-	o_col = vec4(clamp((total_amb + total_diffuse) * mixed_res + total_spec, vec3(0), vec3(1)), 1);
+	o_col = vec4(clamp((total_amb + total_diff) * mixed_res + total_spec, vec3(0), vec3(1)), 1);
 	// o_col = vec4(abs(N), 1);
 }
