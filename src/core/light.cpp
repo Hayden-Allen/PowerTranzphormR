@@ -27,6 +27,7 @@ light::light(const nlohmann::json& obj) :
 		mgl_light.cs[i] = obj["cs"][i];
 	}
 	mgl_light.sp = obj["sp"];
+	mgl_light.rmax = obj["rm"];
 }
 
 
@@ -53,6 +54,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> light::get_params() co
 		{ "Diffuse Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.cd, 0, 0, 0 } },
 		{ "Specular Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.cs, 0, 0, 0 } },
 		{ "Specular Power", { generated_mesh_param_type::FLOAT_1, (void*)&mgl_light.sp, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Max Distance", { generated_mesh_param_type::FLOAT_1, (void*)&mgl_light.rmax, MIN_PARAM_VALUE, MAX_PARAM_VALUE, .1f } },
 	};
 }
 nlohmann::json light::save() const
@@ -66,6 +68,7 @@ nlohmann::json light::save() const
 	obj["cd"] = mgl_light.cd;
 	obj["cs"] = mgl_light.cs;
 	obj["sp"] = mgl_light.sp;
+	obj["rm"] = mgl_light.rmax;
 	return obj;
 }
 tmat<space::OBJECT, space::WORLD>& light::get_mat()
