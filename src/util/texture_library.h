@@ -107,21 +107,7 @@ public:
 private:
 	static mgl::texture2d_rgb_u8* load_file(const std::string& fp)
 	{
-		std::ifstream test(fp);
-		if (!test.is_open())
-		{
-			LOG_FATAL("Invalid texture filepath {}", fp.c_str());
-			MGL_ASSERT(false);
-			return nullptr;
-		}
-		test.close();
-
-		stbi_set_flip_vertically_on_load(true);
-		int w = -1, h = -1, c = -1;
-		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
-		mgl::texture2d_rgb_u8* tex = new mgl::texture2d_rgb_u8(GL_RGB, w, h, tex_data);
-		stbi_image_free(tex_data);
-		return tex;
+		return u::load_texture2d_rgb_u8(fp);
 	}
 private:
 	mgl::texture2d_rgb_u8* m_deftex = nullptr;

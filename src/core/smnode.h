@@ -31,6 +31,7 @@ public:
 	void set_gen_dirty();
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
 	void set_material(scene_ctx* const scene, const u32 mat);
+	void set_gen(generated_mesh* const gen);
 public:
 	bool is_dirty() const;
 	bool is_static() const;
@@ -48,7 +49,6 @@ private:
 	bool m_dirty = false;
 	std::string m_id;
 	std::string m_name = "Heightmap";
-	u32 m_material;
 private:
 	void copy_local_verts();
 	void transform_verts();

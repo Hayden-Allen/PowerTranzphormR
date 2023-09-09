@@ -5,8 +5,7 @@
 generated_mesh::generated_mesh(mesh_t* const m) :
 	mesh(m),
 	dirty(false)
-{
-}
+{}
 generated_mesh::~generated_mesh()
 {
 	delete mesh;
@@ -518,7 +517,8 @@ generated_static_mesh::generated_static_mesh(mesh_t* const m, scene_ctx* const s
 	dirty = false;
 }
 generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ctx* const scene) :
-	generated_mesh(nullptr)
+	generated_mesh(nullptr),
+	m_material(obj["mat"])
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& vert_attrs = scene->get_vert_attrs();
@@ -610,6 +610,7 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 
 	nlohmann::json obj;
 	obj["type"] = 6;
+	obj["mat"] = m_material;
 
 	nlohmann::json::array_t verts;
 	std::unordered_map<const vertex_t*, u64> vert2index;
@@ -673,17 +674,14 @@ bool generated_static_mesh::is_static() const
 {
 	return true;
 }
-
 void generated_static_mesh::set_mesh(mesh_t* const m)
 {
 	generated_mesh::set_mesh(m);
 }
-
 GLuint generated_static_mesh::get_material() const
 {
 	return m_material;
 }
-
 void generated_static_mesh::check_material_id(scene_ctx* const scene)
 {
 	auto& mtl_id_attr = scene->get_mtl_id_attr();

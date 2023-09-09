@@ -460,8 +460,9 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 	assert(options.width_steps > 1);
 	assert(options.depth_steps > 1);
 
-	const u32 x_steps = options.width_steps;
-	const u32 z_steps = options.depth_steps;
+	const bool use_map = options.map;
+	const u32 x_steps = use_map ? options.map->get_width() : options.width_steps;
+	const u32 z_steps = use_map ? options.map->get_height() : options.depth_steps;
 	const f32 x_step = 1.f / (x_steps - 1);
 	const f32 z_step = 1.f / (z_steps - 1);
 	std::vector<vertex_t> raw_vertices;
@@ -476,7 +477,9 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 		for (u32 ix = 0; ix < x_steps; ix++)
 		{
 			const f32 x = ix * x_step - .5f;
-			raw_vertices.emplace_back(carve::geom::VECTOR(x, 0, z));
+			// height is stored in alpha channel
+			const f32 y = use_map ? (1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 0) / MAX_VALUE_TYPE(u8)) : 0.f;
+			raw_vertices.emplace_back(carve::geom::VECTOR(x, y, z));
 		}
 	}
 	for (u64 i = 0; i < raw_vertices.size(); i++)

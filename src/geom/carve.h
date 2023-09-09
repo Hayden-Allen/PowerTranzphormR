@@ -73,6 +73,7 @@ struct torus_options : public primitive_options
 struct heightmap_options : public primitive_options
 {
 	u32 width_steps = 2, depth_steps = 2;
+	const mgl::retained_texture2d_rgba_u8* map = nullptr;
 };
 
 struct carve_vert_attrs
