@@ -213,7 +213,37 @@ void properties_window::handle_material_autotexture(scene_material* const select
 void properties_window::handle_light_frame(light* const selected)
 {
 	bool changed = false;
+	const light_type type = selected->get_type();
 	changed |= handle_transform(selected->get_mat().e);
+	// maintain type id in mat[3][3]
+	selected->set_type(type);
+
+	ImGui::PushID(selected->get_id().c_str());
+	if (ImGui::BeginCombo("Type", light_type_string(type).c_str()))
+	{
+		for (u32 i = 0; i < (u32)light_type::COUNT; i++)
+		{
+			light_type cur = (light_type)i;
+			const bool cur_selected = type == cur;
+			ImGui::PushID(i);
+			if (ImGui::Selectable(light_type_string(cur).c_str(), cur_selected))
+			{
+				if (!cur_selected)
+				{
+					changed = true;
+					selected->set_type(cur);
+				}
+			}
+			if (cur_selected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+			ImGui::PopID();
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+
 	changed |= draw_params(selected->get_params());
 	m_app_ctx->scene.update_light(selected);
 }
@@ -241,7 +271,7 @@ u32 properties_window::material_combo_box(const u32 selected)
 		const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
 		for (const auto& pair : sorted_mtls)
 		{
-			bool cur_mtl_combo_selected = pair.first == selected;
+			const bool cur_mtl_combo_selected = pair.first == selected;
 			ImGui::PushID(pair.first);
 			if (ImGui::Selectable(pair.second->name.c_str(), cur_mtl_combo_selected))
 			{

@@ -4,15 +4,21 @@
 
 light::light() :
 	m_id(std::string("lit") + std::to_string(s_next_id++))
-{}
+{
+	set_type(light_type::POINT);
+}
 light::light(const mgl::light& ml, const std::string& _name) :
 	mgl_light(ml),
 	name(_name)
-{}
+{
+	set_type(light_type::POINT);
+}
 light::light(const nlohmann::json& obj) :
 	name(obj["n"]),
 	m_id(obj["id"])
 {
+	set_type(obj["ty"]);
+
 	mgl_light.mat = u::json2tmat<space::OBJECT, space::WORLD>(obj["t"]);
 	for (s32 i = 0; i < 4; i++)
 	{
@@ -54,6 +60,7 @@ nlohmann::json light::save() const
 	nlohmann::json obj;
 	obj["id"] = m_id;
 	obj["n"] = name;
+	obj["ty"] = m_type;
 	obj["t"] = mgl_light.mat.e;
 	obj["ca"] = mgl_light.ca;
 	obj["cd"] = mgl_light.cd;
@@ -77,9 +84,18 @@ const std::string& light::get_name() const
 {
 	return name;
 }
+light_type light::get_type() const
+{
+	return m_type;
+}
 void light::set_name(const std::string& n)
 {
 	name = n;
+}
+void light::set_type(const light_type t)
+{
+	m_type = t;
+	mgl_light.mat.t[3] = (f32)t;
 }
 const std::string& light::get_id() const
 {

@@ -43,12 +43,24 @@ void main()
 	for(uint i = 0; i < u_num_lights; i++)
 	{
 		Light cur_light = u_light_block.lights[i];
+		float cur_type = cur_light.obj2world[3][3];
 		vec3 light_pos = vec3(cur_light.obj2world[3][0], cur_light.obj2world[3][1], cur_light.obj2world[3][2]);
-		vec3 L = normalize(light_pos - v_pos);
+		vec3 L = vec3(0, 0, 0);
+
+		// directional light
+		if(cur_type == 0)
+		{
+			L = normalize(light_pos);
+		}
+		// point light
+		else if(cur_type == 1)
+		{
+			L = normalize(light_pos - v_pos);
+		}
+
 		vec3 R = normalize(reflect(L, N));
 		float RdV = max(0, dot(V, R));
 		float NdL = max(0, dot(N, L));
-		// float NdL = abs(dot(N, L));
 
 		vec4 amb  = cur_light.ca;
 		vec4 diff = NdL * cur_light.cd;
