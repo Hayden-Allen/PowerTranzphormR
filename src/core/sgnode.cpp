@@ -294,7 +294,8 @@ void sgnode::recompute(scene_ctx* const scene)
 		{
 			if (child->m_dirty)
 				child->recompute(scene);
-			if (!child->m_gen->mesh)
+			// sometimes carve makes weird cases with empty meshes
+			if (!(child->m_gen->mesh && child->m_gen->mesh->meshes.size()))
 				continue;
 			if (!m_gen->mesh)
 			{

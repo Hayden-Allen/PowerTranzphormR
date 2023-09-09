@@ -219,6 +219,8 @@ void properties_window::handle_light_frame(light* const selected)
 }
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
+	bool changed = false;
+	changed |= handle_transform(selected->get_mat().e);
 	if (!selected->is_static())
 	{
 		const u32 selected_mtl_id = selected->get_material();
@@ -226,10 +228,10 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 		if (new_mtl_id != selected_mtl_id)
 			selected->set_material(&m_app_ctx->scene, new_mtl_id);
 
-		const bool changed = draw_params(selected->get_params());
-		if (changed)
-			selected->set_gen_dirty();
+		changed |= draw_params(selected->get_params());
 	}
+	if (changed)
+		selected->set_gen_dirty();
 }
 u32 properties_window::material_combo_box(const u32 selected)
 {
