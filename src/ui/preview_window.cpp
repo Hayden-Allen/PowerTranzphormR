@@ -31,7 +31,8 @@ void preview_window::handle_frame()
 	{
 		sgnode* const sg = m_app_ctx->get_selected_sgnode();
 		smnode* const sm = m_app_ctx->get_selected_static_mesh();
-		if (sg || sm)
+		light* const sl = m_app_ctx->get_selected_light();
+		if (sg || sm || sl)
 		{
 			const auto& win_pos = ImGui::GetWindowPos();
 			auto clip_min = win_pos;
@@ -77,7 +78,7 @@ void preview_window::handle_frame()
 					}
 				}
 			}
-			else
+			else if (sm)
 			{
 				// make a copy of node's transform so that the gizmo can modify it
 				tmat<space::OBJECT, space::WORLD> current_mat = sm->get_mat();
@@ -89,6 +90,25 @@ void preview_window::handle_frame()
 					// propagate gizmo's changes to node
 					if (current_mat != sm->get_mat())
 						sm->set_transform(current_mat);
+				}
+				// ImGuizmo not being used this frame, but was last frame
+				else if (m_was_using_imguizmo)
+				{
+					m_was_using_imguizmo = false;
+				}
+			}
+			else if (sl)
+			{
+				// make a copy of node's transform so that the gizmo can modify it
+				tmat<space::OBJECT, space::WORLD> current_mat = sl->mat;
+				ImGuizmo::Manipulate(view.e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
+
+				if (ImGuizmo::IsUsing())
+				{
+					m_was_using_imguizmo = true;
+					// propagate gizmo's changes to node
+					if (current_mat != sl->mat)
+						sl->mat = current_mat;
 				}
 				// ImGuizmo not being used this frame, but was last frame
 				else if (m_was_using_imguizmo)

@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "util/color.h"
+#include "geom/generated_mesh.h"
 
 struct light
 {
@@ -17,7 +18,10 @@ struct light
 		s_next_id = s_first_id;
 	}
 
-	light() : m_id(std::string("lit") + std::to_string(s_next_id++)) {}
+
+	light();
+	light(const nlohmann::json& obj);
+
 	std::string name = "Light";
 	tmat<space::OBJECT, space::WORLD> mat;
 	// ambient, diffuse, specular
@@ -31,7 +35,9 @@ struct light
 	void set_name(const std::string& n) { name = n; }
 	const std::string& get_id() const { return m_id; }
 
-	
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
+	nlohmann::json save() const;
+
 private:
 	constexpr static inline u32 s_first_id = 0;
 	static inline u32 s_next_id = s_first_id;
