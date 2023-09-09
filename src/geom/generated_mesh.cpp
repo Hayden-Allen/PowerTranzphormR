@@ -5,7 +5,8 @@
 generated_mesh::generated_mesh(mesh_t* const m) :
 	mesh(m),
 	dirty(false)
-{}
+{
+}
 generated_mesh::~generated_mesh()
 {
 	delete mesh;
@@ -78,8 +79,7 @@ void generated_mesh::clear()
 }
 void generated_mesh::copy_mesh_from(const generated_mesh* const other, scene_ctx* const scene)
 {
-	assert(!mesh);
-	mesh = carve_clone(other->mesh, scene);
+	set_mesh(carve_clone(other->mesh, scene));
 }
 mesh_t* generated_mesh::clone_mesh_to_local(scene_ctx* const scene, const tmat<space::OBJECT, space::WORLD>& mat) const
 {
@@ -511,9 +511,10 @@ generated_heightmap::generated_heightmap(const GLuint material, const heightmap_
 
 
 
-generated_static_mesh::generated_static_mesh(mesh_t* const m) :
+generated_static_mesh::generated_static_mesh(mesh_t* const m, scene_ctx* const scene) :
 	generated_mesh(m)
 {
+	check_material_id(scene);
 	dirty = false;
 }
 generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ctx* const scene) :
@@ -566,6 +567,8 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 	}
 
 	mesh = new mesh_t(faces);
+
+	check_material_id(scene);
 }
 void generated_static_mesh::set_material(scene_ctx* const scene, const GLuint new_mat)
 {
@@ -576,6 +579,8 @@ void generated_static_mesh::set_material(scene_ctx* const scene, const GLuint ne
 		const face_t* const f = *i;
 		mtl_id_attr.setAttribute(f, new_mat);
 	}
+
+	check_material_id(scene);
 }
 void generated_static_mesh::replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat)
 {
@@ -590,10 +595,12 @@ void generated_static_mesh::replace_material(scene_ctx* const scene, const GLuin
 			mtl_id_attr.setAttribute(f, new_mat);
 		}
 	}
+
+	check_material_id(scene);
 }
 generated_mesh* generated_static_mesh::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
-	return new generated_static_mesh(carve_clone(mesh, scene, inv_mat));
+	return new generated_static_mesh(carve_clone(mesh, scene, inv_mat), scene);
 }
 nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const
 {
@@ -665,4 +672,40 @@ void generated_static_mesh::set_dirty() {}
 bool generated_static_mesh::is_static() const
 {
 	return true;
+}
+
+void generated_static_mesh::set_mesh(mesh_t* const m)
+{
+	generated_mesh::set_mesh(m);
+}
+
+GLuint generated_static_mesh::get_material() const
+{
+	return m_material;
+}
+
+void generated_static_mesh::check_material_id(scene_ctx* const scene)
+{
+	auto& mtl_id_attr = scene->get_mtl_id_attr();
+	u32 prev_mtl_id = 0;
+	bool prev_mtl_valid = false;
+	for (mesh_t::face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+	{
+		const mesh_t::face_t* const f = *i;
+		u32 mtl_id = mtl_id_attr.getAttribute(f, 0);
+		if (prev_mtl_valid)
+		{
+			if (mtl_id == prev_mtl_id)
+			{
+				m_material = mtl_id;
+			}
+			else
+			{
+				m_material = MAX_VALUE_TYPE(GLuint);
+				return;
+			}
+		}
+		prev_mtl_id = mtl_id;
+		prev_mtl_valid = true;
+	}
 }

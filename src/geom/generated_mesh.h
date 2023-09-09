@@ -44,7 +44,7 @@ public:
 	virtual GLuint get_material() const;
 	virtual void set_material(scene_ctx* const scene, const GLuint mat);
 	virtual void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat);
-	void set_mesh(mesh_t* const m);
+	virtual void set_mesh(mesh_t* const m);
 	virtual void set_dirty();
 	bool is_dirty() const;
 	void clear();
@@ -194,7 +194,7 @@ private:
 class generated_static_mesh : public generated_mesh
 {
 public:
-	generated_static_mesh(mesh_t* const m);
+	generated_static_mesh(mesh_t* const m, scene_ctx* const scene);
 	generated_static_mesh(const nlohmann::json& obj, scene_ctx* const scene);
 	MGL_DCM(generated_static_mesh);
 public:
@@ -204,4 +204,10 @@ public:
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
 	void set_dirty() override;
 	bool is_static() const override;
+	void set_mesh(mesh_t* const m) override;
+	GLuint get_material() const override;
+private:
+	void check_material_id(scene_ctx* const scene);
+private:
+	GLuint m_material = MAX_VALUE_TYPE(GLuint);
 };
