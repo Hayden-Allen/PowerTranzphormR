@@ -2,8 +2,10 @@
 #include "light.h"
 
 
+light::light() : m_id(std::string("lit") + std::to_string(s_next_id++)) {}
 light::light(const nlohmann::json& obj) :
 	name(obj["n"]),
+	m_id(std::string("lit") + std::to_string(s_next_id++)),
 	mat(u::json2tmat<space::OBJECT, space::WORLD>(obj["t"])),
 	ca(obj["ca"][0], obj["ca"][1], obj["ca"][2], obj["ca"][3]),
 	cd(obj["cd"][0], obj["cd"][1], obj["cd"][2], obj["cd"][3]),
