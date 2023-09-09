@@ -25,10 +25,7 @@ scene_ctx::scene_ctx() :
 	ml.cs[2] = 1;
 	ml.cs[3] = 1;
 	ml.sp = 16;
-	light l;
-	l.mgl_light = ml;
-	l.name = "TEST";
-	add_light(l);
+	add_light(new light(ml, "TEST"));
 }
 scene_ctx::~scene_ctx()
 {
@@ -87,6 +84,8 @@ void scene_ctx::update()
 void scene_ctx::clear(bool ready_for_default_material)
 {
 	sgnode::reset_next_id();
+	smnode::reset_next_id();
+	light::reset_next_id();
 	s_next_mtl_id = 1;
 
 	m_csg = carve::csg::CSG();
@@ -145,9 +144,9 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 
 	obj["nl"] = m_lights.size();
 	std::vector<nlohmann::json> ls;
-	for (const light& l : m_lights)
+	for (const auto& l : m_lights)
 	{
-		ls.push_back(l.save());
+		ls.push_back(l->save());
 	}
 	obj["l"] = ls;
 
@@ -176,7 +175,7 @@ void scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	m_lights.reserve(obj["nl"]);
 	for (const nlohmann::json& l : obj["l"])
 	{
-		m_lights.emplace_back(l);
+		m_lights.emplace_back(new light(l));
 	}
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
@@ -253,26 +252,31 @@ scene_material* scene_ctx::get_material(const GLuint id)
 {
 	return m_mtls[id];
 }
-std::vector<light>& scene_ctx::get_lights()
+std::vector<light*>& scene_ctx::get_lights()
 {
 	return m_lights;
 }
-void scene_ctx::add_light()
+light* scene_ctx::add_light()
 {
-	add_light(light());
+	return add_light(new light());
 }
-void scene_ctx::add_light(const light& l)
+light* scene_ctx::add_light(light* const l)
 {
 	if (m_lights.size() < s_num_lights)
 	{
 		m_lights.push_back(l);
-		const light& l = m_lights.back();
-		m_light_buffer.update((f32*)&l.mgl_light, sizeof(mgl::light) / sizeof(f32), sizeof(mgl::light) * u32(m_lights.size() - 1));
+		const light* const l = m_lights.back();
+		m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), sizeof(mgl::light) * u32(m_lights.size() - 1));
+		return m_lights.back();
 	}
+	return nullptr;
 }
-void scene_ctx::destroy_light(const u32 index)
+void scene_ctx::destroy_light(light* const l)
 {
-	m_lights.erase(m_lights.begin() + index);
+	const auto& it = std::find(m_lights.begin(), m_lights.end(), l);
+	assert(it != m_lights.end());
+	m_lights.erase(it);
+	delete l;
 	// I'm lazy
 	m_build_light_buffer();
 }
@@ -280,10 +284,12 @@ const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {
 	return m_static_meshes;
 }
-void scene_ctx::add_heightmap()
+smnode* const scene_ctx::add_heightmap()
 {
-	m_static_meshes.push_back(new smnode(generated_textured_heightmap(0)));
+	smnode* const result = new smnode(generated_textured_heightmap(0));
+	m_static_meshes.push_back(result);
 	m_build_sm_vaos();
+	return result;
 }
 void scene_ctx::destroy_static_mesh(smnode* const n)
 {
@@ -351,8 +357,8 @@ void scene_ctx::m_build_light_buffer()
 {
 	std::vector<mgl::light> mgl_lights;
 	mgl_lights.reserve(m_lights.size());
-	for (const light& l : m_lights)
-		mgl_lights.push_back(l.mgl_light);
+	for (const light* const l : m_lights)
+		mgl_lights.push_back(l->mgl_light);
 	m_light_buffer.update((f32*)mgl_lights.data(), sizeof(mgl::light) / sizeof(f32) * (u32)mgl_lights.size(), 0);
 }
 void scene_ctx::m_build_sg_vaos()

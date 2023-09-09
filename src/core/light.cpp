@@ -2,6 +2,13 @@
 #include "light.h"
 
 
+light::light() :
+	m_id(std::string("lit") + std::to_string(s_next_id++))
+{}
+light::light(const mgl::light& ml, const std::string& _name) :
+	mgl_light(ml),
+	name(_name)
+{}
 light::light(const nlohmann::json& obj) :
 	name(obj["n"])
 {
@@ -13,6 +20,21 @@ light::light(const nlohmann::json& obj) :
 		mgl_light.cs[i] = obj["cs"][i];
 	}
 	mgl_light.sp = obj["sp"];
+}
+
+
+
+u32 light::get_next_id()
+{
+	return s_next_id;
+}
+void light::set_next_id(const u32 id)
+{
+	s_next_id = id;
+}
+void light::reset_next_id()
+{
+	s_next_id = s_first_id;
 }
 
 
@@ -45,8 +67,19 @@ const tmat<space::OBJECT, space::WORLD>& light::get_mat() const
 {
 	return mgl_light.mat;
 }
-
 void light::set_mat(const tmat<space::OBJECT, space::WORLD>& m)
 {
 	mgl_light.mat = m;
+}
+const std::string& light::get_name() const
+{
+	return name;
+}
+void light::set_name(const std::string& n)
+{
+	name = n;
+}
+const std::string& light::get_id() const
+{
+	return m_id;
 }

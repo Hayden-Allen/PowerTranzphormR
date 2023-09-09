@@ -31,10 +31,10 @@ void scene_graph_window::handle_frame()
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	handle_node(root);
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
-	// m_app_ctx->unset_imgui_needs_select_unfocused_light();
-	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
 	handle_heightmaps();
+	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
 	handle_lights();
+	m_app_ctx->unset_imgui_needs_select_unfocused_light();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -45,6 +45,26 @@ void scene_graph_window::set_renaming(sgnode* const node)
 const sgnode* scene_graph_window::get_renaming() const
 {
 	return m_renaming;
+}
+void scene_graph_window::set_renaming_sm(smnode* const sm)
+{
+	assert(!m_renaming_sm);
+	m_renaming_sm = sm;
+	m_rename_sm_needs_focus = true;
+}
+const smnode* scene_graph_window::get_renaming_sm() const
+{
+	return m_renaming_sm;
+}
+void scene_graph_window::set_renaming_light(light* const l)
+{
+	assert(!m_renaming_light);
+	m_renaming_light = l;
+	m_rename_light_needs_focus = true;
+}
+const light* scene_graph_window::get_renaming_light() const
+{
+	return m_renaming_light;
 }
 scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 {
@@ -66,6 +86,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	if (node == m_renaming)
 	{
 		const f32 x = ImGui::GetCursorPosX();
+
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 
 		constexpr u32 BUF_SIZE = 32;
@@ -137,8 +158,6 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 				m_app_ctx->create_cone_action();
 			if (ImGui::MenuItem("Add Torus"))
 				m_app_ctx->create_torus_action();
-			if (ImGui::MenuItem("Add Heightmap"))
-				m_app_ctx->create_heightmap();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Add Union"))
 				m_app_ctx->create_union_action();
@@ -211,37 +230,94 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 
 	return std::make_pair(cur_min, cur_max);
 }
-void scene_graph_window::handle_lights()
+void scene_graph_window::handle_heightmap(smnode* const hmp)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
-	const bool open = ImGui::TreeNodeEx("##SGW_LIGHTS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Lights");
-	ImGui::PopStyleVar();
+	if (hmp == m_renaming_sm)
+	{
+		const f32 x = ImGui::GetCursorPosX();
 
-	ImGui::PushID("##SW_LIGHTS");
+		ImGui::TreeNodeEx(hmp->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (hmp == m_app_ctx->get_selected_static_mesh() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", hmp->get_name().c_str());
+
+		constexpr u32 BUF_SIZE = 32;
+		char buf[32] = { 0 };
+		memcpy_s(buf, BUF_SIZE, hmp->get_name().c_str(), hmp->get_name().size());
+
+		// FIXME kind of hacky?
+		ImGui::SameLine();
+		const f32 size = ImGui::GetFontSize();
+		ImGui::SetCursorPosX(x + size + padding_x);
+
+		if (ImGui::InputText("##SGW_RENAME_SM", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			std::string new_name(buf);
+			if (!new_name.empty())
+			{
+				hmp->set_name(new_name);
+			}
+			m_renaming_sm = nullptr;
+		}
+
+		if (m_rename_sm_needs_focus)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+			m_rename_sm_needs_focus = false;
+		}
+		else if (!ImGui::IsItemActive())
+		{
+			m_renaming_sm = nullptr;
+		}
+	}
+	else
+	{
+		ImGui::TreeNodeEx(hmp->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (hmp == m_app_ctx->get_selected_static_mesh() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", hmp->get_name().c_str());
+	}
+
+	smnode* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_static_mesh();
+	if (needs_select)
+	{
+		if (hmp == needs_select)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+		}
+	}
+	else if (ImGui::IsItemFocused())
+	{
+		m_app_ctx->set_selected_static_mesh(hmp);
+	}
+
+	ImGui::PopStyleVar();
+	const ImVec2& cur_min = ImGui::GetItemRectMin();
+	const ImVec2& cur_max = ImGui::GetItemRectMax();
+
+	// handle controls
+	ImGui::PushID(hmp->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		if (ImGui::MenuItem("Add Light"))
+		m_app_ctx->set_selected_static_mesh(hmp);
+		if (!hmp->is_static())
 		{
-			m_app_ctx->add_light();
+			if (ImGui::MenuItem("Phreeze!"))
+			{
+				hmp->make_static(&m_app_ctx->scene);
+				hmp->set_name("Phrozen " + hmp->get_name());
+			}
+			ImGui::Separator();
+		}
+		if (ImGui::MenuItem("Rename"))
+		{
+			set_renaming_sm(hmp);
+		}
+		if (ImGui::MenuItem("Destroy"))
+		{
+			m_app_ctx->destroy_static_mesh(hmp);
 		}
 		ImGui::EndPopup();
 	}
 	ImGui::PopID();
 
-	if (open)
-	{
-		auto& lights = m_app_ctx->scene.get_lights();
-		for (u32 i = 0; i < lights.size(); i++)
-		{
-			light* light = lights.data() + i;
-			if (ImGui::Selectable(light->name.c_str(), "", m_app_ctx->get_selected_light() == light))
-			{
-				m_app_ctx->set_selected_light(light);
-			}
-		}
-		ImGui::TreePop();
-	}
+	ImGui::TreePop();
 }
 void scene_graph_window::handle_heightmaps()
 {
@@ -266,46 +342,117 @@ void scene_graph_window::handle_heightmaps()
 		auto& sms = m_app_ctx->scene.get_static_meshes();
 		for (u32 i = 0; i < sms.size(); i++)
 		{
-			smnode* const sm = sms.at(i);
-			smnode* const needs_select = m_app_ctx->get_imgui_needs_select_unfocused_static_mesh();
-			bool selected = m_app_ctx->get_selected_static_mesh() == sm;
-			ImGui::PushID("Static Mesh");
-			ImGui::PushID(i);
-			selected = ImGui::Selectable(sm->get_name().c_str(), &selected);
-			if (needs_select)
-			{
-				if (sms[i] == needs_select)
-				{
-					ImGui::SetKeyboardFocusHere(-1);
-				}
-			}
-			else if (selected)
-			{
-				m_app_ctx->set_selected_static_mesh(sm);
-			}
+			handle_heightmap(sms[i]);
+		}
+		ImGui::TreePop();
+	}
+}
 
-			if (ImGui::BeginPopupContextItem())
-			{
-				m_app_ctx->set_selected_static_mesh(sm);
-				// if the current node is NOT a clone of an original frozen node
-				if (!sm->is_static())
-				{
-					if (ImGui::MenuItem("Phreeze!"))
-						sm->make_static(&m_app_ctx->scene);
-					ImGui::Separator();
-				}
-				if (ImGui::MenuItem("Rename"))
-				{
-				}
-				if (ImGui::MenuItem("Destroy"))
-				{
-					m_app_ctx->destroy_static_mesh(sm);
-				}
-				ImGui::EndPopup();
-			}
+void scene_graph_window::handle_light(light* const l)
+{
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	if (l == m_renaming_light)
+	{
+		const f32 x = ImGui::GetCursorPosX();
 
-			ImGui::PopID();
-			ImGui::PopID();
+		ImGui::TreeNodeEx(l->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (l == m_app_ctx->get_selected_light() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", l->get_name().c_str());
+
+		constexpr u32 BUF_SIZE = 32;
+		char buf[32] = { 0 };
+		memcpy_s(buf, BUF_SIZE, l->get_name().c_str(), l->get_name().size());
+
+		// FIXME kind of hacky?
+		ImGui::SameLine();
+		const f32 size = ImGui::GetFontSize();
+		ImGui::SetCursorPosX(x + size + padding_x);
+
+		if (ImGui::InputText("##SGW_RENAME_LIT", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			std::string new_name(buf);
+			if (!new_name.empty())
+			{
+				l->set_name(new_name);
+			}
+			m_renaming_light = nullptr;
+		}
+
+		if (m_rename_light_needs_focus)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+			m_rename_light_needs_focus = false;
+		}
+		else if (!ImGui::IsItemActive())
+		{
+			m_renaming_light = nullptr;
+		}
+	}
+	else
+	{
+		ImGui::TreeNodeEx(l->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (l == m_app_ctx->get_selected_light() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", l->get_name().c_str());
+	}
+
+	light* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_light();
+	if (needs_select)
+	{
+		if (l == needs_select)
+		{
+			ImGui::SetKeyboardFocusHere(-1);
+		}
+	}
+	else if (ImGui::IsItemFocused())
+	{
+		m_app_ctx->set_selected_light(l);
+	}
+
+	ImGui::PopStyleVar();
+	const ImVec2& cur_min = ImGui::GetItemRectMin();
+	const ImVec2& cur_max = ImGui::GetItemRectMax();
+
+	// handle controls
+	ImGui::PushID(l->get_id().c_str());
+	if (ImGui::BeginPopupContextItem())
+	{
+		m_app_ctx->set_selected_light(l);
+		if (ImGui::MenuItem("Rename"))
+		{
+			set_renaming_light(l);
+		}
+		if (ImGui::MenuItem("Destroy"))
+		{
+			m_app_ctx->destroy_light(l);
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	ImGui::TreePop();
+}
+
+void scene_graph_window::handle_lights()
+{
+	const f32 padding_x = 3.f;
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
+	const bool open = ImGui::TreeNodeEx("##SGW_LITS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Lights");
+	ImGui::PopStyleVar();
+
+	ImGui::PushID("##SGW_LITS");
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::MenuItem("Add Light"))
+		{
+			m_app_ctx->add_light();
+		}
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	if (open)
+	{
+		auto& lights = m_app_ctx->scene.get_lights();
+		for (u32 i = 0; i < lights.size(); i++)
+		{
+			handle_light(lights[i]);
 		}
 		ImGui::TreePop();
 	}

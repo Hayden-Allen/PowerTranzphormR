@@ -52,13 +52,13 @@ public:
 	u32 get_id_for_material(scene_material* const mat);
 	scene_material* get_material(const GLuint id);
 public:
-	std::vector<light>& get_lights();
-	void add_light();
-	void add_light(const light& l);
-	void destroy_light(const u32 index);
+	std::vector<light*>& get_lights();
+	light* add_light();
+	light* add_light(light* const l);
+	void destroy_light(light* const l);
 public:
 	const std::vector<smnode*>& get_static_meshes();
-	void add_heightmap();
+	smnode* const add_heightmap();
 	void destroy_static_mesh(smnode* const n);
 public:
 	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
@@ -94,7 +94,7 @@ private:
 	std::unordered_map<u32, scene_material*> m_mtls;
 	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_sm_ros_for_mtl;
 	std::vector<smnode*> m_static_meshes;
-	std::vector<light> m_lights;
+	std::vector<light*> m_lights;
 	sgnode* m_sg_root = nullptr;
 	mgl::static_uniform_buffer m_light_buffer;
 private:

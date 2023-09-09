@@ -3,12 +3,14 @@
 #include "geom/generated_mesh.h"
 
 smnode::smnode(generated_mesh* const gen) :
-	m_gen(gen)
+	m_gen(gen),
+	m_id(std::string("smn") + std::to_string(s_next_id++))
 {
 	copy_local_verts();
 }
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
-	m_name(obj["n"])
+	m_name(obj["n"]),
+	m_id(std::string("smn") + std::to_string(s_next_id++))
 {
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
@@ -24,6 +26,21 @@ smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 smnode::~smnode()
 {
 	delete m_gen;
+}
+
+
+
+u32 smnode::get_next_id()
+{
+	return s_next_id;
+}
+void smnode::set_next_id(const u32 id)
+{
+	s_next_id = id;
+}
+void smnode::reset_next_id()
+{
+	s_next_id = s_first_id;
 }
 
 
@@ -51,6 +68,10 @@ u32 smnode::get_material() const
 const tmat<space::OBJECT, space::WORLD>& smnode::get_mat() const
 {
 	return m_mat;
+}
+const std::string& smnode::get_id() const
+{
+	return m_id;
 }
 const std::string& smnode::get_name() const
 {

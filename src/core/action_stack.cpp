@@ -4,6 +4,8 @@
 #include "ui/app_ctx.h"
 #include "scene_ctx.h"
 #include "sgnode.h"
+#include "smnode.h"
+#include "light.h"
 
 
 static void all_nodes(const sgnode* const cur, std::unordered_set<const sgnode*>& nodes)
@@ -140,6 +142,8 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	meta["np"] = m_past.size();
 	meta["nf"] = m_future.size();
 	meta["ni"] = sgnode::get_next_id();
+	meta["mi"] = smnode::get_next_id();
+	meta["li"] = light::get_next_id();
 	out << meta << "\n";
 
 	// write out all nodes
@@ -197,6 +201,8 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 
 	// need to know what unique id to start making new sgnodes at
 	sgnode::set_next_id(meta["ni"]);
+	smnode::set_next_id(meta["mi"]);
+	light::set_next_id(meta["li"]);
 
 	return nodes;
 }
