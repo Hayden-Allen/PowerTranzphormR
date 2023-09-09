@@ -263,25 +263,25 @@ bool properties_window::draw_params(const std::vector<std::pair<std::string, gen
 		switch (prop.second.type)
 		{
 		case generated_mesh_param_type::UINT_1:
-			changed |= ImGui::DragInt(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max));
+			changed |= ImGui::DragInt(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
 		case generated_mesh_param_type::UINT_2:
-			changed |= ImGui::DragInt2(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max));
+			changed |= ImGui::DragInt2(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
 		case generated_mesh_param_type::FLOAT_1:
-			changed |= ImGui::DragFloat(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			changed |= ImGui::DragFloat(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
 		case generated_mesh_param_type::FLOAT_2:
-			changed |= ImGui::DragFloat2(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			changed |= ImGui::DragFloat2(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
 		case generated_mesh_param_type::FLOAT_4:
-			changed |= ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max);
+			changed |= ImGui::DragFloat4(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
 		case generated_mesh_param_type::FLOAT_4_SUM_1:
 			{
 				f32* const f = static_cast<f32*>(prop.second.value);
 				const f32 of[4] = { f[0], f[1], f[2], f[3] };
-				changed |= ImGui::DragFloat4(prop.first.c_str(), f, prop.second.speed, prop.second.min, prop.second.max);
+				changed |= ImGui::DragFloat4(prop.first.c_str(), f, prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 				if (changed)
 				{
 					// index of weight that changed

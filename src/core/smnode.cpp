@@ -10,7 +10,7 @@ smnode::smnode(generated_mesh* const gen) :
 }
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	m_name(obj["n"]),
-	m_id(std::string("smn") + std::to_string(s_next_id++))
+	m_id(obj["id"])
 {
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
@@ -132,6 +132,7 @@ void smnode::make_static(scene_ctx* const scene)
 nlohmann::json smnode::save(scene_ctx* const scene) const
 {
 	nlohmann::json obj;
+	obj["id"] = m_id;
 	obj["t"] = m_mat.e;
 	obj["m"] = m_gen->save(scene, m_mat.invert_copy());
 	obj["s"] = is_static();

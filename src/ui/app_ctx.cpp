@@ -432,7 +432,6 @@ void app_ctx::destroy_static_mesh(smnode* const n)
 	}
 	scene.destroy_static_mesh(n);
 }
-
 void app_ctx::destroy_light(light* const l)
 {
 	if (l == m_selected_light)
@@ -1214,7 +1213,7 @@ void app_ctx::lights_menu()
 		{
 			light* const l = get_selected_light();
 			destroy_light(l);
-			set_selected_light(l);
+			set_selected_light(nullptr);
 		},
 		[&]()
 		{

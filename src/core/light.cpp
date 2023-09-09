@@ -10,7 +10,8 @@ light::light(const mgl::light& ml, const std::string& _name) :
 	name(_name)
 {}
 light::light(const nlohmann::json& obj) :
-	name(obj["n"])
+	name(obj["n"]),
+	m_id(obj["id"])
 {
 	mgl_light.mat = u::json2tmat<space::OBJECT, space::WORLD>(obj["t"]);
 	for (s32 i = 0; i < 4; i++)
@@ -45,12 +46,13 @@ std::vector<std::pair<std::string, generated_mesh_param>> light::get_params() co
 		{ "Ambient Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.ca, 0, 0, 0 } },
 		{ "Diffuse Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.cd, 0, 0, 0 } },
 		{ "Specular Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.cs, 0, 0, 0 } },
-		{ "Specular Power", { generated_mesh_param_type::FLOAT_1, (void*)&mgl_light.sp, 0, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "Specular Power", { generated_mesh_param_type::FLOAT_1, (void*)&mgl_light.sp, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 }
 nlohmann::json light::save() const
 {
 	nlohmann::json obj;
+	obj["id"] = m_id;
 	obj["n"] = name;
 	obj["t"] = mgl_light.mat.e;
 	obj["ca"] = mgl_light.ca;

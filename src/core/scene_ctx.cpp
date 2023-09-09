@@ -10,7 +10,7 @@ scene_ctx::scene_ctx() :
 	m_light_buffer(sizeof(mgl::light) * s_num_lights)
 {
 	clear(false);
-	mgl::light ml;
+	/*mgl::light ml;
 	ml.mat = tmat_util::translation<space::OBJECT, space::WORLD>(0, 0, 5);
 	ml.ca[0] = 1;
 	ml.ca[1] = 1;
@@ -25,7 +25,7 @@ scene_ctx::scene_ctx() :
 	ml.cs[2] = 1;
 	ml.cs[3] = 0;
 	ml.sp = 16;
-	add_light(new light(ml, "TEST"));
+	add_light(new light(ml, "TEST"));*/
 }
 scene_ctx::~scene_ctx()
 {
@@ -99,9 +99,14 @@ void scene_ctx::clear(bool ready_for_default_material)
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
+
 	for (smnode* const sm : m_static_meshes)
 		delete sm;
 	m_static_meshes.clear();
+
+	for (light* const l : m_lights)
+		delete l;
+	m_lights.clear();
 
 	// needs to happen after mtls are deleted (they unload textures from texlib)
 	// and before new mtl is created (needs new shaders)
@@ -144,7 +149,7 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 
 	obj["nl"] = m_lights.size();
 	std::vector<nlohmann::json> ls;
-	for (const auto& l : m_lights)
+	for (const light* const l : m_lights)
 	{
 		ls.push_back(l->save());
 	}
@@ -177,6 +182,7 @@ void scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	{
 		m_lights.emplace_back(new light(l));
 	}
+	m_build_light_buffer();
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
 {
@@ -388,6 +394,8 @@ void scene_ctx::m_build_sg_vaos()
 	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
 	{
 		const auto& verts = verts_for_mtl.at(it->first);
+		if (verts.empty())
+			continue;
 		const auto& indices = indices_for_mtl.at(it->first);
 		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
 		m_sg_ros_for_mtl.emplace(it->first, std::move(ro));
@@ -407,12 +415,32 @@ void scene_ctx::m_build_sm_vaos()
 	{
 		if (sm->is_dirty())
 			sm->recompute(this);
-		m_tesselate(sm->get_mesh(), verts_for_mtl, indices_for_mtl);
+
+		const u32 mat = sm->get_material();
+		std::unordered_map<u32, std::vector<mesh_vertex>> sm_verts;
+		std::unordered_map<u32, std::vector<u32>> sm_indices;
+		sm_verts.insert({ mat, {} });
+		sm_indices.insert({ mat, {} });
+		m_tesselate(sm->get_mesh(), sm_verts, sm_indices);
+
+		auto& out_verts = verts_for_mtl.at(mat);
+		auto& out_indices = indices_for_mtl.at(mat);
+		auto& sm_indices_for_mat = sm_indices.at(mat);
+		const u64 oldsize = out_verts.size();
+		for (u32& i : sm_indices_for_mat)
+		{
+			i += (u32)oldsize;
+		}
+		// do as i say, not as i do
+		out_verts.insert(out_verts.end(), sm_verts.at(mat).begin(), sm_verts.at(mat).end());
+		out_indices.insert(out_indices.end(), sm_indices.at(mat).begin(), sm_indices.at(mat).end());
 	}
 
 	m_sm_ros_for_mtl.clear();
 	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 	{
+		if (it->second.empty())
+			continue;
 		const auto& verts = verts_for_mtl.at(it->first);
 		const auto& indices = indices_for_mtl.at(it->first);
 		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());

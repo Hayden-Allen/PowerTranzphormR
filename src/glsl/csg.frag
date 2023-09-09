@@ -26,6 +26,8 @@ in float v_NdL;
 
 void main()
 {
+	vec3 N = normalize(v_N);
+
 	vec4 multi_tex_res = texture(u_tex0, v_uv0.xy + v_uv0.zw * u_time) * v_weights[0] +
 				texture(u_tex1, v_uv1.xy + v_uv1.zw * u_time) * v_weights[1] +
 				texture(u_tex2, v_uv2.xy + v_uv2.zw * u_time) * v_weights[2] +
@@ -35,21 +37,27 @@ void main()
 	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
 	vec3 V = normalize(world_pos - u_cam_pos);
 	vec3 total_light = vec3(0, 0, 0);
+	vec3 total_diffuse = vec3(0.0);
+	vec3 total_spec = vec3(0.0);
+	vec3 total_amb = vec3(0.0);
 	for(uint i = 0; i < u_num_lights; i++)
 	{
 		Light cur_light = u_light_block.lights[i];
-		vec3 light_pos = vec3(-cur_light.obj2world[3][0], -cur_light.obj2world[3][1], -cur_light.obj2world[3][2]);
-		vec3 L = normalize(v_pos - light_pos);
-		vec3 R = normalize(reflect(L, v_N));
+		vec3 light_pos = vec3(cur_light.obj2world[3][0], cur_light.obj2world[3][1], cur_light.obj2world[3][2]);
+		vec3 L = normalize(light_pos - v_pos);
+		vec3 R = normalize(reflect(L, N));
 		float RdV = max(0, dot(V, R));
-		float NdL = max(0, dot(v_N, L));
+		float NdL = max(0, dot(N, L));
+		// float NdL = abs(dot(N, L));
 
 		vec4 amb  = cur_light.ca;
 		vec4 diff = NdL * cur_light.cd;
 		vec4 spec = pow(RdV, cur_light.sp) * cur_light.cs;
-		total_light += amb.rgb * amb.a + diff.rgb * diff.a + spec.rgb * spec.a;
+		total_diffuse += diff.rgb * diff.a;
+		total_spec += spec.rgb * spec.a;
+		total_amb += amb.rgb * amb.a;
 	}
 	
-	o_col = vec4(clamp(total_light * mixed_res, vec3(0), vec3(1)), 1);
-	// o_col = vec4(abs(v_N), 1);
+	o_col = vec4(clamp((total_amb + total_diffuse) * mixed_res + total_spec, vec3(0), vec3(1)), 1);
+	// o_col = vec4(abs(N), 1);
 }
