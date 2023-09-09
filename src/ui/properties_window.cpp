@@ -260,9 +260,9 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	bool changed = false;
 	changed |= handle_transform(selected->get_mat().e);
 
-	const u32 selected_mtl_id = selected->get_material();
-	const u32 new_mtl_id = material_combo_box(selected_mtl_id);
-	if (new_mtl_id != selected_mtl_id)
+	const u32 old_mtl_id = selected->get_material();
+	const u32 new_mtl_id = material_combo_box(old_mtl_id);
+	if (new_mtl_id != old_mtl_id)
 	{
 		selected->set_material(&m_app_ctx->scene, new_mtl_id);
 		changed = true;
@@ -271,6 +271,19 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	if (!selected->is_static())
 	{
 		changed |= draw_params(selected->get_params());
+		if (ImGui::Button("Load Heightmap"))
+		{
+			const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp");
+			if (!fp.empty())
+			{
+				const u32 material = selected->get_material();
+				const mgl::retained_texture2d_rgba_u8* tex = u::load_retained_texture2d_rgba_u8(fp);
+				const heightmap_options new_hm_opts = { .map = tex };
+				generated_mesh* const new_hm = m_app_ctx->scene.generated_textured_heightmap(material, new_hm_opts);
+				selected->set_gen(new_hm);
+				changed = true;
+			}
+		}
 	}
 
 	if (changed)
@@ -461,7 +474,6 @@ void properties_window::save_autotex_settings()
 	j["password"] = m_autotex_password;
 	outf << j.dump() << "\n";
 }
-
 bool properties_window::autotex_fetch_post(const std::string& host, const std::string& path, const nlohmann::json& body, nlohmann::json& result, int expect_status)
 {
 	httplib::Client cli(host);
@@ -487,7 +499,6 @@ bool properties_window::autotex_fetch_post(const std::string& host, const std::s
 		return false;
 	}
 }
-
 void properties_window::autotex_sampler_combo(autotexture_params& params, const std::string& sampler_name)
 {
 	bool selected = params.sampler == sampler_name;

@@ -7,13 +7,11 @@ smnode::smnode(generated_mesh* const gen) :
 	m_id(std::string("smn") + std::to_string(s_next_id++))
 {
 	assert(!gen->is_static());
-	m_material = gen->get_material();
 	copy_local_verts();
 }
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	m_name(obj["n"]),
-	m_id(obj["id"]),
-	m_material(obj["mat"])
+	m_id(obj["id"])
 {
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
@@ -66,7 +64,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> smnode::get_params() c
 }
 u32 smnode::get_material() const
 {
-	return m_material;
+	return m_gen->get_material();
 }
 tmat<space::OBJECT, space::WORLD>& smnode::get_mat()
 {
@@ -105,7 +103,6 @@ void smnode::set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 }
 void smnode::set_material(scene_ctx* const scene, const u32 mat)
 {
-	m_material = mat;
 	m_gen->set_material(scene, mat);
 	if (is_static())
 	{
@@ -115,6 +112,11 @@ void smnode::set_material(scene_ctx* const scene, const u32 mat)
 	{
 		set_gen_dirty();
 	}
+}
+void smnode::set_gen(generated_mesh* const gen)
+{
+	delete m_gen;
+	m_gen = gen;
 }
 bool smnode::is_dirty() const
 {
@@ -151,7 +153,6 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 	obj["m"] = m_gen->save(scene, m_mat.invert_copy());
 	obj["s"] = is_static();
 	obj["n"] = m_name;
-	obj["mat"] = m_material;
 	return obj;
 }
 
