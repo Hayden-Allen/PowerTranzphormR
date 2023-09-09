@@ -53,8 +53,8 @@ std::vector<std::pair<std::string, generated_mesh_param>> light::get_params() co
 		{ "Ambient Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.ca, 0, 0, 0 } },
 		{ "Diffuse Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.cd, 0, 0, 0 } },
 		{ "Specular Color", { generated_mesh_param_type::COLOR_4, (void*)mgl_light.cs, 0, 0, 0 } },
-		{ "Specular Power", { generated_mesh_param_type::FLOAT_1, (void*)&mgl_light.sp, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
-		{ "Max Distance", { generated_mesh_param_type::FLOAT_1, (void*)&mgl_light.rmax, MIN_PARAM_VALUE, MAX_PARAM_VALUE, .1f } },
+		{ "Specular Power", { generated_mesh_param_type::FLOAT_1_LOG, (void*)&mgl_light.sp, MIN_PARAM_VALUE, MAX_PARAM_VALUE, 1.f } },
+		{ "Max Distance", { generated_mesh_param_type::FLOAT_1_LOG, (void*)&mgl_light.rmax, MIN_PARAM_VALUE, MAX_PARAM_VALUE, 1.f } },
 	};
 }
 nlohmann::json light::save() const

@@ -317,6 +317,9 @@ bool properties_window::draw_params(const std::vector<std::pair<std::string, gen
 		case generated_mesh_param_type::FLOAT_1:
 			changed |= ImGui::DragFloat(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
+		case generated_mesh_param_type::FLOAT_1_LOG:
+			changed |= ImGui::DragFloat(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+			break;
 		case generated_mesh_param_type::FLOAT_2:
 			changed |= ImGui::DragFloat2(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			break;
