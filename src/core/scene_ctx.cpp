@@ -13,8 +13,8 @@ scene_ctx::scene_ctx() :
 	mgl::light ml;
 	ml.mat = tmat_util::translation<space::OBJECT, space::WORLD>(0, 0, 5);
 	ml.ca[0] = 1;
-	ml.ca[1] = 0;
-	ml.ca[2] = 0;
+	ml.ca[1] = 1;
+	ml.ca[2] = 1;
 	ml.ca[3] = .2f;
 	ml.cd[0] = 1;
 	ml.cd[1] = 1;
@@ -23,7 +23,7 @@ scene_ctx::scene_ctx() :
 	ml.cs[0] = 1;
 	ml.cs[1] = 1;
 	ml.cs[2] = 1;
-	ml.cs[3] = 1;
+	ml.cs[3] = 0;
 	ml.sp = 16;
 	add_light(new light(ml, "TEST"));
 }

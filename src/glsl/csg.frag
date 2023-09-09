@@ -38,13 +38,14 @@ void main()
 	for(uint i = 0; i < u_num_lights; i++)
 	{
 		Light cur_light = u_light_block.lights[i];
-		vec3 light_pos = vec3(cur_light.obj2world[3][0], cur_light.obj2world[3][1], cur_light.obj2world[3][2]);
+		vec3 light_pos = vec3(-cur_light.obj2world[3][0], -cur_light.obj2world[3][1], -cur_light.obj2world[3][2]);
 		vec3 L = normalize(v_pos - light_pos);
 		vec3 R = normalize(reflect(L, v_N));
 		float RdV = max(0, dot(V, R));
+		float NdL = max(0, dot(v_N, L));
 
 		vec4 amb  = cur_light.ca;
-		vec4 diff = v_NdL * cur_light.cd;
+		vec4 diff = NdL * cur_light.cd;
 		vec4 spec = pow(RdV, cur_light.sp) * cur_light.cs;
 		total_light += amb.rgb * amb.a + diff.rgb * diff.a + spec.rgb * spec.a;
 	}
