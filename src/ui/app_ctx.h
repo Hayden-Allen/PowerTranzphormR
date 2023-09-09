@@ -82,6 +82,7 @@ public:
 	smnode* get_selected_static_mesh();
 	void deselect_all();
 	void clear_clipboard();
+	void destroy_static_mesh(smnode* const n);
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);

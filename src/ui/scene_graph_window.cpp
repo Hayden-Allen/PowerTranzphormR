@@ -271,7 +271,7 @@ void scene_graph_window::handle_heightmaps()
 			bool selected = m_app_ctx->get_selected_static_mesh() == sm;
 			ImGui::PushID("Static Mesh");
 			ImGui::PushID(i);
-			selected = ImGui::Selectable("selectable", &selected);
+			selected = ImGui::Selectable(sm->get_name().c_str(), &selected);
 			if (needs_select)
 			{
 				if (sms[i] == needs_select)
@@ -292,6 +292,14 @@ void scene_graph_window::handle_heightmaps()
 				{
 					if (ImGui::MenuItem("Phreeze!"))
 						sm->make_static(&m_app_ctx->scene);
+					ImGui::Separator();
+				}
+				if (ImGui::MenuItem("Rename"))
+				{
+				}
+				if (ImGui::MenuItem("Destroy"))
+				{
+					m_app_ctx->destroy_static_mesh(sm);
 				}
 				ImGui::EndPopup();
 			}

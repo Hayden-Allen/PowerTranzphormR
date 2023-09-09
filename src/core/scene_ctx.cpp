@@ -236,6 +236,14 @@ void scene_ctx::add_heightmap()
 	m_static_meshes.push_back(new smnode(generated_textured_heightmap(0)));
 	m_build_sm_vaos();
 }
+void scene_ctx::destroy_static_mesh(smnode* const n)
+{
+	const auto& it = std::find(m_static_meshes.begin(), m_static_meshes.end(), n);
+	assert(it != m_static_meshes.end());
+	m_static_meshes.erase(it);
+	delete n;
+	m_build_sm_vaos();
+}
 
 
 

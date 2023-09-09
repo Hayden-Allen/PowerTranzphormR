@@ -7,7 +7,8 @@ smnode::smnode(generated_mesh* const gen) :
 {
 	copy_local_verts();
 }
-smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene)
+smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
+	m_name(obj["n"])
 {
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
@@ -27,38 +28,6 @@ smnode::~smnode()
 
 
 
-void smnode::set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
-{
-	m_mat = new_mat;
-	set_dirty();
-}
-void smnode::set_dirty()
-{
-	m_dirty = true;
-}
-void smnode::set_gen_dirty()
-{
-	assert(!is_static());
-	set_dirty();
-	m_gen->set_dirty();
-}
-bool smnode::is_dirty() const
-{
-	return m_dirty;
-}
-void smnode::recompute(scene_ctx* const scene)
-{
-	assert(m_dirty);
-	m_dirty = false;
-
-	if (m_gen->is_dirty())
-	{
-		m_gen->recompute(scene);
-		copy_local_verts();
-	}
-
-	transform_verts();
-}
 std::vector<point<space::OBJECT>>& smnode::get_local_verts()
 {
 	return m_local_verts;
@@ -83,9 +52,55 @@ const tmat<space::OBJECT, space::WORLD>& smnode::get_mat() const
 {
 	return m_mat;
 }
+const std::string& smnode::get_name() const
+{
+	return m_name;
+}
+void smnode::set_name(const std::string& name)
+{
+	m_name = name;
+}
+void smnode::set_dirty()
+{
+	m_dirty = true;
+}
+void smnode::set_gen_dirty()
+{
+	assert(!is_static());
+	set_dirty();
+	m_gen->set_dirty();
+}
+void smnode::set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
+{
+	m_mat = new_mat;
+	set_dirty();
+}
+void smnode::set_material(scene_ctx* const scene, const u32 mat)
+{
+	assert(!is_static());
+	m_gen->set_material(scene, mat);
+	set_gen_dirty();
+}
+bool smnode::is_dirty() const
+{
+	return m_dirty;
+}
 bool smnode::is_static() const
 {
 	return m_gen->is_static();
+}
+void smnode::recompute(scene_ctx* const scene)
+{
+	assert(m_dirty);
+	m_dirty = false;
+
+	if (m_gen->is_dirty())
+	{
+		m_gen->recompute(scene);
+		copy_local_verts();
+	}
+
+	transform_verts();
 }
 void smnode::make_static(scene_ctx* const scene)
 {
@@ -99,13 +114,8 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 	obj["t"] = m_mat.e;
 	obj["m"] = m_gen->save(scene, m_mat.invert_copy());
 	obj["s"] = is_static();
+	obj["n"] = m_name;
 	return obj;
-}
-void smnode::set_material(scene_ctx* const scene, const u32 mat)
-{
-	assert(!is_static());
-	m_gen->set_material(scene, mat);
-	set_gen_dirty();
 }
 
 

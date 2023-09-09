@@ -12,26 +12,32 @@ public:
 	smnode(const nlohmann::json& obj, scene_ctx* const scene);
 	virtual ~smnode();
 public:
-	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
-	void set_dirty();
-	void set_gen_dirty();
-	bool is_dirty() const;
-	void recompute(scene_ctx* const scene);
 	std::vector<point<space::OBJECT>>& get_local_verts();
 	const std::vector<point<space::OBJECT>>& get_local_verts() const;
 	const mesh_t* get_mesh() const;
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
 	u32 get_material() const;
 	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
+	const std::string& get_name() const;
+public:
+	void set_name(const std::string& name);
+	void set_dirty();
+	void set_gen_dirty();
+	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
+	void set_material(scene_ctx* const scene, const u32 mat);
+public:
+	bool is_dirty() const;
 	bool is_static() const;
+public:
+	void recompute(scene_ctx* const scene);
 	void make_static(scene_ctx* const scene);
 	nlohmann::json save(scene_ctx* const scene) const;
-	void set_material(scene_ctx* const scene, const u32 mat);
 private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;
 	std::vector<point<space::OBJECT>> m_local_verts;
 	bool m_dirty = false;
+	std::string m_name = "Heightmap";
 private:
 	void copy_local_verts();
 	void transform_verts();

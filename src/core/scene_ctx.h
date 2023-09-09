@@ -57,6 +57,7 @@ public:
 public:
 	const std::vector<smnode*>& get_static_meshes();
 	void add_heightmap();
+	void destroy_static_mesh(smnode* const n);
 public:
 	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});
 	mesh_t* create_textured_ellipsoid(const GLuint mtl_id, const ellipsoid_options& options = {});

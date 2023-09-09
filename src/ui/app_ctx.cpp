@@ -423,6 +423,15 @@ void app_ctx::clear_clipboard()
 		delete clipboard;
 	}
 }
+void app_ctx::destroy_static_mesh(smnode* const n)
+{
+	if (n == m_selected_static_mesh)
+	{
+		deselect_all();
+		unset_imgui_needs_select_unfocused_static_mesh();
+	}
+	scene.destroy_static_mesh(n);
+}
 
 
 
@@ -951,15 +960,25 @@ void app_ctx::phorm_menu()
 		"Destroy",
 		[&]()
 		{
-			if (!mgl_ctx.is_cursor_locked())
+			if (get_selected_sgnode())
 			{
-				destroy_selected_action();
+				if (!mgl_ctx.is_cursor_locked())
+				{
+					destroy_selected_action();
+				}
+			}
+			else
+			{
+				assert(get_selected_static_mesh());
+				destroy_static_mesh(get_selected_static_mesh());
 			}
 		},
 		[&]()
 		{
-			sgnode* const selected = get_selected_sgnode();
-			return selected && !selected->is_root();
+			sgnode* const sg = get_selected_sgnode();
+			smnode* const sm = get_selected_static_mesh();
+			return (sg && !sg->is_root()) || sm;
+			// return selected && !selected->is_root();
 		},
 		"Delete",
 		GLFW_KEY_DELETE,
