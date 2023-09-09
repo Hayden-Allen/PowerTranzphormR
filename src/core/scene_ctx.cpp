@@ -67,6 +67,8 @@ void scene_ctx::update()
 void scene_ctx::clear(bool ready_for_default_material)
 {
 	sgnode::reset_next_id();
+	smnode::reset_next_id();
+	light::reset_next_id();
 	s_next_mtl_id = 1;
 
 	m_csg = carve::csg::CSG();
@@ -219,22 +221,32 @@ scene_material* scene_ctx::get_material(const GLuint id)
 {
 	return m_mtls[id];
 }
-std::vector<light>& scene_ctx::get_lights()
+std::vector<light*>& scene_ctx::get_lights()
 {
 	return m_lights;
 }
-void scene_ctx::add_light()
+light* const scene_ctx::add_light()
 {
-	m_lights.emplace_back();
+	m_lights.emplace_back(new light);
+	return m_lights[m_lights.size() - 1];
+}
+void scene_ctx::destroy_light(light* const l)
+{
+	const auto& it = std::find(m_lights.begin(), m_lights.end(), l);
+	assert(it != m_lights.end());
+	m_lights.erase(it);
+	delete l;
 }
 const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {
 	return m_static_meshes;
 }
-void scene_ctx::add_heightmap()
+smnode* const scene_ctx::add_heightmap()
 {
-	m_static_meshes.push_back(new smnode(generated_textured_heightmap(0)));
+	smnode* const result = new smnode(generated_textured_heightmap(0));
+	m_static_meshes.push_back(result);
 	m_build_sm_vaos();
+	return result;
 }
 void scene_ctx::destroy_static_mesh(smnode* const n)
 {

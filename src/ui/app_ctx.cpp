@@ -305,7 +305,7 @@ void app_ctx::set_material(sgnode* const node, const u32 id)
 }
 void app_ctx::add_light()
 {
-	scene.add_light();
+	set_selected_light(scene.add_light());
 }
 void app_ctx::set_selected_light(light* const l)
 {
@@ -433,6 +433,16 @@ void app_ctx::destroy_static_mesh(smnode* const n)
 	scene.destroy_static_mesh(n);
 }
 
+void app_ctx::destroy_light(light* const l)
+{
+	if (l == m_selected_light)
+	{
+		deselect_all();
+		unset_imgui_needs_select_unfocused_light();
+	}
+	scene.destroy_light(l);
+}
+
 
 
 void app_ctx::transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
@@ -480,7 +490,7 @@ void app_ctx::create_torus_action()
 }
 void app_ctx::create_heightmap()
 {
-	scene.add_heightmap();
+	set_selected_static_mesh(scene.add_heightmap());
 }
 void app_ctx::create_union_action()
 {
@@ -544,6 +554,8 @@ void app_ctx::init_menus()
 	file_menu();
 	phorm_menu();
 	material_menu();
+	static_meshes_menu();
+	lights_menu();
 }
 void app_ctx::file_menu()
 {
@@ -1107,4 +1119,114 @@ void app_ctx::material_menu()
 	material_menu.name = "Material";
 	material_menu.groups.push_back({ material_create, material_rename, material_destroy });
 	shortcut_menus.push_back(material_menu);
+}
+
+void app_ctx::static_meshes_menu()
+{
+	shortcut_menu_item sm_create = {
+		"Create Heightmap",
+		[&]()
+		{
+			create_heightmap();
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+Shift+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item sm_rename = {
+		"Rename",
+		[&]()
+		{
+			assert(m_sg_window);
+			assert(!m_sg_window->get_renaming_sm());
+			m_sg_window->set_renaming_sm(get_selected_static_mesh());
+		},
+		[&]()
+		{
+			return get_selected_static_mesh();
+		},
+		"Ctrl+R",
+		GLFW_KEY_R,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item sm_destroy = {
+		"Destroy",
+		[&]()
+		{
+			smnode* const sm = get_selected_static_mesh();
+			destroy_static_mesh(sm);
+			set_selected_static_mesh(nullptr);
+		},
+		[&]()
+		{
+			return get_selected_static_mesh();
+		},
+		"Delete",
+		GLFW_KEY_DELETE,
+		0,
+	};
+
+	shortcut_menu sm_menu;
+	sm_menu.name = "Static Mesh";
+	sm_menu.groups.push_back({ sm_create, sm_rename, sm_destroy });
+	shortcut_menus.push_back(sm_menu);
+}
+
+void app_ctx::lights_menu()
+{
+	shortcut_menu_item light_create = {
+		"Create",
+		[&]()
+		{
+			add_light();
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+Shift+L",
+		GLFW_KEY_L,
+		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item light_rename = {
+		"Rename",
+		[&]()
+		{
+			assert(m_sg_window);
+			assert(!m_sg_window->get_renaming_light());
+			m_sg_window->set_renaming_light(get_selected_light());
+		},
+		[&]()
+		{
+			return get_selected_light();
+		},
+		"Ctrl+R",
+		GLFW_KEY_R,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item light_destroy = {
+		"Destroy",
+		[&]()
+		{
+			light* const l = get_selected_light();
+			destroy_light(l);
+			set_selected_light(l);
+		},
+		[&]()
+		{
+			return get_selected_light();
+		},
+		"Delete",
+		GLFW_KEY_DELETE,
+		0,
+	};
+
+	shortcut_menu light_menu;
+	light_menu.name = "Lights";
+	light_menu.groups.push_back({ light_create, light_rename, light_destroy });
+	shortcut_menus.push_back(light_menu);
 }

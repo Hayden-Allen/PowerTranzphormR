@@ -83,6 +83,7 @@ public:
 	void deselect_all();
 	void clear_clipboard();
 	void destroy_static_mesh(smnode* const n);
+	void destroy_light(light* const l);
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -110,6 +111,8 @@ private:
 	void file_menu();
 	void phorm_menu();
 	void material_menu();
+	void static_meshes_menu();
+	void lights_menu();
 private:
 	sgnode* m_selected_sgnode = nullptr;
 	sgnode* m_imgui_needs_select_unfocused_sgnode = nullptr;
