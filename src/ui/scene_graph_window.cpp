@@ -34,7 +34,7 @@ void scene_graph_window::handle_frame()
 	handle_heightmaps();
 	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
 	handle_lights();
-	// m_app_ctx->unset_imgui_needs_select_unfocused_light();
+	m_app_ctx->unset_imgui_needs_select_unfocused_light();
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -249,7 +249,7 @@ void scene_graph_window::handle_heightmap(smnode* const hmp)
 		const f32 size = ImGui::GetFontSize();
 		ImGui::SetCursorPosX(x + size + padding_x);
 
-		if (ImGui::InputText("##SMW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+		if (ImGui::InputText("##SGW_RENAME_SM", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			std::string new_name(buf);
 			if (!new_name.empty())
@@ -367,7 +367,7 @@ void scene_graph_window::handle_light(light* const l)
 		const f32 size = ImGui::GetFontSize();
 		ImGui::SetCursorPosX(x + size + padding_x);
 
-		if (ImGui::InputText("##SLW_RENAME", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
+		if (ImGui::InputText("##SGW_RENAME_LIT", buf, BUF_SIZE, ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			std::string new_name(buf);
 			if (!new_name.empty())
