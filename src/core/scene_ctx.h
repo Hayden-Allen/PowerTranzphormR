@@ -56,6 +56,7 @@ public:
 	light* add_light();
 	light* add_light(light* const l);
 	void destroy_light(light* const l);
+	void update_light(const light* const l);
 public:
 	const std::vector<smnode*>& get_static_meshes();
 	smnode* const add_heightmap();

@@ -280,6 +280,13 @@ void scene_ctx::destroy_light(light* const l)
 	// I'm lazy
 	m_build_light_buffer();
 }
+void scene_ctx::update_light(const light* const l)
+{
+	const auto& it = std::find(m_lights.begin(), m_lights.end(), l);
+	assert(it != m_lights.end());
+	const u32 index = u32(it - m_lights.begin());
+	m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), index * sizeof(mgl::light));
+}
 const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {
 	return m_static_meshes;

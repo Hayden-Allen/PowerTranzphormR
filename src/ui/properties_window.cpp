@@ -212,8 +212,10 @@ void properties_window::handle_material_autotexture(scene_material* const select
 }
 void properties_window::handle_light_frame(light* const selected)
 {
-	handle_transform(selected->get_mat().e);
-	draw_params(selected->get_params());
+	bool changed = false;
+	changed |= handle_transform(selected->get_mat().e);
+	changed |= draw_params(selected->get_params());
+	m_app_ctx->scene.update_light(selected);
 }
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
