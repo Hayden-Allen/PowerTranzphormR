@@ -54,6 +54,8 @@ public:
 public:
 	std::vector<light>& get_lights();
 	void add_light();
+	void add_light(const light& l);
+	void destroy_light(const u32 index);
 public:
 	const std::vector<smnode*>& get_static_meshes();
 	void add_heightmap();
@@ -73,6 +75,7 @@ public:
 	generated_mesh* generated_textured_heightmap(const GLuint mtl_id, const heightmap_options& options = {});
 private:
 	static inline u32 s_next_mtl_id = 1;
+	constexpr static u32 s_num_lights = 128;
 private:
 	constexpr static std::vector<u32> get_vert_layout()
 	{
@@ -93,7 +96,9 @@ private:
 	std::vector<smnode*> m_static_meshes;
 	std::vector<light> m_lights;
 	sgnode* m_sg_root = nullptr;
+	mgl::static_uniform_buffer m_light_buffer;
 private:
+	void m_build_light_buffer();
 	void m_build_sg_vaos();
 	void m_build_sm_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl);

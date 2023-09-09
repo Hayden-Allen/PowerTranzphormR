@@ -5,18 +5,16 @@
 
 struct light
 {
+public:
+	mgl::light mgl_light;
 	std::string name = "Light";
-	tmat<space::OBJECT, space::WORLD> mat;
-	// ambient, diffuse, specular
-	color_t ca, cd, cs;
-	// coefficients
-	f32 ka = 0.f, kd = 0.f, ks = 0.f;
-	// specular power
-	f32 sp = 0.f;
-
+public:
 	light() {}
 	light(const nlohmann::json& obj);
-
+public:
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const;
 	nlohmann::json save() const;
+	tmat<space::OBJECT, space::WORLD>& get_mat();
+	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
+	void set_mat(const tmat<space::OBJECT, space::WORLD>& m);
 };

@@ -6,9 +6,29 @@
 #include "geom/generated_mesh.h"
 #include "smnode.h"
 
-scene_ctx::scene_ctx()
+scene_ctx::scene_ctx() :
+	m_light_buffer(sizeof(mgl::light) * s_num_lights)
 {
 	clear(false);
+	mgl::light ml;
+	ml.mat = tmat_util::translation<space::OBJECT, space::WORLD>(0, 0, 5);
+	ml.ca[0] = 1;
+	ml.ca[1] = 0;
+	ml.ca[2] = 0;
+	ml.ca[3] = .2f;
+	ml.cd[0] = 1;
+	ml.cd[1] = 1;
+	ml.cd[2] = 1;
+	ml.cd[3] = 1;
+	ml.cs[0] = 1;
+	ml.cs[1] = 1;
+	ml.cs[2] = 1;
+	ml.cs[3] = 1;
+	ml.sp = 16;
+	light l;
+	l.mgl_light = ml;
+	l.name = "TEST";
+	add_light(l);
 }
 scene_ctx::~scene_ctx()
 {
@@ -239,7 +259,22 @@ std::vector<light>& scene_ctx::get_lights()
 }
 void scene_ctx::add_light()
 {
-	m_lights.emplace_back();
+	add_light(light());
+}
+void scene_ctx::add_light(const light& l)
+{
+	if (m_lights.size() < s_num_lights)
+	{
+		m_lights.push_back(l);
+		const light& l = m_lights.back();
+		m_light_buffer.update((f32*)&l.mgl_light, sizeof(mgl::light) / sizeof(f32), sizeof(mgl::light) * u32(m_lights.size() - 1));
+	}
+}
+void scene_ctx::destroy_light(const u32 index)
+{
+	m_lights.erase(m_lights.begin() + index);
+	// I'm lazy
+	m_build_light_buffer();
 }
 const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {
@@ -312,6 +347,14 @@ generated_mesh* scene_ctx::generated_textured_heightmap(const GLuint mtl_id, con
 
 
 
+void scene_ctx::m_build_light_buffer()
+{
+	std::vector<mgl::light> mgl_lights;
+	mgl_lights.reserve(m_lights.size());
+	for (const light& l : m_lights)
+		mgl_lights.push_back(l.mgl_light);
+	m_light_buffer.update((f32*)mgl_lights.data(), sizeof(mgl::light) / sizeof(f32) * (u32)mgl_lights.size(), 0);
+}
 void scene_ctx::m_build_sg_vaos()
 {
 	std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
@@ -631,6 +674,7 @@ next_vertex:
 }
 void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros)
 {
+	m_light_buffer.bind(0);
 	for (auto it = ros.begin(); it != ros.end(); ++it)
 	{
 		const scene_material* mat = m_mtls[it->first];
@@ -641,6 +685,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		mat->shaders->uniform_mat4("u_normal", mats.normal.e);
 		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
 		mat->shaders->uniform_1f("u_time", glctx.time.now);
+		mat->shaders->uniform_1ui("u_num_lights", (u32)m_lights.size());
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)

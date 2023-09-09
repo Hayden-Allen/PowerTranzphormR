@@ -100,15 +100,15 @@ void preview_window::handle_frame()
 			else if (sl)
 			{
 				// make a copy of node's transform so that the gizmo can modify it
-				tmat<space::OBJECT, space::WORLD> current_mat = sl->mat;
+				tmat<space::OBJECT, space::WORLD> current_mat = sl->get_mat();
 				ImGuizmo::Manipulate(view.e, proj.e, m_app_ctx->gizmo_op, ImGuizmo::LOCAL, current_mat.e);
 
 				if (ImGuizmo::IsUsing())
 				{
 					m_was_using_imguizmo = true;
 					// propagate gizmo's changes to node
-					if (current_mat != sl->mat)
-						sl->mat = current_mat;
+					if (current_mat != sl->get_mat())
+						sl->set_mat(current_mat);
 				}
 				// ImGuizmo not being used this frame, but was last frame
 				else if (m_was_using_imguizmo)

@@ -12,6 +12,8 @@
 
 int main(int argc, char** argv)
 {
+	printf("%zu | %zu\n", sizeof(mgl::light), alignof(mgl::light));
+	printf("%zu | %zu\n", sizeof(light), alignof(light));
 	app_ctx a_ctx;
 
 	shortcut_menus_layer sl(&a_ctx);

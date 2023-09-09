@@ -1,6 +1,19 @@
 #version 430 core
 layout(location = 0) out vec4 o_col;
 
+struct Light
+{
+	mat4 obj2world;
+	vec4 ca, cd, cs;
+	float sp;
+	float pad0, pad1, pad2;
+};
+
+layout(std140, binding = 0) uniform LightBlock
+{
+	Light lights[128];
+} u_light_block;
+uniform uint u_num_lights;
 uniform sampler2D u_tex0, u_tex1, u_tex2, u_tex3;
 uniform vec3 u_cam_pos;
 uniform mat4 u_m;
@@ -13,20 +26,29 @@ in float v_NdL;
 
 void main()
 {
-	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
-	vec3 V = normalize(world_pos - u_cam_pos);
-	vec3 L = normalize(u_cam_pos);
-	vec3 R = normalize(reflect(L, v_N));
-	float RdV = pow(max(0, dot(V, R)), 16);
-
 	vec4 multi_tex_res = texture(u_tex0, v_uv0.xy + v_uv0.zw * u_time) * v_weights[0] +
 				texture(u_tex1, v_uv1.xy + v_uv1.zw * u_time) * v_weights[1] +
 				texture(u_tex2, v_uv2.xy + v_uv2.zw * u_time) * v_weights[2] +
 				texture(u_tex3, v_uv3.xy + v_uv3.zw * u_time) * v_weights[3];
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
 
-	vec3 spec = RdV * vec3(1);
-	vec3 diff = min(1, v_NdL + .33) * mixed_res;
-	o_col = clamp(vec4(diff + spec * 0.0, 1.0), vec4(vec3(0), 1), vec4(1));
+	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
+	vec3 V = normalize(world_pos - u_cam_pos);
+	vec3 total_light = vec3(0, 0, 0);
+	for(uint i = 0; i < u_num_lights; i++)
+	{
+		Light cur_light = u_light_block.lights[i];
+		vec3 light_pos = vec3(cur_light.obj2world[3][0], cur_light.obj2world[3][1], cur_light.obj2world[3][2]);
+		vec3 L = normalize(v_pos - light_pos);
+		vec3 R = normalize(reflect(L, v_N));
+		float RdV = max(0, dot(V, R));
+
+		vec4 amb  = cur_light.ca;
+		vec4 diff = v_NdL * cur_light.cd;
+		vec4 spec = pow(RdV, cur_light.sp) * cur_light.cs;
+		total_light += amb.rgb * amb.a + diff.rgb * diff.a + spec.rgb * spec.a;
+	}
+	
+	o_col = vec4(clamp(total_light * mixed_res, vec3(0), vec3(1)), 1);
 	// o_col = vec4(abs(v_N), 1);
 }
