@@ -57,7 +57,7 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 	const f32 item_spacing_x = ImGui::GetStyle().ItemSpacing.x;
 	const f32 half_item_spacing_x = item_spacing_x * 0.5f;
 	const s32 col_vert_id_width = 56;
-	const f32 col_position_width = 300.0f, col_color_width = 300.0f, col_uv_width = 300.0f;
+	const f32 col_position_width = 300.0f, col_color_width = 300.0f, col_uv_width = 300.0f, col_weight_width = 300.0f;
 	bool found_activated = false;
 	bool changed = false;
 
@@ -134,7 +134,7 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 	case vertex_editor_mode::COLOR:
 		{
 			std::unordered_map<const vertex_t*, u64> inserted;
-			std::vector<std::vector<std::tuple<const face_t*, u32, u64, const vertex_t*>>> vec;
+			std::vector<std::vector<std::tuple<const face_t*, u32, const vertex_t*>>> vec;
 			u64 vert_id = 0;
 			for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 			{
@@ -144,14 +144,13 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 					const vertex_t* v = e->vert;
 					if (inserted.contains(v))
 					{
-						vec.at(inserted.at(v)).push_back({ f, e.idx(), vert_id, v });
+						vec.at(inserted.at(v)).push_back({ f, e.idx(), v });
 					}
 					else
 					{
-						vec.push_back({ { f, e.idx(), vert_id, v } });
+						vec.push_back({ { f, e.idx(), v } });
 						inserted.insert({ v, vec.size() - 1 });
 					}
-					vert_id++;
 				}
 			}
 
@@ -204,7 +203,7 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 					ImGui::EndGroup();
 					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
 					{
-						const vertex_t* v = std::get<3>(list[0]);
+						const vertex_t* v = std::get<2>(list[0]);
 						m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z), vert_i);
 						if (ImGui::IsItemActive())
 							found_activated = true;
@@ -245,24 +244,20 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 				ImGui::TableSetupColumn("Tex1", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
 				ImGui::TableSetupColumn("Tex2", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
 				ImGui::TableSetupColumn("Tex3", ImGuiTableColumnFlags_WidthFixed, col_uv_width);
-				const f32 drag_float_width = (col_uv_width - half_item_spacing_x * 4.0f) * 0.2f;
+				const f32 drag_float_width = (col_uv_width - half_item_spacing_x * 3.0f) * 0.25f;
 
 				for (s32 vert_i = 0; vert_i < (s32)vec.size(); ++vert_i)
 				{
 					const auto& tuple = vec[vert_i];
 					const tex_coord_t& uv0 = vert_attrs.uv0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-					const f64 w0 = vert_attrs.w0.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
 					const tex_coord_t& uv1 = vert_attrs.uv1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-					const f64 w1 = vert_attrs.w1.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
 					const tex_coord_t& uv2 = vert_attrs.uv2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-					const f64 w2 = vert_attrs.w2.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
 					const tex_coord_t& uv3 = vert_attrs.uv3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-					const f64 w3 = vert_attrs.w3.getAttribute(std::get<0>(tuple), std::get<1>(tuple));
-					f32 editable_uvw[4][5] = {
-						{ uv0.u, uv0.v, uv0.uo, uv0.vo, (f32)w0 },
-						{ uv1.u, uv1.v, uv1.uo, uv1.vo, (f32)w1 },
-						{ uv2.u, uv2.v, uv2.uo, uv2.vo, (f32)w2 },
-						{ uv3.u, uv3.v, uv3.uo, uv3.vo, (f32)w3 },
+					f32 editable_uvw[4][4] = {
+						{ uv0.u, uv0.v, uv0.uo, uv0.vo },
+						{ uv1.u, uv1.v, uv1.uo, uv1.vo },
+						{ uv2.u, uv2.v, uv2.uo, uv2.vo },
+						{ uv3.u, uv3.v, uv3.uo, uv3.vo },
 					};
 
 					ImGui::TableNextRow();
@@ -283,7 +278,7 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 
 						ImGui::BeginGroup();
 
-						for (s32 comp = 0; comp < 5; ++comp)
+						for (s32 comp = 0; comp < 4; ++comp)
 						{
 							if (comp > 0)
 							{
@@ -319,28 +314,16 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 							switch (chan)
 							{
 							case 0:
-								{
-									vert_attrs.uv0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
-									vert_attrs.w0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
-								}
+								vert_attrs.uv0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
 								break;
 							case 1:
-								{
-									vert_attrs.uv1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
-									vert_attrs.w1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
-								}
+								vert_attrs.uv1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
 								break;
 							case 2:
-								{
-									vert_attrs.uv2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
-									vert_attrs.w2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
-								}
+								vert_attrs.uv2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
 								break;
 							case 3:
-								{
-									vert_attrs.uv3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
-									vert_attrs.w3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_uvw[chan][4]);
-								}
+								vert_attrs.uv3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), new_tc);
 								break;
 							default:
 								assert(false);
@@ -348,6 +331,121 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 							}
 							changed = true;
 						}
+					}
+
+					ImGui::PopID();
+				}
+
+				ImGui::EndTable();
+			}
+		}
+		break;
+	case vertex_editor_mode::TEX_WEIGHT:
+		{
+			std::vector<std::vector<std::tuple<const face_t*, u32, const vertex_t*>>> vec;
+			bool should_dedup = false;
+			if (should_dedup)
+			{
+				std::unordered_map<const vertex_t*, u64> inserted;
+				u64 vert_id = 0;
+				for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+				{
+					const mesh_t::face_t* const f = *i;
+					for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+					{
+						const vertex_t* v = e->vert;
+						if (inserted.contains(v))
+						{
+							vec.at(inserted.at(v)).push_back({ f, e.idx(), v });
+						}
+						else
+						{
+							vec.push_back({ { f, e.idx(), v } });
+							inserted.insert({ v, vec.size() - 1 });
+						}
+					}
+				}
+			}
+			else
+			{
+				for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+				{
+					const mesh_t::face_t* const f = *i;
+					for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+					{
+						vec.push_back({{ f, e.idx(), e->vert }});
+					}
+				}
+			}
+
+
+			if (ImGui::BeginTable("vew_weight", 2))
+			{
+				ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, col_vert_id_width);
+				ImGui::TableSetupColumn("Weights", ImGuiTableColumnFlags_WidthFixed, col_weight_width);
+				const f32 drag_float_width = (col_weight_width - half_item_spacing_x * 3.0f) * 0.25f;
+
+				for (s32 vert_i = 0; vert_i < (s32)vec.size(); ++vert_i)
+				{
+					const auto& list = vec[vert_i];
+					const f32& w0 = (f32)vert_attrs.w0.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
+					const f32& w1 = (f32)vert_attrs.w1.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
+					const f32& w2 = (f32)vert_attrs.w2.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
+					const f32& w3 = (f32)vert_attrs.w3.getAttribute(std::get<0>(list[0]), std::get<1>(list[0]));
+					f32 editable_weights[4] = { w0, w1, w2, w3 };
+					bool weights_dirty = false;
+
+					ImGui::TableNextRow();
+
+					ImGui::TableNextColumn();
+					ImGui::PushID(vert_i);
+
+					ImGui::PushID("id");
+					ImGui::Text("%d", vert_i);
+					ImGui::PopID();
+
+					ImGui::TableNextColumn();
+
+					ImGui::BeginGroup();
+
+					for (s32 comp = 0; comp < 4; comp++)
+					{
+						if (comp > 0)
+						{
+							ImGui::SameLine();
+							ImGui::SetCursorPosX(ImGui::GetCursorPosX() - half_item_spacing_x);
+						}
+
+						ImGui::PushID(comp);
+
+						ImGui::SetNextItemWidth(drag_float_width);
+						if (ImGui::DragFloat("", &editable_weights[comp], 0.01f, 0.0f, 1.0f))
+						{
+							weights_dirty = true;
+						}
+
+						ImGui::PopID();
+					}
+
+					ImGui::EndGroup();
+					if (!found_activated && (ImGui::IsItemHovered() || ImGui::IsItemActive()))
+					{
+						const vertex_t* v = std::get<2>(list[0]);
+						m_app_ctx->set_vertex_editor_icon_position(point<space::WORLD>(v->v.x, v->v.y, v->v.z), vert_i);
+						if (ImGui::IsItemActive())
+							found_activated = true;
+					}
+
+					if (weights_dirty)
+					{
+						for (const auto& tuple : list)
+						{
+							vert_attrs.w0.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_weights[0]);
+							vert_attrs.w1.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_weights[1]);
+							vert_attrs.w2.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_weights[2]);
+							vert_attrs.w3.setAttribute(std::get<0>(tuple), std::get<1>(tuple), editable_weights[3]);
+						}
+						changed = true;
 					}
 
 					ImGui::PopID();

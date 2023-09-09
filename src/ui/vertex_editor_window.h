@@ -7,6 +7,7 @@ enum class vertex_editor_mode
 	POSITION,
 	COLOR,
 	UV,
+	TEX_WEIGHT,
 	COUNT
 };
 static std::string vertex_editor_mode_string(const vertex_editor_mode em)
@@ -15,7 +16,8 @@ static std::string vertex_editor_mode_string(const vertex_editor_mode em)
 	{
 	case vertex_editor_mode::POSITION: return "Position";
 	case vertex_editor_mode::COLOR: return "Color";
-	case vertex_editor_mode::UV: return "UVs";
+	case vertex_editor_mode::UV: return "UV";
+	case vertex_editor_mode::TEX_WEIGHT: return "Weight";
 	}
 	assert(false);
 	return "";
