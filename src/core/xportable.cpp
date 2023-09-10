@@ -59,6 +59,18 @@ void xportable::reset_num_tags_created()
 {
 	s_num_tags_created = 0;
 }
+std::vector<const char*> xportable::get_tag_suggestions(const std::string& s)
+{
+	std::vector<const char*> result;
+	for (const auto& c : s_used_tagz)
+	{
+		if (c.first.name.starts_with(s))
+		{
+			result.emplace_back(c.first.name.c_str());
+		}
+	}
+	return result;
+}
 
 
 
@@ -109,13 +121,20 @@ void xportable::push_tag(const std::string& s)
 		s,
 		s_num_tags_created + 1,
 	};
+	const auto& it = s_used_tagz.find(new_tag);
+	if (it != s_used_tagz.end())
+	{
+		new_tag.id = it->first.id;
+	}
+	else
+		s_num_tags_created++;
+
 	if (m_tagz.contains(new_tag))
 	{
 		return;
 	}
 	++s_used_tagz[new_tag];
 	m_tagz.insert(new_tag);
-	s_num_tags_created++;
 }
 void xportable::erase_tag(const tag& t)
 {

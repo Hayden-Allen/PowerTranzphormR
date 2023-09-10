@@ -179,11 +179,39 @@ void properties_window::handle_xportable(xportable* x)
 	{
 		x->erase_tag(to_erase);
 	}
-	if (ImGui::InputText("Add Tag", &m_cur_tag_input, ImGuiInputTextFlags_EnterReturnsTrue) && !m_cur_tag_input.empty())
+	const bool pressed_enter = ImGui::InputText("Add Tag", &m_cur_tag_input, ImGuiInputTextFlags_EnterReturnsTrue);
+	if (!m_cur_tag_input.empty())
 	{
-		x->push_tag(m_cur_tag_input);
-		m_cur_tag_input = "";
-		ImGui::SetKeyboardFocusHere(-1);
+		if (pressed_enter)
+		{
+			x->push_tag(m_cur_tag_input);
+			m_cur_tag_input = "";
+			ImGui::SetKeyboardFocusHere(-1);
+		}
+		else
+		{
+			const auto& suggestions = xportable::get_tag_suggestions(m_cur_tag_input);
+			const bool is_input_text_active = ImGui::IsItemActive() || ImGui::IsItemActivated();
+			if (is_input_text_active && suggestions.size() > 0)
+				ImGui::OpenPopup("##suggestions");
+			ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
+			if (ImGui::BeginPopup("##suggestions", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
+			{
+				for (const auto& s : suggestions)
+				{
+					if (ImGui::Selectable(s))
+					{
+						x->push_tag(s);
+						m_cur_tag_input = "";
+					}
+				}
+
+				if (pressed_enter || (!is_input_text_active && !ImGui::IsWindowFocused()))
+					ImGui::CloseCurrentPopup();
+
+				ImGui::EndPopup();
+			}
+		}
 	}
 }
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
