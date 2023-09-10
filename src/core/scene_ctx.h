@@ -14,6 +14,8 @@ struct scene_ctx_uniforms
 {
 	const mat<space::OBJECT, space::CLIP>& mvp;
 	const tmat<space::OBJECT, space::CAMERA>& mv;
+	const tmat<space::WORLD, space::CAMERA>& view;
+	const pmat<space::CAMERA, space::CLIP>& proj;
 	const tmat<space::OBJECT, space::WORLD>& model;
 	const tmat<space::OBJECT, space::WORLD>& normal;
 	const point<space::WORLD>& cam_pos;
@@ -104,6 +106,7 @@ private:
 	std::vector<waypoint*> m_waypoints;
 	sgnode* m_sg_root = nullptr;
 	mgl::static_uniform_buffer m_light_buffer;
+	mgl::skybox_rgb_u8* m_skybox = nullptr;
 private:
 	void m_build_light_buffer();
 	void m_build_sg_vaos();

@@ -42,6 +42,7 @@ void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
 	m_draw_vaos(glctx, mats, m_sm_ros_for_mtl);
 	m_draw_vaos(glctx, mats, m_sg_ros_for_mtl);
+	m_skybox->draw(mats.view, mats.proj);
 }
 void scene_ctx::update()
 {
@@ -105,6 +106,17 @@ void scene_ctx::clear(bool ready_for_default_material)
 		scene_material* const null_mtl = create_default_material();
 		null_mtl->set_name(g::null_mtl_name);
 		m_mtls.insert(std::make_pair(0, null_mtl));
+
+		delete m_skybox;
+		m_skybox = u::load_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
+			{
+				"res/sb/px.png",
+				"res/sb/nx.png",
+				"res/sb/py.png",
+				"res/sb/ny.png",
+				"res/sb/pz.png",
+				"res/sb/nz.png",
+			});
 	}
 }
 void scene_ctx::destroy()
@@ -114,6 +126,8 @@ void scene_ctx::destroy()
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
+	delete m_skybox;
+	m_skybox = nullptr;
 }
 void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 {

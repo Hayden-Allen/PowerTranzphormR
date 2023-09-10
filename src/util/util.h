@@ -180,6 +180,45 @@ namespace u
 		return tex;
 	}
 
+	static mgl::skybox_rgb_u8* load_skybox_rgb_u8(const std::string& vert_fp, const std::string& frag_fp, const std::array<std::string, 6>& fps)
+	{
+		int aw = -1, ah = -1;
+		const u8* tex[6] = { nullptr };
+		for (u64 i = 0; i < fps.size(); i++)
+		{
+			std::ifstream test(fps[i]);
+			if (!test.is_open())
+			{
+				LOG_FATAL("Invalid texture filepath {}", fps[i].c_str());
+				MGL_ASSERT(false);
+				return nullptr;
+			}
+			test.close();
+
+			stbi_set_flip_vertically_on_load(true);
+			int w = -1, h = -1, c = -1;
+			tex[i] = stbi_load(fps[i].c_str(), &w, &h, &c, 3);
+			assert(c == 3);
+			if (aw == -1)
+			{
+				aw = w;
+				ah = h;
+			}
+			else if (!(w == aw && h == ah))
+			{
+				LOG_ERROR("All skybox texture dimensions must match");
+				for (s32 j = 0; j < 6; j++)
+					delete tex[i];
+				return nullptr;
+			}
+		}
+
+		mgl::skybox_rgb_u8* ret = new mgl::skybox_rgb_u8(vert_fp, frag_fp, std::move(mgl::cubemap_rgb_u8(GL_RGB, aw, ah, tex)));
+		for (s32 i = 0; i < 6; i++)
+			delete tex[i];
+		return ret;
+	}
+
 	static f32 hue2rgb(f32 v1, f32 v2, f32 vH)
 	{
 		if (vH < 0)
