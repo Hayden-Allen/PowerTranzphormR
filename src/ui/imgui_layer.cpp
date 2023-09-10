@@ -64,7 +64,8 @@ bool imgui_layer::on_frame(const f32 dt)
 	{
 		ImGui_ImplOpenGL3_DestroyFontsTexture();
 		ImGui::GetIO().Fonts->Clear();
-		ImGui::GetIO().Fonts->AddFontFromFileTTF("res/fonts/Jost-Regular.ttf", 20.0f * std::max(x_scale, y_scale));
+		g::font_size = 20.0f * std::max(x_scale, y_scale);
+		ImGui::GetIO().Fonts->AddFontFromFileTTF("res/fonts/Jost-Regular.ttf", g::font_size);
 		ImGui::GetIO().Fonts->Build();
 		ImGui_ImplOpenGL3_CreateFontsTexture();
 		m_prev_x_scale = x_scale;

@@ -42,6 +42,9 @@ private:
 	bool autotex_fetch_post(const std::string& host, const std::string& path, const nlohmann::json& body, nlohmann::json& result, int expect_status = 200);
 	void autotex_sampler_combo(autotexture_params& params, const std::string& sampler_name);
 private:
+	xportable* m_prev_xportable = nullptr;
+	std::string m_cur_tag_input;
+private:
 	std::string m_autotex_url, m_autotex_username, m_autotex_password;
 	bool m_autotex_needs_load = true;
 };

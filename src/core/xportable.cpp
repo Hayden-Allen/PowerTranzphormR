@@ -14,23 +14,22 @@ xportable::xportable(const std::string& name) :
 }
 xportable::xportable(const nlohmann::json& obj) :
 	m_id(obj["id"]),
-	m_name(obj["name"]),
-	m_kustom_id(obj["kustom_id"]),
-	m_kustom_display(obj["kustom_id"])
+	m_name(obj["name"])
 {
-	assert(!s_used_kustomz.contains(m_kustom_id));
-	s_used_kustomz.insert(m_kustom_id);
+	assert(!s_used_kustomz.contains(obj["kustom_id"]));
+	kustomize_display(obj["kustom_id"]);
 	for (const auto& s : obj["tagz"])
 	{
-		m_tagz.emplace_back(s);
+		push_tag(s);
 	}
 }
 xportable::~xportable()
 {
-	if (!m_kustom_id.empty())
+	for (const auto& s : m_tagz)
 	{
-		s_used_kustomz.erase(m_kustom_id);
+		decrement_tag_refcount(s);
 	}
+	kustomize_display("");
 }
 
 u32 xportable::get_next_id()
@@ -66,7 +65,7 @@ const std::string& xportable::get_name() const
 {
 	return m_name;
 }
-const std::vector<std::string>& xportable::get_tagz() const
+const std::set<std::string, xportable::CaseInsensitiveCompare>& xportable::get_tagz() const
 {
 	return m_tagz;
 }
@@ -86,6 +85,20 @@ void xportable::kustomize_display(const std::string& s)
 	}
 	m_kustom_display = s;
 }
+void xportable::push_tag(const std::string& s)
+{
+	if (m_tagz.contains(s))
+	{
+		return;
+	}
+	++s_used_tagz[s];
+	m_tagz.insert(s);
+}
+void xportable::erase_tag(const std::string& s)
+{
+	decrement_tag_refcount(s);
+	m_tagz.erase(s);
+}
 void xportable::set_name(const std::string& n)
 {
 	m_name = n;
@@ -98,4 +111,13 @@ nlohmann::json xportable::save() const
 	obj["tagz"] = m_tagz;
 	obj["name"] = m_name;
 	return obj;
+}
+
+void xportable::decrement_tag_refcount(const std::string& s)
+{
+	--s_used_tagz[s];
+	if (s_used_tagz[s] == 0)
+	{
+		s_used_tagz.erase(s);
+	}
 }

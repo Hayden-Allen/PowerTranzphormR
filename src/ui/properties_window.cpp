@@ -23,43 +23,44 @@ void properties_window::handle_frame()
 	ImGui::PushID("propswin");
 
 	sgnode* const selected_sgnode = m_app_ctx->get_selected_sgnode();
+	scene_material* const selected_material = m_app_ctx->get_selected_material();
+	light* const selected_light = m_app_ctx->get_selected_light();
+	waypoint* const selected_waypoint = m_app_ctx->get_selected_waypoint();
+	smnode* const selected_static_mesh = m_app_ctx->get_selected_static_mesh();
+
 	if (selected_sgnode)
 	{
 		ImGui::PushID(selected_sgnode->get_id().c_str());
 		handle_sgnode_frame(selected_sgnode);
 		ImGui::PopID();
 	}
-
-	scene_material* const selected_material = m_app_ctx->get_selected_material();
-	if (selected_material)
+	else if (selected_material)
 	{
 		ImGui::PushID(selected_material->get_id().c_str());
 		handle_material_frame(selected_material);
 		ImGui::PopID();
 	}
-
-	light* const selected_light = m_app_ctx->get_selected_light();
-	if (selected_light)
+	else if (selected_light)
 	{
 		ImGui::PushID(selected_light->get_id().c_str());
 		handle_light_frame(selected_light);
 		ImGui::PopID();
 	}
-
-	waypoint* const selected_waypoint = m_app_ctx->get_selected_waypoint();
-	if (selected_waypoint)
+	else if (selected_waypoint)
 	{
 		ImGui::PushID(selected_waypoint->get_id().c_str());
 		handle_waypoint_frame(selected_waypoint);
 		ImGui::PopID();
 	}
-
-	smnode* const selected_static_mesh = m_app_ctx->get_selected_static_mesh();
-	if (selected_static_mesh)
+	else if (selected_static_mesh)
 	{
 		ImGui::PushID(selected_static_mesh->get_id().c_str());
 		handle_static_mesh_frame(selected_static_mesh);
 		ImGui::PopID();
+	}
+	else
+	{
+		m_prev_xportable = nullptr;
 	}
 
 	ImGui::PopID();
@@ -85,6 +86,8 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 }
 void properties_window::handle_sgnode_snapping_angle()
 {
+	ImGui::SeparatorText("Normals");
+
 	const bool start_all = scene_ctx::s_snap_all;
 	ImGui::Checkbox("Snap All", &scene_ctx::s_snap_all);
 	const f32 start_angle = scene_ctx::s_snap_angle;
@@ -95,6 +98,7 @@ void properties_window::handle_sgnode_snapping_angle()
 }
 bool properties_window::handle_transform(f32* const elements)
 {
+	ImGui::SeparatorText("Transform");
 	bool dirty = false;
 	float trans[3] = { 0.f }, rot[3] = { 0.f }, scale[3] = { 0.f };
 	ImGuizmo::DecomposeMatrixToComponents(elements, trans, rot, scale);
@@ -118,7 +122,16 @@ bool properties_window::handle_transform(f32* const elements)
 }
 void properties_window::handle_xportable(xportable* x)
 {
-	std::string s = x->get_kustom_id();
+	if (x != m_prev_xportable)
+	{
+		m_cur_tag_input = "";
+		m_prev_xportable = x;
+	}
+
+
+	ImGui::SeparatorText("Identifiers");
+
+	std::string s = x->get_kustom_display();
 	if (ImGui::InputText("ID", &s))
 	{
 		x->kustomize_display(s);
@@ -126,6 +139,35 @@ void properties_window::handle_xportable(xportable* x)
 	if (x->get_kustom_id_conflict())
 	{
 		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid ID - must be unique");
+	}
+
+	const f32 orig_avail = ImGui::GetWindowContentRegionWidth();
+	f32 cur_avail = orig_avail;
+	bool is_first = true;
+	for (const auto& s : x->get_tagz())
+	{
+		const f32 cur_width = ImGui::GetIO().Fonts->Fonts[0]->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, 0.0f, s.c_str()).x + ImGui::GetStyle().ItemSpacing.x;
+		cur_avail -= cur_width;
+		if (cur_avail > 0.0f)
+		{
+			if (!is_first)
+			{
+				ImGui::SameLine();
+			}
+		}
+		else
+		{
+			cur_avail = orig_avail - cur_width;
+		}
+		is_first = false;
+
+		ImGui::Text(s.c_str());
+	}
+	if (ImGui::InputText("Add Tag", &m_cur_tag_input, ImGuiInputTextFlags_EnterReturnsTrue) && !m_cur_tag_input.empty())
+	{
+		x->push_tag(m_cur_tag_input);
+		m_cur_tag_input = "";
+		ImGui::SetKeyboardFocusHere(-1);
 	}
 }
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
@@ -145,6 +187,8 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 void properties_window::handle_material_frame(scene_material* const selected)
 {
 	handle_xportable(selected);
+
+	ImGui::SeparatorText("Textures");
 
 	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
 		{
@@ -265,6 +309,7 @@ void properties_window::handle_light_frame(light* const selected)
 	// maintain type id in mat[3][3]
 	selected->set_type(type);
 
+	ImGui::SeparatorText("Light");
 	ImGui::PushID(selected->get_id().c_str());
 	if (ImGui::BeginCombo("Type", light_type_string(type).c_str()))
 	{
@@ -317,6 +362,7 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	if (!selected->is_static())
 	{
 		changed |= draw_params(selected->get_params());
+		ImGui::SeparatorText("Heightmap");
 		if (ImGui::Button("Load Heightmap"))
 		{
 			const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp");
@@ -346,6 +392,7 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 }
 u32 properties_window::material_combo_box(const u32 selected)
 {
+	ImGui::SeparatorText("Material");
 	u32 new_selected = selected;
 	if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(selected)->get_name().c_str()))
 	{
@@ -370,6 +417,8 @@ u32 properties_window::material_combo_box(const u32 selected)
 }
 bool properties_window::draw_params(const std::vector<std::pair<std::string, generated_mesh_param>>& params)
 {
+	ImGui::SeparatorText("Parameters");
+
 	bool changed = false;
 	for (const auto& prop : params)
 	{

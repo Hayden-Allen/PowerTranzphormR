@@ -7,6 +7,7 @@ namespace g
 {
 	texture_library* texlib = nullptr;
 	mgl::shaders* shaders = nullptr;
+	f32 font_size = 0.0f;
 
 	void init()
 	{
