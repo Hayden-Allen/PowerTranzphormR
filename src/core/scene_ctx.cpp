@@ -40,9 +40,9 @@ const attr_material_t& scene_ctx::get_mtl_id_attr() const
 }
 void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
+	m_skybox->draw(mats.view, mats.proj);
 	m_draw_vaos(glctx, mats, m_sm_ros_for_mtl);
 	m_draw_vaos(glctx, mats, m_sg_ros_for_mtl);
-	m_skybox->draw(mats.view, mats.proj);
 }
 void scene_ctx::update()
 {

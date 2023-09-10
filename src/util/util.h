@@ -198,7 +198,6 @@ namespace u
 			stbi_set_flip_vertically_on_load(true);
 			int w = -1, h = -1, c = -1;
 			tex[i] = stbi_load(fps[i].c_str(), &w, &h, &c, 3);
-			assert(c == 3);
 			if (aw == -1)
 			{
 				aw = w;
