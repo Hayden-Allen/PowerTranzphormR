@@ -6,30 +6,27 @@
 
 // nop node
 sgnode::sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t) :
+	xportable(n),
 	m_parent(p),
 	m_gen(m),
-	m_id(std::string("sgn") + std::to_string(s_next_id++)),
-	m_name(n),
 	m_mat(t)
 {
 	set_gen_dirty();
 }
 // operation node
 sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t) :
+	xportable(u::operation_to_string(op)),
 	m_parent(p),
 	m_gen(new generated_mesh(nullptr)),
 	m_operation(op),
-	m_id(std::string("sgn") + std::to_string(s_next_id++)),
-	m_name(u::operation_to_string(op)),
 	m_mat(t)
 {
 	assert(op != carve::csg::CSG::OP::ALL);
 	set_dirty();
 }
 sgnode::sgnode(const nlohmann::json& obj, scene_ctx* const scene) :
+	xportable(obj),
 	m_operation(obj["op"]),
-	m_id(obj["id"]),
-	m_name(obj["name"]),
 	m_frozen(obj["frozen"])
 {
 	m_mat = u::json2tmat<space::OBJECT, space::PARENT>(obj["mat"]);
@@ -60,21 +57,6 @@ sgnode::~sgnode()
 
 
 
-u32 sgnode::get_next_id()
-{
-	return s_next_id;
-}
-void sgnode::set_next_id(const u32 id)
-{
-	s_next_id = id;
-}
-void sgnode::reset_next_id()
-{
-	s_next_id = s_first_id;
-}
-
-
-
 s64 sgnode::get_index() const
 {
 	if (!m_parent)
@@ -90,14 +72,6 @@ sgnode* sgnode::get_parent()
 const sgnode* sgnode::get_parent() const
 {
 	return m_parent;
-}
-const std::string& sgnode::get_id() const
-{
-	return m_id;
-}
-const std::string& sgnode::get_name() const
-{
-	return m_name;
 }
 tmat<space::OBJECT, space::PARENT>& sgnode::get_mat()
 {
@@ -166,10 +140,6 @@ void sgnode::set_gen_dirty()
 {
 	m_gen->set_dirty();
 	set_dirty();
-}
-void sgnode::set_name(const std::string& n)
-{
-	m_name = n;
 }
 tmat<space::OBJECT, space::WORLD> sgnode::accumulate_mats() const
 {
@@ -329,7 +299,7 @@ void sgnode::recompute(scene_ctx* const scene)
 }
 nlohmann::json sgnode::save(scene_ctx* const scene) const
 {
-	nlohmann::json obj;
+	nlohmann::json obj = xportable::save();
 	// good for debugging?
 	/*obj["parent"] = m_parent ? m_parent->m_id : "";
 	std::vector<std::string> child_ids;
@@ -339,8 +309,6 @@ nlohmann::json sgnode::save(scene_ctx* const scene) const
 
 	obj["gen"] = m_gen->save(scene, accumulate_mats().invert_copy());
 	obj["op"] = m_operation;
-	obj["id"] = m_id;
-	obj["name"] = m_name;
 	obj["mat"] = m_mat.e;
 	obj["frozen"] = m_frozen;
 
@@ -365,9 +333,8 @@ void sgnode::destroy(std::unordered_set<sgnode*>& freed)
 
 
 sgnode::sgnode(const sgnode* const original) :
+	xportable(original->get_name()),
 	m_operation(original->m_operation),
-	m_id(std::string("sgn") + std::to_string(s_next_id++)),
-	m_name(original->m_name),
 	m_frozen(original->m_frozen),
 	m_mat(original->m_mat)
 {}

@@ -142,10 +142,7 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	meta["nn"] = nodes.size();
 	meta["np"] = m_past.size();
 	meta["nf"] = m_future.size();
-	meta["ni"] = sgnode::get_next_id();
-	meta["mi"] = smnode::get_next_id();
-	meta["li"] = light::get_next_id();
-	meta["wi"] = waypoint::get_next_id();
+	meta["xpni"] = xportable::get_next_id();
 	out << meta << "\n";
 
 	// write out all nodes
@@ -202,10 +199,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 	}
 
 	// need to know what unique id to start making new sgnodes at
-	sgnode::set_next_id(meta["ni"]);
-	smnode::set_next_id(meta["mi"]);
-	light::set_next_id(meta["li"]);
-	waypoint::set_next_id(meta["wi"]);
+	xportable::set_next_id(meta["xpni"]);
 
 	return nodes;
 }

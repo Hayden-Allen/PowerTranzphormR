@@ -5,8 +5,8 @@
 class sgnode;
 struct autotexture_params;
 struct scene_material;
-struct light;
-struct waypoint;
+class light;
+class waypoint;
 class generated_mesh;
 class smnode;
 

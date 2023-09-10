@@ -391,6 +391,7 @@
     <ClCompile Include="src\ui\properties_window.cpp" />
     <ClCompile Include="src\ui\scene_graph_window.cpp" />
     <ClCompile Include="src\ui\shortcut_menus_layer.cpp" />
+    <ClCompile Include="src\core\xportable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
@@ -399,6 +400,7 @@
     <ClInclude Include="src\core\light.h" />
     <ClInclude Include="src\core\smnode.h" />
     <ClInclude Include="src\core\waypoint.h" />
+    <ClInclude Include="src\core\xportable.h" />
     <ClInclude Include="src\geom\carve.h" />
     <ClInclude Include="src\geom\generated_mesh.h" />
     <ClInclude Include="src\geom\glu_tess.h" />

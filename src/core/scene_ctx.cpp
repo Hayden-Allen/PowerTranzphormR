@@ -67,10 +67,7 @@ void scene_ctx::update()
 }
 void scene_ctx::clear(bool ready_for_default_material)
 {
-	sgnode::reset_next_id();
-	smnode::reset_next_id();
-	light::reset_next_id();
-	waypoint::reset_next_id();
+	xportable::reset_next_id();
 	s_next_mtl_id = 1;
 
 	m_csg = carve::csg::CSG();
@@ -88,6 +85,7 @@ void scene_ctx::clear(bool ready_for_default_material)
 	for (smnode* const sm : m_static_meshes)
 		delete sm;
 	m_static_meshes.clear();
+	m_sm_ros_for_mtl.clear();
 
 	for (light* const l : m_lights)
 		delete l;
@@ -104,7 +102,7 @@ void scene_ctx::clear(bool ready_for_default_material)
 	if (ready_for_default_material)
 	{
 		scene_material* const null_mtl = create_default_material();
-		null_mtl->name = g::null_mtl_name;
+		null_mtl->set_name(g::null_mtl_name);
 		m_mtls.insert(std::make_pair(0, null_mtl));
 	}
 }
@@ -119,6 +117,8 @@ void scene_ctx::destroy()
 void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 {
 	nlohmann::json obj;
+
+	obj["rid"] = m_sg_root->get_id();
 
 	obj["nm"] = m_mtls.size();
 	std::vector<nlohmann::json::array_t> mtls;
@@ -154,7 +154,7 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 
 	out << obj << "\n";
 }
-void scene_ctx::load(std::ifstream& in, const std::string& in_fp)
+const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 {
 	const nlohmann::json& obj = u::next_line_json(in);
 
@@ -180,6 +180,8 @@ void scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 		m_lights.emplace_back(new light(l));
 	}
 	m_build_light_buffer();
+
+	return obj["rid"];
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
 {
@@ -220,7 +222,6 @@ scene_material* scene_ctx::create_default_material()
 {
 	scene_material* mtl = new scene_material;
 	mtl->shaders = g::shaders;
-	mtl->name = "Untitled Material";
 	mtl->set_texture("u_tex0", g::null_tex_fp);
 	mtl->set_texture("u_tex1", g::null_tex_fp);
 	mtl->set_texture("u_tex2", g::null_tex_fp);

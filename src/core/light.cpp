@@ -2,20 +2,18 @@
 #include "light.h"
 
 
-light::light() :
-	m_id(std::string("lit") + std::to_string(s_next_id++))
+light::light() : xportable(std::string("Light"))
 {
 	set_type(light_type::POINT);
 }
 light::light(const mgl::light& ml, const std::string& _name) :
-	mgl_light(ml),
-	name(_name)
+	xportable(_name),
+	mgl_light(ml)
 {
 	set_type(light_type::POINT);
 }
 light::light(const nlohmann::json& obj) :
-	name(obj["n"]),
-	m_id(obj["id"])
+	xportable(obj)
 {
 	set_type(obj["ty"]);
 
@@ -32,21 +30,6 @@ light::light(const nlohmann::json& obj) :
 
 
 
-u32 light::get_next_id()
-{
-	return s_next_id;
-}
-void light::set_next_id(const u32 id)
-{
-	s_next_id = id;
-}
-void light::reset_next_id()
-{
-	s_next_id = s_first_id;
-}
-
-
-
 std::vector<std::pair<std::string, generated_mesh_param>> light::get_params() const
 {
 	return {
@@ -59,9 +42,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> light::get_params() co
 }
 nlohmann::json light::save() const
 {
-	nlohmann::json obj;
-	obj["id"] = m_id;
-	obj["n"] = name;
+	nlohmann::json obj = xportable::save();
 	obj["ty"] = m_type;
 	obj["t"] = mgl_light.mat.e;
 	obj["ca"] = mgl_light.ca;
@@ -83,24 +64,12 @@ void light::set_mat(const tmat<space::OBJECT, space::WORLD>& m)
 {
 	mgl_light.mat = m;
 }
-const std::string& light::get_name() const
-{
-	return name;
-}
 light_type light::get_type() const
 {
 	return m_type;
-}
-void light::set_name(const std::string& n)
-{
-	name = n;
 }
 void light::set_type(const light_type t)
 {
 	m_type = t;
 	mgl_light.mat.t[3] = (f32)t;
-}
-const std::string& light::get_id() const
-{
-	return m_id;
 }

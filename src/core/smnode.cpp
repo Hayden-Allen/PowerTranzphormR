@@ -3,15 +3,14 @@
 #include "geom/generated_mesh.h"
 
 smnode::smnode(generated_mesh* const gen) :
-	m_gen(gen),
-	m_id(std::string("smn") + std::to_string(s_next_id++))
+	xportable(std::string("Static Mesh")),
+	m_gen(gen)
 {
 	assert(!gen->is_static());
 	copy_local_verts();
 }
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
-	m_name(obj["n"]),
-	m_id(obj["id"])
+	xportable(obj)
 {
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
@@ -27,21 +26,6 @@ smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 smnode::~smnode()
 {
 	delete m_gen;
-}
-
-
-
-u32 smnode::get_next_id()
-{
-	return s_next_id;
-}
-void smnode::set_next_id(const u32 id)
-{
-	s_next_id = id;
-}
-void smnode::reset_next_id()
-{
-	s_next_id = s_first_id;
 }
 
 
@@ -73,18 +57,6 @@ tmat<space::OBJECT, space::WORLD>& smnode::get_mat()
 const tmat<space::OBJECT, space::WORLD>& smnode::get_mat() const
 {
 	return m_mat;
-}
-const std::string& smnode::get_id() const
-{
-	return m_id;
-}
-const std::string& smnode::get_name() const
-{
-	return m_name;
-}
-void smnode::set_name(const std::string& name)
-{
-	m_name = name;
 }
 void smnode::set_dirty()
 {
@@ -147,12 +119,10 @@ void smnode::make_static(scene_ctx* const scene)
 }
 nlohmann::json smnode::save(scene_ctx* const scene) const
 {
-	nlohmann::json obj;
-	obj["id"] = m_id;
+	nlohmann::json obj = xportable::save();
 	obj["t"] = m_mat.e;
 	obj["m"] = m_gen->save(scene, m_mat.invert_copy());
 	obj["s"] = is_static();
-	obj["n"] = m_name;
 	return obj;
 }
 

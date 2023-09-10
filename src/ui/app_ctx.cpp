@@ -142,9 +142,6 @@ void app_ctx::load(const std::string& fp)
 	loaded_filename = fp;
 
 	const auto& nodes = actions.load(in);
-	// should always be the id of the root
-	assert(nodes.contains("sgn0"));
-	scene.set_sg_root(nodes.at("sgn0"));
 
 	const nlohmann::json& f2u = u::next_line_json(in);
 	const nlohmann::json::array_t& f2us = f2u["p"];
@@ -154,7 +151,9 @@ void app_ctx::load(const std::string& fp)
 		frozen2unfrozen.insert({ nodes.at(f2us[i][0]), nodes.at(f2us[i][1]) });
 	}
 
-	scene.load(in, fp);
+	const std::string& rid = scene.load(in, fp);
+	assert(nodes.contains(rid));
+	scene.set_sg_root(nodes.at(rid));
 	deselect_all();
 }
 void app_ctx::undo()
@@ -290,7 +289,7 @@ std::vector<std::pair<u32, scene_material*>> app_ctx::get_sorted_materials()
 	}
 	std::sort(sorted_mtls.begin(), sorted_mtls.end(), [](const auto& a, const auto& b)
 		{
-			return _strnicmp(a.second->name.c_str(), b.second->name.c_str(), std::max(a.second->name.size(), b.second->name.size())) < 0;
+			return _strnicmp(a.second->get_name().c_str(), b.second->get_name().c_str(), std::max(a.second->get_name().size(), b.second->get_name().size())) < 0;
 		});
 	sorted_mtls.emplace(sorted_mtls.begin(), std::make_pair(0, unordered_mtls.at(0)));
 	return sorted_mtls;

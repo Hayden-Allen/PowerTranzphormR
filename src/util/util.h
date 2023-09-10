@@ -97,6 +97,10 @@ namespace u
 			ret = nfd_path;
 			NFD_FreePath(nfd_path);
 		}
+		else if (nfd_res == NFD_ERROR)
+		{
+			std::cerr << "NFD Error: " << NFD_GetError() << "\n";
+		}
 		reset_imgui_io(window);
 		return ret;
 	}

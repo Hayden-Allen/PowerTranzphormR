@@ -1,11 +1,12 @@
 #pragma once
 #include "pch.h"
+#include "xportable.h"
 
 class generated_mesh;
 class scene_ctx;
 struct app_ctx;
 
-class sgnode
+class sgnode : public xportable
 {
 public:
 	// nop node
@@ -16,15 +17,9 @@ public:
 	MGL_DCM(sgnode);
 	virtual ~sgnode();
 public:
-	static u32 get_next_id();
-	static void set_next_id(const u32 id);
-	static void reset_next_id();
-public:
 	s64 get_index() const;
 	sgnode* get_parent();
 	const sgnode* get_parent() const;
-	const std::string& get_id() const;
-	const std::string& get_name() const;
 	tmat<space::OBJECT, space::PARENT>& get_mat();
 	const tmat<space::OBJECT, space::PARENT>& get_mat() const;
 	generated_mesh* get_gen();
@@ -40,7 +35,6 @@ public:
 	void set_operation(const carve::csg::CSG::OP op);
 	void set_dirty();
 	void set_gen_dirty();
-	void set_name(const std::string& n);
 	tmat<space::OBJECT, space::WORLD> accumulate_mats() const;
 	tmat<space::PARENT, space::WORLD> accumulate_parent_mats() const;
 	void set_material(scene_ctx* const scene, u32 mtl_id);									   // WARNING: Always use app_ctx->set_material instead of this one
@@ -57,14 +51,10 @@ public:
 	nlohmann::json save(scene_ctx* const scene) const;
 	void destroy(std::unordered_set<sgnode*>& freed);
 private:
-	constexpr static inline u32 s_first_id = 0;
-	static inline u32 s_next_id = s_first_id;
-private:
 	sgnode* m_parent = nullptr;
 	std::vector<sgnode*> m_children;
 	generated_mesh* m_gen = nullptr;
 	carve::csg::CSG::OP m_operation = carve::csg::CSG::OP::ALL;
-	std::string m_id, m_name;
 	bool m_dirty = false, m_frozen = false;
 	tmat<space::OBJECT, space::PARENT> m_mat;
 	std::vector<point<space::OBJECT>> m_local_verts;

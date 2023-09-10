@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "xportable.h"
 
 struct autotexture_params
 {
@@ -11,10 +12,9 @@ struct autotexture_params
 	s32 dims[2] = { 512, 512 };
 };
 
-struct scene_material
+struct scene_material : public xportable
 {
 public:
-	std::string name;
 	mgl::shaders* shaders;
 public:
 	scene_material();

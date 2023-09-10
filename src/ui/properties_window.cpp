@@ -301,14 +301,14 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 u32 properties_window::material_combo_box(const u32 selected)
 {
 	u32 new_selected = selected;
-	if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(selected)->name.c_str()))
+	if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(selected)->get_name().c_str()))
 	{
 		const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
 		for (const auto& pair : sorted_mtls)
 		{
 			const bool cur_mtl_combo_selected = pair.first == selected;
 			ImGui::PushID(pair.first);
-			if (ImGui::Selectable(pair.second->name.c_str(), cur_mtl_combo_selected))
+			if (ImGui::Selectable(pair.second->get_name().c_str(), cur_mtl_combo_selected))
 			{
 				new_selected = pair.first;
 			}

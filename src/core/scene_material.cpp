@@ -2,19 +2,19 @@
 #include "scene_material.h"
 
 scene_material::scene_material() :
-	name(""),
+	xportable(std::string("Material")),
 	shaders(nullptr)
 {}
 scene_material::scene_material(const std::string& n, mgl::shaders* const s) :
-	name(n),
+	xportable(n),
 	shaders(s)
 {}
 scene_material::scene_material(const scene_material& o) noexcept :
-	name(o.name),
+	xportable(o.get_name()),
 	shaders(o.shaders)
 {}
 scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const s) :
-	name(obj["name"]),
+	xportable(obj),
 	shaders(s)
 {
 	const nlohmann::json::array_t& texs = obj["texs"];
@@ -77,8 +77,7 @@ void scene_material::for_each_texture(const std::function<void(const std::string
 }
 nlohmann::json scene_material::save(std::ofstream& out, const std::string& out_fp) const
 {
-	nlohmann::json obj;
-	obj["name"] = name;
+	nlohmann::json obj = xportable::save();
 
 	std::vector<nlohmann::json::array_t> texs;
 	for (const auto& pair : m_tex_name_to_filename)

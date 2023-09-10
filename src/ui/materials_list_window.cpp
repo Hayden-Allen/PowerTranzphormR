@@ -36,7 +36,7 @@ void materials_list_window::handle_frame()
 		scene_material* const mtl = sorted_mtls[i].second;
 		if (i == 0)
 		{
-			ImGui::TextDisabled(mtl->name.c_str());
+			ImGui::TextDisabled(mtl->get_name().c_str());
 			continue;
 		}
 
@@ -49,7 +49,7 @@ void materials_list_window::handle_frame()
 
 			constexpr u32 BUF_SIZE = 32;
 			char buf[32] = { 0 };
-			memcpy_s(buf, BUF_SIZE, mtl->name.c_str(), mtl->name.size());
+			memcpy_s(buf, BUF_SIZE, mtl->get_name().c_str(), mtl->get_name().size());
 
 			// hacky, but works
 			ImGui::SetCursorPosX(x - ImGui::GetStyle().FramePadding.x / 2 - 2);
@@ -59,7 +59,7 @@ void materials_list_window::handle_frame()
 				std::string new_name(buf);
 				if (!new_name.empty())
 				{
-					mtl->name = new_name;
+					mtl->set_name(new_name);
 				}
 				m_renaming = nullptr;
 			}
@@ -76,7 +76,7 @@ void materials_list_window::handle_frame()
 		}
 		else
 		{
-			ImGui::Selectable(mtl->name.c_str(), &selected);
+			ImGui::Selectable(mtl->get_name().c_str(), &selected);
 		}
 		if (ImGui::BeginPopupContextItem())
 		{
