@@ -143,6 +143,7 @@ void action_stack::save(std::ofstream& out, const sgnode* const root) const
 	meta["np"] = m_past.size();
 	meta["nf"] = m_future.size();
 	meta["xpni"] = xportable::get_next_id();
+	meta["xpnt"] = xportable::get_num_tags_created();
 	out << meta << "\n";
 
 	// write out all nodes
@@ -200,6 +201,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 
 	// need to know what unique id to start making new sgnodes at
 	xportable::set_next_id(meta["xpni"]);
+	xportable::set_num_tags_created(meta["xpnt"]);
 
 	return nodes;
 }

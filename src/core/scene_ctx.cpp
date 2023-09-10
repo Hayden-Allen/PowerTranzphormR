@@ -68,6 +68,7 @@ void scene_ctx::update()
 void scene_ctx::clear(bool ready_for_default_material)
 {
 	xportable::reset_next_id();
+	xportable::reset_num_tags_created();
 	s_next_mtl_id = 1;
 
 	m_csg = carve::csg::CSG();

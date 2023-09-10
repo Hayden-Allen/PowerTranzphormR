@@ -20,17 +20,20 @@ xportable::xportable(const nlohmann::json& obj) :
 	kustomize_display(obj["kustom_id"]);
 	for (const auto& s : obj["tagz"])
 	{
-		push_tag(s);
+		tag new_tag = { s[0], s[1] };
+		push_tag(new_tag);
 	}
 }
 xportable::~xportable()
 {
-	for (const auto& s : m_tagz)
+	for (const auto& t : m_tagz)
 	{
-		decrement_tag_refcount(s);
+		decrement_tag_refcount(t);
 	}
 	kustomize_display("");
 }
+
+
 
 u32 xportable::get_next_id()
 {
@@ -44,6 +47,20 @@ void xportable::reset_next_id()
 {
 	s_next_id = s_first_id;
 }
+u32 xportable::get_num_tags_created()
+{
+	return s_num_tags_created;
+}
+void xportable::set_num_tags_created(const u32 id)
+{
+	s_num_tags_created = id;
+}
+void xportable::reset_num_tags_created()
+{
+	s_num_tags_created = 0;
+}
+
+
 
 const std::string& xportable::get_id() const
 {
@@ -65,7 +82,7 @@ const std::string& xportable::get_name() const
 {
 	return m_name;
 }
-const std::set<std::string, xportable::CaseInsensitiveCompare>& xportable::get_tagz() const
+const std::set<xportable::tag, xportable::tag_comparator>& xportable::get_tagz() const
 {
 	return m_tagz;
 }
@@ -87,17 +104,23 @@ void xportable::kustomize_display(const std::string& s)
 }
 void xportable::push_tag(const std::string& s)
 {
-	if (m_tagz.contains(s))
+	// number doesn't matter, comparator doesn't care
+	tag new_tag = {
+		s,
+		s_num_tags_created + 1,
+	};
+	if (m_tagz.contains(new_tag))
 	{
 		return;
 	}
-	++s_used_tagz[s];
-	m_tagz.insert(s);
+	++s_used_tagz[new_tag];
+	m_tagz.insert(new_tag);
+	s_num_tags_created++;
 }
-void xportable::erase_tag(const std::string& s)
+void xportable::erase_tag(const tag& t)
 {
-	decrement_tag_refcount(s);
-	m_tagz.erase(s);
+	decrement_tag_refcount(t);
+	m_tagz.erase(t);
 }
 void xportable::set_name(const std::string& n)
 {
@@ -108,16 +131,31 @@ nlohmann::json xportable::save() const
 	nlohmann::json obj;
 	obj["id"] = m_id;
 	obj["kustom_id"] = m_kustom_id;
-	obj["tagz"] = m_tagz;
+	nlohmann::json::array_t tagz;
+	for (const auto& tag : m_tagz)
+	{
+		tagz.push_back(nlohmann::json::array({ tag.name, tag.id }));
+	}
+	obj["tagz"] = tagz;
 	obj["name"] = m_name;
 	return obj;
 }
 
-void xportable::decrement_tag_refcount(const std::string& s)
+
+
+void xportable::decrement_tag_refcount(const tag& t)
 {
-	--s_used_tagz[s];
-	if (s_used_tagz[s] == 0)
+	--s_used_tagz[t];
+	if (s_used_tagz[t] == 0)
 	{
-		s_used_tagz.erase(s);
+		s_used_tagz.erase(t);
 	}
+}
+
+
+
+void xportable::push_tag(const tag& t)
+{
+	++s_used_tagz[t];
+	m_tagz.insert(t);
 }

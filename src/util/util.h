@@ -154,6 +154,7 @@ namespace u
 		stbi_set_flip_vertically_on_load(true);
 		int w = -1, h = -1, c = -1;
 		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
+		assert(c == 3);
 		mgl::texture2d_rgb_u8* tex = new mgl::texture2d_rgb_u8(GL_RGB, w, h, tex_data);
 		stbi_image_free(tex_data);
 		return tex;
@@ -173,8 +174,53 @@ namespace u
 		stbi_set_flip_vertically_on_load(true);
 		int w = -1, h = -1, c = -1;
 		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 4);
+		assert(c == 4);
 		mgl::retained_texture2d_rgba_u8* tex = new mgl::retained_texture2d_rgba_u8(GL_RGBA, w, h, tex_data);
 		stbi_image_free(tex_data);
 		return tex;
+	}
+
+	static f32 hue2rgb(f32 v1, f32 v2, f32 vH)
+	{
+		if (vH < 0)
+			vH += 1;
+
+		if (vH > 1)
+			vH -= 1;
+
+		if ((6 * vH) < 1)
+			return (v1 + (v2 - v1) * 6 * vH);
+
+		if ((2 * vH) < 1)
+			return v2;
+
+		if ((3 * vH) < 2)
+			return (v1 + (v2 - v1) * ((2.0f / 3) - vH) * 6);
+
+		return v1;
+	}
+
+	static ImVec4 hsl2rgb(const f32 h, const f32 s, const f32 l)
+	{
+		f32 r, g, b;
+
+		if (s == 0)
+		{
+			r = g = b = l;
+		}
+		else
+		{
+			f32 v1, v2;
+			f32 hue = h / 360;
+
+			v2 = (l < 0.5f) ? (l * (1 + s)) : ((l + s) - (l * s));
+			v1 = 2 * l - v2;
+
+			r = hue2rgb(v1, v2, hue + (1.0f / 3));
+			g = hue2rgb(v1, v2, hue);
+			b = hue2rgb(v1, v2, hue - (1.0f / 3));
+		}
+
+		return ImVec4(r, g, b, 1.f);
 	}
 } // namespace u

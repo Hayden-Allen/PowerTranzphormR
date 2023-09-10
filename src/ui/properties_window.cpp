@@ -144,9 +144,12 @@ void properties_window::handle_xportable(xportable* x)
 	const f32 orig_avail = ImGui::GetWindowContentRegionWidth();
 	f32 cur_avail = orig_avail;
 	bool is_first = true;
+	xportable::tag to_erase = { "", 0 };
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.f, ImGui::GetStyle().FramePadding.y));
 	for (const auto& s : x->get_tagz())
 	{
-		const f32 cur_width = ImGui::GetIO().Fonts->Fonts[0]->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, 0.0f, s.c_str()).x + ImGui::GetStyle().ItemSpacing.x;
+		const f32 cur_width = ImGui::GetIO().Fonts->Fonts[0]->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, 0.0f, s.name.c_str()).x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
 		cur_avail -= cur_width;
 		if (cur_avail > 0.0f)
 		{
@@ -161,7 +164,20 @@ void properties_window::handle_xportable(xportable* x)
 		}
 		is_first = false;
 
-		ImGui::Text(s.c_str());
+		const f32 hue = 240.f * (s.id % 16) / 16 + 120.f;
+		ImGui::PushStyleColor(ImGuiCol_Button, u::hsl2rgb(hue, .5f, .45f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, u::hsl2rgb(hue, .5f, .55f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, u::hsl2rgb(hue, .5f, .55f));
+		if (ImGui::Button(s.name.c_str()) || ImGui::IsItemClicked(ImGuiMouseButton_Middle))
+		{
+			to_erase = s;
+		}
+		ImGui::PopStyleColor(3);
+	}
+	ImGui::PopStyleVar(2);
+	if (!to_erase.name.empty())
+	{
+		x->erase_tag(to_erase);
 	}
 	if (ImGui::InputText("Add Tag", &m_cur_tag_input, ImGuiInputTextFlags_EnterReturnsTrue) && !m_cur_tag_input.empty())
 	{
