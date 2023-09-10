@@ -2,7 +2,8 @@
 #include "light.h"
 
 
-light::light() : xportable(std::string("Light"))
+light::light() :
+	xportable(std::string("Light"))
 {
 	set_type(light_type::POINT);
 }
@@ -63,6 +64,7 @@ const tmat<space::OBJECT, space::WORLD>& light::get_mat() const
 void light::set_mat(const tmat<space::OBJECT, space::WORLD>& m)
 {
 	mgl_light.mat = m;
+	mgl_light.mat.t[3] = (f32)m_type;
 }
 light_type light::get_type() const
 {
