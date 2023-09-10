@@ -118,6 +118,18 @@ struct carve_vert_attrs
 		w3.setAttribute(face, i, opts.w3);
 		color.setAttribute(face, i, color_t(opts.r, opts.g, opts.b, opts.a));
 	}
+	void set_attribute(const face_t* const face, const u32 i, const primitive_options& opts, const tex_coord_t& mask, const f64 _w0, const f64 _w1, const f64 _w2, const f64 _w3)
+	{
+		uv0.setAttribute(face, i, tex_coord_t(mask.u * opts.u0, mask.v * opts.v0, opts.uo0, opts.vo0));
+		uv1.setAttribute(face, i, tex_coord_t(mask.u * opts.u1, mask.v * opts.v1, opts.uo1, opts.vo1));
+		uv2.setAttribute(face, i, tex_coord_t(mask.u * opts.u2, mask.v * opts.v2, opts.uo2, opts.vo2));
+		uv3.setAttribute(face, i, tex_coord_t(mask.u * opts.u3, mask.v * opts.v3, opts.uo3, opts.vo3));
+		w0.setAttribute(face, i, _w0);
+		w1.setAttribute(face, i, _w1);
+		w2.setAttribute(face, i, _w2);
+		w3.setAttribute(face, i, _w3);
+		color.setAttribute(face, i, color_t(opts.r, opts.g, opts.b, opts.a));
+	}
 };
 
 mesh_t* textured_cuboid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const cuboid_options& options = {});

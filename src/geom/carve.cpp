@@ -455,6 +455,19 @@ mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 	return new mesh_t(faces);
 }
 
+void read_weights(const mgl::retained_texture2d_rgba_u8* const map, const u32 x, const u32 y, f64* const w0, f64* const w1, f64* const w2, f64* const w3)
+{
+	*w0 = (f64)(1.f * map->get_pixel_component(x, y, 0) / MAX_VALUE_TYPE(u8));
+	*w1 = (f64)(1.f * map->get_pixel_component(x, y, 1) / MAX_VALUE_TYPE(u8));
+	*w2 = (f64)(1.f * map->get_pixel_component(x, y, 2) / MAX_VALUE_TYPE(u8));
+	const f64 blwt = *w0 + *w1 + *w2;
+	*w0 /= blwt;
+	*w1 /= blwt;
+	*w2 /= blwt;
+	if (*w0 == 0 && *w1 == 0 && *w2 == 0)
+		*w0 = 1;
+	*w3 = 1 - *w0 - *w1 - *w2;
+}
 mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)
 {
 	assert(options.width_steps > 1);
@@ -478,7 +491,7 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 		{
 			const f32 x = ix * x_step - .5f;
 			// height is stored in alpha channel
-			const f32 y = use_map ? (1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 0) / MAX_VALUE_TYPE(u8)) : 0.f;
+			const f32 y = use_map ? (1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 3) / MAX_VALUE_TYPE(u8)) : 0.f;
 			raw_vertices.emplace_back(carve::geom::VECTOR(x, y, z));
 		}
 	}
@@ -497,18 +510,58 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			const f32 bru = 1.f * (ix + 1) / (x_steps - 1), brv = 1.f - 1.f * iz / (z_steps - 1);
 			const f32 tlu = 1.f * ix / (x_steps - 1), tlv = 1.f - 1.f * (iz + 1) / (z_steps - 1);
 			const f32 tru = 1.f * (ix + 1) / (x_steps - 1), trv = 1.f - 1.f * (iz + 1) / (z_steps - 1);
+
+			f64 blw0 = options.w0, blw1 = options.w1, blw2 = options.w2, blw3 = options.w3;
+			f64 brw0 = options.w0, brw1 = options.w1, brw2 = options.w2, brw3 = options.w3;
+			f64 tlw0 = options.w0, tlw1 = options.w1, tlw2 = options.w2, tlw3 = options.w3;
+			f64 trw0 = options.w0, trw1 = options.w1, trw2 = options.w2, trw3 = options.w3;
+			if (use_map)
+			{
+				read_weights(options.map, ix + 0, z_steps - 2 - iz, &blw0, &blw1, &blw2, &blw3);
+				read_weights(options.map, ix + 1, z_steps - 2 - iz, &brw0, &brw1, &brw2, &brw3);
+				read_weights(options.map, ix + 0, z_steps - 1 - iz, &tlw0, &tlw1, &tlw2, &tlw3);
+				read_weights(options.map, ix + 1, z_steps - 1 - iz, &trw0, &trw1, &trw2, &trw3);
+			}
+
+			/*f64 brw0 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 2 - iz), 0) / MAX_VALUE_TYPE(u8)) : options.w0;
+			f64 brw1 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 2 - iz), 1) / MAX_VALUE_TYPE(u8)) : options.w1;
+			f64 brw2 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 2 - iz), 2) / MAX_VALUE_TYPE(u8)) : options.w2;
+			const f64 brwt = brw0 + brw1 + brw2;
+			brw0 /= brwt;
+			brw1 /= brwt;
+			brw2 /= brwt;
+			const f64 brw3 = 1 - brw0 - brw1 - brw2;
+
+			f64 tlw0 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 0) / MAX_VALUE_TYPE(u8)) : options.w0;
+			f64 tlw1 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 1) / MAX_VALUE_TYPE(u8)) : options.w1;
+			f64 tlw2 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 2) / MAX_VALUE_TYPE(u8)) : options.w2;
+			const f64 tlwt = tlw0 + tlw1 + tlw2;
+			tlw0 /= tlwt;
+			tlw1 /= tlwt;
+			tlw2 /= tlwt;
+			const f64 tlw3 = 1 - tlw0 - tlw1 - tlw2;
+
+			f64 trw0 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 1 - iz), 0) / MAX_VALUE_TYPE(u8)) : options.w0;
+			f64 trw1 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 1 - iz), 1) / MAX_VALUE_TYPE(u8)) : options.w1;
+			f64 trw2 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 1 - iz), 2) / MAX_VALUE_TYPE(u8)) : options.w2;
+			const f64 trwt = trw0 + trw1 + trw2;
+			trw0 /= trwt;
+			trw1 /= trwt;
+			trw2 /= trwt;
+			const f64 trw3 = 1 - trw0 - trw1 - trw2;*/
+
 			// bottom right triangle
 			face_t* face = new face_t(vertices[bl], vertices[tr], vertices[br]);
-			vert_attrs.set_attribute(face, 0, options, tex_coord_t(blu, blv));
-			vert_attrs.set_attribute(face, 1, options, tex_coord_t(tru, trv));
-			vert_attrs.set_attribute(face, 2, options, tex_coord_t(bru, brv));
+			vert_attrs.set_attribute(face, 0, options, tex_coord_t(blu, blv), blw0, blw1, blw2, blw3);
+			vert_attrs.set_attribute(face, 1, options, tex_coord_t(tru, trv), trw0, trw1, trw2, trw3);
+			vert_attrs.set_attribute(face, 2, options, tex_coord_t(bru, brv), brw0, brw1, brw2, brw3);
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 			// top left triangle
 			face = new face_t(vertices[bl], vertices[tl], vertices[tr]);
-			vert_attrs.set_attribute(face, 0, options, tex_coord_t(blu, blv));
-			vert_attrs.set_attribute(face, 1, options, tex_coord_t(tlu, tlv));
-			vert_attrs.set_attribute(face, 2, options, tex_coord_t(tru, trv));
+			vert_attrs.set_attribute(face, 0, options, tex_coord_t(blu, blv), blw0, blw1, blw2, blw3);
+			vert_attrs.set_attribute(face, 1, options, tex_coord_t(tlu, tlv), tlw0, tlw1, tlw2, tlw3);
+			vert_attrs.set_attribute(face, 2, options, tex_coord_t(tru, trv), trw0, trw1, trw2, trw3);
 			mtl_id_attr.setAttribute(face, mtl_id);
 			faces.push_back(face);
 		}

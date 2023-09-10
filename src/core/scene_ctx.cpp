@@ -181,6 +181,13 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	}
 	m_build_light_buffer();
 
+
+	m_waypoints.reserve(obj["nw"]);
+	for (const nlohmann::json& wp : obj["w"])
+	{
+		m_waypoints.emplace_back(new waypoint(wp));
+	}
+
 	return obj["rid"];
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
