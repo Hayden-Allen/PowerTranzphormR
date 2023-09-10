@@ -73,7 +73,7 @@ void main()
 		float RdV = max(0, dot(V, R));
 		float NdL = max(0, dot(N, L));
 
-		vec4 amb  = atten * cur_light.ca;
+		vec4 amb  = atten * float(NdL > 0) * cur_light.ca;
 		vec4 diff = atten * NdL * cur_light.cd;
 		vec4 spec = atten * pow(RdV, cur_light.sp) * cur_light.cs;
 		total_amb += amb.rgb * amb.a;
