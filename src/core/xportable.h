@@ -29,6 +29,7 @@ public:
 	static u32 get_num_tags_created();
 	static void set_num_tags_created(const u32 id);
 	static void reset_num_tags_created();
+	static std::vector<const char*> get_tag_suggestions(const std::string& s);
 public:
 	const std::string& get_id() const;
 	const std::string& get_kustom_id() const;
