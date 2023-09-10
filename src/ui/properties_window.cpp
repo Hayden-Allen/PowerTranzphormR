@@ -5,6 +5,7 @@
 #include "core/sgnode.h"
 #include "core/smnode.h"
 #include "core/scene_material.h"
+#include "core/xportable.h"
 
 properties_window::properties_window(app_ctx* const a_ctx) :
 	imgui_window(a_ctx, "Properties")
@@ -19,28 +20,54 @@ properties_window::properties_window(app_ctx* const a_ctx) :
 
 void properties_window::handle_frame()
 {
+	ImGui::PushID("propswin");
+
 	sgnode* const selected_sgnode = m_app_ctx->get_selected_sgnode();
 	if (selected_sgnode)
+	{
+		ImGui::PushID(selected_sgnode->get_id().c_str());
 		handle_sgnode_frame(selected_sgnode);
+		ImGui::PopID();
+	}
 
 	scene_material* const selected_material = m_app_ctx->get_selected_material();
 	if (selected_material)
+	{
+		ImGui::PushID(selected_material->get_id().c_str());
 		handle_material_frame(selected_material);
+		ImGui::PopID();
+	}
 
 	light* const selected_light = m_app_ctx->get_selected_light();
 	if (selected_light)
+	{
+		ImGui::PushID(selected_light->get_id().c_str());
 		handle_light_frame(selected_light);
+		ImGui::PopID();
+	}
 
 	waypoint* const selected_waypoint = m_app_ctx->get_selected_waypoint();
 	if (selected_waypoint)
+	{
+		ImGui::PushID(selected_waypoint->get_id().c_str());
 		handle_waypoint_frame(selected_waypoint);
+		ImGui::PopID();
+	}
 
 	smnode* const selected_static_mesh = m_app_ctx->get_selected_static_mesh();
 	if (selected_static_mesh)
+	{
+		ImGui::PushID(selected_static_mesh->get_id().c_str());
 		handle_static_mesh_frame(selected_static_mesh);
+		ImGui::PopID();
+	}
+
+	ImGui::PopID();
 }
 void properties_window::handle_sgnode_frame(sgnode* const selected)
 {
+	handle_xportable(selected);
+
 	if (selected->is_root())
 	{
 		handle_sgnode_snapping_angle();
@@ -89,6 +116,18 @@ bool properties_window::handle_transform(f32* const elements)
 	}
 	return dirty;
 }
+void properties_window::handle_xportable(xportable* x)
+{
+	std::string s = x->get_kustom_id();
+	if (ImGui::InputText("ID", &s))
+	{
+		x->kustomize_display(s);
+	}
+	if (x->get_kustom_id_conflict())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid ID - must be unique");
+	}
+}
 void properties_window::handle_sgnode_mesh(sgnode* const selected)
 {
 	const u32 selected_mtl_id = selected->get_material();
@@ -105,6 +144,8 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 }
 void properties_window::handle_material_frame(scene_material* const selected)
 {
+	handle_xportable(selected);
+
 	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
 		{
 			if (ImGui::CollapsingHeader(name.c_str()))
@@ -216,6 +257,8 @@ void properties_window::handle_material_autotexture(scene_material* const select
 }
 void properties_window::handle_light_frame(light* const selected)
 {
+	handle_xportable(selected);
+
 	bool changed = false;
 	const light_type type = selected->get_type();
 	changed |= handle_transform(selected->get_mat().e);
@@ -253,10 +296,13 @@ void properties_window::handle_light_frame(light* const selected)
 }
 void properties_window::handle_waypoint_frame(waypoint* const selected)
 {
+	handle_xportable(selected);
 	handle_transform(selected->get_mat().e);
 }
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
+	handle_xportable(selected);
+
 	bool changed = false;
 	changed |= handle_transform(selected->get_mat().e);
 

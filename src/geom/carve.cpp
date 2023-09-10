@@ -460,6 +460,7 @@ void read_weights(const mgl::retained_texture2d_rgba_u8* const map, const u32 x,
 	*w0 = (f64)(1.f * map->get_pixel_component(x, y, 0) / MAX_VALUE_TYPE(u8));
 	*w1 = (f64)(1.f * map->get_pixel_component(x, y, 1) / MAX_VALUE_TYPE(u8));
 	*w2 = (f64)(1.f * map->get_pixel_component(x, y, 2) / MAX_VALUE_TYPE(u8));
+	// normalize
 	const f64 blwt = *w0 + *w1 + *w2;
 	*w0 /= blwt;
 	*w1 /= blwt;

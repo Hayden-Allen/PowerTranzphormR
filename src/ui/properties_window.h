@@ -9,6 +9,7 @@ class light;
 class waypoint;
 class generated_mesh;
 class smnode;
+class xportable;
 
 class properties_window : public imgui_window
 {
@@ -21,6 +22,7 @@ private:
 	void handle_sgnode_frame(sgnode* const selected);
 	void handle_sgnode_snapping_angle();
 	bool handle_transform(f32* const elements);
+	void handle_xportable(xportable* x);
 	void handle_sgnode_mesh(sgnode* const selected);
 private:
 	void handle_material_frame(scene_material* const selected);
