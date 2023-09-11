@@ -81,6 +81,7 @@ public:
 	generated_mesh* generated_textured_cone(const GLuint mtl_id, const cone_options& options = {});
 	generated_mesh* generated_textured_torus(const GLuint mtl_id, const torus_options& options = {});
 	generated_mesh* generated_textured_heightmap(const GLuint mtl_id, const heightmap_options& options = {});
+	generated_mesh* generated_textured_heightmap_static(const GLuint mtl_id, const heightmap_options& options = {});
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_num_lights = 128;
@@ -111,6 +112,8 @@ private:
 	void m_build_light_buffer();
 	void m_build_sg_vaos();
 	void m_build_sm_vaos();
-	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl);
+	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms);
 	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros);
+	void m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices);
+	void m_compute_norms(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices);
 };

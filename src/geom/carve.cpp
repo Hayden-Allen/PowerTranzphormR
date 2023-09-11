@@ -518,38 +518,11 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			f64 trw0 = options.w0, trw1 = options.w1, trw2 = options.w2, trw3 = options.w3;
 			if (use_map)
 			{
-				read_weights(options.map, ix + 0, z_steps - 2 - iz, &blw0, &blw1, &blw2, &blw3);
-				read_weights(options.map, ix + 1, z_steps - 2 - iz, &brw0, &brw1, &brw2, &brw3);
-				read_weights(options.map, ix + 0, z_steps - 1 - iz, &tlw0, &tlw1, &tlw2, &tlw3);
-				read_weights(options.map, ix + 1, z_steps - 1 - iz, &trw0, &trw1, &trw2, &trw3);
+				read_weights(options.map, ix + 0, iz + 0, &blw0, &blw1, &blw2, &blw3);
+				read_weights(options.map, ix + 1, iz + 0, &brw0, &brw1, &brw2, &brw3);
+				read_weights(options.map, ix + 0, iz + 1, &tlw0, &tlw1, &tlw2, &tlw3);
+				read_weights(options.map, ix + 1, iz + 1, &trw0, &trw1, &trw2, &trw3);
 			}
-
-			/*f64 brw0 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 2 - iz), 0) / MAX_VALUE_TYPE(u8)) : options.w0;
-			f64 brw1 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 2 - iz), 1) / MAX_VALUE_TYPE(u8)) : options.w1;
-			f64 brw2 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 2 - iz), 2) / MAX_VALUE_TYPE(u8)) : options.w2;
-			const f64 brwt = brw0 + brw1 + brw2;
-			brw0 /= brwt;
-			brw1 /= brwt;
-			brw2 /= brwt;
-			const f64 brw3 = 1 - brw0 - brw1 - brw2;
-
-			f64 tlw0 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 0) / MAX_VALUE_TYPE(u8)) : options.w0;
-			f64 tlw1 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 1) / MAX_VALUE_TYPE(u8)) : options.w1;
-			f64 tlw2 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix, (z_steps - 1 - iz), 2) / MAX_VALUE_TYPE(u8)) : options.w2;
-			const f64 tlwt = tlw0 + tlw1 + tlw2;
-			tlw0 /= tlwt;
-			tlw1 /= tlwt;
-			tlw2 /= tlwt;
-			const f64 tlw3 = 1 - tlw0 - tlw1 - tlw2;
-
-			f64 trw0 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 1 - iz), 0) / MAX_VALUE_TYPE(u8)) : options.w0;
-			f64 trw1 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 1 - iz), 1) / MAX_VALUE_TYPE(u8)) : options.w1;
-			f64 trw2 = use_map ? (f64)(1.f * options.map->get_pixel_component(ix + 1, (z_steps - 1 - iz), 2) / MAX_VALUE_TYPE(u8)) : options.w2;
-			const f64 trwt = trw0 + trw1 + trw2;
-			trw0 /= trwt;
-			trw1 /= trwt;
-			trw2 /= trwt;
-			const f64 trw3 = 1 - trw0 - trw1 - trw2;*/
 
 			// bottom right triangle
 			face_t* face = new face_t(vertices[bl], vertices[tr], vertices[br]);

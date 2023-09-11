@@ -46,7 +46,7 @@ void main()
 		float cur_type = cur_light.obj2world[3][3];
 		vec3 light_pos = vec3(cur_light.obj2world[3][0], cur_light.obj2world[3][1], cur_light.obj2world[3][2]);
 		vec3 L = vec3(0, 0, 0);
-		float atten = 1.f;
+		float atten = 1.f, amb_atten = 1.f;
 
 		// directional light
 		if(cur_type == 0)
@@ -67,13 +67,14 @@ void main()
 			atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
 			L = normalize(light_pos - v_pos);
+			amb_atten = float(dot(N, L) > 0);
 		}
 
 		vec3 R = normalize(reflect(L, N));
 		float RdV = max(0, dot(V, R));
 		float NdL = max(0, dot(N, L));
 
-		vec4 amb  = atten * float(NdL > 0) * cur_light.ca;
+		vec4 amb  = atten * amb_atten * cur_light.ca;
 		vec4 diff = atten * NdL * cur_light.cd;
 		vec4 spec = atten * pow(RdV, cur_light.sp) * cur_light.cs;
 		total_amb += amb.rgb * amb.a;

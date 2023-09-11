@@ -14,7 +14,9 @@ enum class generated_mesh_param_type
 	FLOAT_4_SUM_1,
 	COLOR_4,
 	UINT_1,
+	UINT_1_LOG,
 	UINT_2,
+	UINT_2_LOG,
 	UINT_2_DIRECT
 };
 constexpr static f32 MIN_PARAM_VALUE = .01f, MAX_PARAM_VALUE = 4096.f, DRAG_PARAM_STEP = .01f;

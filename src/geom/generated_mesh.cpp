@@ -255,7 +255,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_ellipsoid::g
 {
 	auto m = generated_primitive::get_params();
 	std::vector<std::pair<std::string, generated_mesh_param>> t = {
-		{ "XY Steps", { generated_mesh_param_type::UINT_2, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
+		{ "XY Steps", { generated_mesh_param_type::UINT_2_LOG, (void*)&m_options.num_horizontal_steps, 3.f, 64.f, 1.f } },
 		{ "Noise", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.noise, 0.f, .3f, .001f } }
 	};
 	m.insert(m.end(), t.begin(), t.end());
@@ -310,7 +310,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_cylinder::ge
 {
 	auto m = generated_primitive::get_params();
 	std::vector<std::pair<std::string, generated_mesh_param>> t = {
-		{ "Steps", { generated_mesh_param_type::UINT_1, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Steps", { generated_mesh_param_type::UINT_1_LOG, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 		{ "Top Radius", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.top_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 		{ "Bottom Radius", { generated_mesh_param_type::FLOAT_1, (void*)&m_options.bottom_radius, MIN_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
@@ -365,7 +365,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_cone::get_pa
 {
 	auto m = generated_primitive::get_params();
 	std::vector<std::pair<std::string, generated_mesh_param>> t = {
-		{ "Steps", { generated_mesh_param_type::UINT_1, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
+		{ "Steps", { generated_mesh_param_type::UINT_1_LOG, (void*)&m_options.num_steps, 3.f, 64.f, 1.f } },
 	};
 	m.insert(m.end(), t.begin(), t.end());
 	return m;

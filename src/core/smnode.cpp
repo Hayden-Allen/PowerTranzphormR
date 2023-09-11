@@ -89,6 +89,7 @@ void smnode::set_gen(generated_mesh* const gen)
 {
 	delete m_gen;
 	m_gen = gen;
+	copy_local_verts();
 }
 bool smnode::is_dirty() const
 {

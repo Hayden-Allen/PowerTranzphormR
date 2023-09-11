@@ -415,7 +415,7 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 				const u32 material = selected->get_material();
 				const mgl::retained_texture2d_rgba_u8* tex = u::load_retained_texture2d_rgba_u8(fp);
 				const heightmap_options new_hm_opts = { .map = tex };
-				generated_mesh* const new_hm = m_app_ctx->scene.generated_textured_heightmap(material, new_hm_opts);
+				generated_mesh* const new_hm = m_app_ctx->scene.generated_textured_heightmap_static(material, new_hm_opts);
 				selected->set_gen(new_hm);
 				changed = true;
 			}
@@ -469,10 +469,16 @@ bool properties_window::draw_params(const std::vector<std::pair<std::string, gen
 		switch (prop.second.type)
 		{
 		case generated_mesh_param_type::UINT_1:
-			changed |= ImGui::DragInt(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			changed |= ImGui::DragInt(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%d", ImGuiSliderFlags_AlwaysClamp);
+			break;
+		case generated_mesh_param_type::UINT_1_LOG:
+			changed |= ImGui::DragInt(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
 			break;
 		case generated_mesh_param_type::UINT_2:
-			changed |= ImGui::DragInt2(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			changed |= ImGui::DragInt2(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%d", ImGuiSliderFlags_AlwaysClamp);
+			break;
+		case generated_mesh_param_type::UINT_2_LOG:
+			changed |= ImGui::DragInt2(prop.first.c_str(), static_cast<int*>(prop.second.value), prop.second.speed, static_cast<int>(prop.second.min), static_cast<int>(prop.second.max), "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
 			break;
 		case generated_mesh_param_type::FLOAT_1:
 			changed |= ImGui::DragFloat(prop.first.c_str(), static_cast<float*>(prop.second.value), prop.second.speed, prop.second.min, prop.second.max, "%.3f", ImGuiSliderFlags_AlwaysClamp);
