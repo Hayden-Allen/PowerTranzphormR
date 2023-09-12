@@ -366,6 +366,7 @@
     <ClCompile Include="src\core\action_stack.cpp" />
     <ClCompile Include="src\core\light.cpp" />
     <ClCompile Include="src\core\smnode.cpp" />
+    <ClCompile Include="src\core\visibility_xportable.cpp" />
     <ClCompile Include="src\core\waypoint.cpp" />
     <ClCompile Include="src\geom\carve.cpp" />
     <ClCompile Include="src\geom\generated_mesh.cpp" />
@@ -424,6 +425,7 @@
     <ClInclude Include="src\ui\scene_graph_window.h" />
     <ClInclude Include="src\ui\shortcut_menus_layer.h" />
     <ClInclude Include="src\util\util.h" />
+    <ClInclude Include="src\core\visibility_xportable.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

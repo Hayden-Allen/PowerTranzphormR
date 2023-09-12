@@ -4,14 +4,14 @@
 
 
 smnode::smnode(generated_mesh* const gen) :
-	xportable(std::string("Static Mesh")),
+	visibility_xportable(std::string("Static Mesh")),
 	m_gen(gen)
 {
 	copy_local_verts();
 	set_gen_dirty();
 }
 smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat) :
-	xportable(std::string("Static Mesh")),
+	visibility_xportable(std::string("Static Mesh")),
 	m_mat(mat),
 	m_gen(gen)
 {
@@ -26,7 +26,7 @@ smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD
 	set_gen_dirty();
 }
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
-	xportable(obj)
+	visibility_xportable(obj)
 {
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
@@ -151,7 +151,7 @@ void smnode::make_static(scene_ctx* const scene)
 }
 nlohmann::json smnode::save(scene_ctx* const scene) const
 {
-	nlohmann::json obj = xportable::save();
+	nlohmann::json obj = visibility_xportable::save();
 	obj["t"] = m_mat.e;
 	obj["m"] = m_gen->save(scene, tmat<space::WORLD, space::OBJECT>());
 	obj["s"] = is_static();

@@ -44,7 +44,8 @@ void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 	m_draw_vaos(glctx, mats, m_sg_ros_for_mtl);
 	for (const auto& pair : m_sm_ros)
 	{
-		m_draw_vaos(glctx, mats, pair.second, pair.first->get_mat());
+		if (pair.first->is_visible())
+			m_draw_vaos(glctx, mats, pair.second, pair.first->get_mat());
 	}
 }
 void scene_ctx::update()
@@ -288,8 +289,9 @@ light* scene_ctx::add_light(light* const l)
 	if (m_lights.size() < s_num_lights)
 	{
 		m_lights.push_back(l);
-		const light* const l = m_lights.back();
-		m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), sizeof(mgl::light) * u32(m_lights.size() - 1));
+		/*const light* const l = m_lights.back();
+		m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), sizeof(mgl::light) * u32(m_lights.size() - 1));*/
+		m_build_light_buffer();
 		return m_lights.back();
 	}
 	return nullptr;
@@ -307,8 +309,9 @@ void scene_ctx::update_light(const light* const l)
 {
 	const auto& it = std::find(m_lights.begin(), m_lights.end(), l);
 	assert(it != m_lights.end());
-	const u32 index = u32(it - m_lights.begin());
-	m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), index * sizeof(mgl::light));
+	/*const u32 index = u32(it - m_lights.begin());
+	m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), index * sizeof(mgl::light));*/
+	m_build_light_buffer();
 }
 waypoint* scene_ctx::add_waypoint()
 {
@@ -417,7 +420,10 @@ void scene_ctx::m_build_light_buffer()
 	std::vector<mgl::light> mgl_lights;
 	mgl_lights.reserve(m_lights.size());
 	for (const light* const l : m_lights)
-		mgl_lights.push_back(l->mgl_light);
+	{
+		if (l->is_visible())
+			mgl_lights.push_back(l->mgl_light);
+	}
 	m_light_buffer.update((f32*)mgl_lights.data(), sizeof(mgl::light) / sizeof(f32) * (u32)mgl_lights.size(), 0);
 }
 void scene_ctx::m_build_sg_vaos()

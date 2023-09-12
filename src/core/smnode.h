@@ -1,12 +1,12 @@
 #pragma once
 #include "pch.h"
 #include "geom/generated_mesh.h"
-#include "xportable.h"
+#include "visibility_xportable.h"
 
 class generated_mesh;
 class scene_ctx;
 
-class smnode : public xportable
+class smnode : public visibility_xportable
 {
 public:
 	smnode(generated_mesh* const gen);

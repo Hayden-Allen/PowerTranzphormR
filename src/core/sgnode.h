@@ -1,13 +1,13 @@
 #pragma once
 #include "pch.h"
-#include "xportable.h"
+#include "visibility_xportable.h"
 
 class generated_mesh;
 class generated_static_mesh;
 class scene_ctx;
 struct app_ctx;
 
-class sgnode : public xportable
+class sgnode : public visibility_xportable
 {
 public:
 	// nop node
@@ -44,6 +44,7 @@ public:
 	void replace_material(scene_ctx* const scene, const u32 old_mtl_id, const u32 new_mtl_id); // WARNING: Always use app_ctx->remove_material instead of using this
 	u32 get_material();
 	std::vector<point<space::OBJECT>>& get_local_verts();
+	void set_visibility(const bool v) override;
 public:
 	void add_child(sgnode* const node, const s64 index = -1);
 	s64 remove_child(sgnode* const node);

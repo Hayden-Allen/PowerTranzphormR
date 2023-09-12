@@ -3,11 +3,11 @@
 
 
 waypoint::waypoint() :
-	xportable(std::string("Waypoint"))
+	visibility_xportable(std::string("Waypoint"))
 {
 }
 waypoint::waypoint(const nlohmann::json& obj) :
-	xportable(obj)
+	visibility_xportable(obj)
 {
 	m_mat = u::json2tmat<space::OBJECT, space::WORLD>(obj["t"]);
 }
@@ -16,7 +16,7 @@ waypoint::waypoint(const nlohmann::json& obj) :
 
 nlohmann::json waypoint::save() const
 {
-	nlohmann::json obj = xportable::save();
+	nlohmann::json obj = visibility_xportable::save();
 	obj["t"] = m_mat.e;
 	return obj;
 }

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pch.h"
 
 class xportable
@@ -41,7 +40,7 @@ public:
 	void push_tag(const std::string& s);
 	void erase_tag(const tag& t);
 	void set_name(const std::string& n);
-	nlohmann::json save() const;
+	virtual nlohmann::json save() const;
 private:
 	constexpr static inline u32 s_first_id = 0;
 	static inline u32 s_next_id = s_first_id;

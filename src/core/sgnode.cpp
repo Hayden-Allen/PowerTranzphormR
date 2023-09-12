@@ -6,7 +6,7 @@
 
 // nop node
 sgnode::sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t) :
-	xportable(n),
+	visibility_xportable(n),
 	m_parent(p),
 	m_gen(m),
 	m_mat(t)
@@ -14,7 +14,7 @@ sgnode::sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<sp
 	set_gen_dirty();
 }
 sgnode::sgnode(sgnode* const parent, generated_static_mesh* const m, const std::string& name, const tmat<space::OBJECT, space::OBJECT>& t) :
-	xportable(name),
+	visibility_xportable(name),
 	m_parent(parent),
 	m_gen(m),
 	m_frozen(true),
@@ -26,7 +26,7 @@ sgnode::sgnode(sgnode* const parent, generated_static_mesh* const m, const std::
 }
 // operation node
 sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t) :
-	xportable(u::operation_to_string(op)),
+	visibility_xportable(u::operation_to_string(op)),
 	m_parent(p),
 	m_gen(new generated_mesh(nullptr)),
 	m_operation(op),
@@ -36,7 +36,7 @@ sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, spac
 	set_dirty();
 }
 sgnode::sgnode(const nlohmann::json& obj, scene_ctx* const scene) :
-	xportable(obj),
+	visibility_xportable(obj),
 	m_operation(obj["op"]),
 	m_frozen(obj["frozen"])
 {
@@ -197,6 +197,11 @@ std::vector<point<space::OBJECT>>& sgnode::get_local_verts()
 {
 	return m_local_verts;
 }
+void sgnode::set_visibility(const bool v)
+{
+	visibility_xportable::set_visibility(v);
+	set_dirty_up();
+}
 
 
 
@@ -273,6 +278,8 @@ void sgnode::recompute(scene_ctx* const scene)
 		m_gen->clear();
 		for (sgnode* const child : m_children)
 		{
+			if (!child->is_visible())
+				continue;
 			if (child->m_dirty)
 				child->recompute(scene);
 			// sometimes carve makes weird cases with empty meshes
@@ -310,7 +317,7 @@ void sgnode::recompute(scene_ctx* const scene)
 }
 nlohmann::json sgnode::save(scene_ctx* const scene) const
 {
-	nlohmann::json obj = xportable::save();
+	nlohmann::json obj = visibility_xportable::save();
 	// good for debugging?
 	/*obj["parent"] = m_parent ? m_parent->m_id : "";
 	std::vector<std::string> child_ids;
@@ -344,7 +351,7 @@ void sgnode::destroy(std::unordered_set<sgnode*>& freed)
 
 
 sgnode::sgnode(const sgnode* const original) :
-	xportable(original->get_name()),
+	visibility_xportable(original->get_name()),
 	m_operation(original->m_operation),
 	m_frozen(original->m_frozen),
 	m_mat(original->m_mat)

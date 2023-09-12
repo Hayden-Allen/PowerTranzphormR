@@ -189,6 +189,25 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 			if (ImGui::MenuItem("Add Intersect"))
 				m_app_ctx->create_intersect_action();
 		}
+
+		if (!node->is_root())
+		{
+			if (node->is_operation())
+				ImGui::Separator();
+			if (node->is_visible())
+			{
+				if (ImGui::MenuItem("Hide"))
+					node->set_visibility(false);
+			}
+			else
+			{
+				if (ImGui::MenuItem("Show"))
+					node->set_visibility(true);
+			}
+			if (!node->is_operation())
+				ImGui::Separator();
+		}
+
 		if (!node->is_root() && node->get_gen()->mesh)
 		{
 			if (node->is_operation())

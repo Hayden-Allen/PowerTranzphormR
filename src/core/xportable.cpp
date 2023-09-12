@@ -4,14 +4,11 @@
 xportable::xportable() :
 	m_id(std::string("xp") + std::to_string(s_next_id++)),
 	m_name("Xportable")
-{
-}
+{}
 xportable::xportable(const std::string& name) :
 	m_id(std::string("xp") + std::to_string(s_next_id++)),
 	m_name(name)
-{
-	//
-}
+{}
 xportable::xportable(const nlohmann::json& obj) :
 	m_id(obj["id"]),
 	m_name(obj["name"])

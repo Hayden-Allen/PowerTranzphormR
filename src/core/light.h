@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "xportable.h"
+#include "visibility_xportable.h"
 #include "util/color.h"
 #include "geom/generated_mesh.h"
 
@@ -24,7 +24,7 @@ static std::string light_type_string(const light_type l)
 	return "";
 }
 
-class light : public xportable
+class light : public visibility_xportable
 {
 public:
 	mgl::light mgl_light;
@@ -41,7 +41,7 @@ public:
 	void set_mat(const tmat<space::OBJECT, space::WORLD>& m);
 	void set_type(const light_type t);
 public:
-	nlohmann::json save() const;
+	nlohmann::json save() const override;
 private:
 	light_type m_type;
 };

@@ -1,8 +1,8 @@
 #pragma once
 #include "pch.h"
-#include "xportable.h"
+#include "visibility_xportable.h"
 
-class waypoint : public xportable
+class waypoint : public visibility_xportable
 {
 public:
 	waypoint();
@@ -13,7 +13,7 @@ public:
 public:
 	void set_mat(const tmat<space::OBJECT, space::WORLD>& m);
 public:
-	nlohmann::json save() const;
+	nlohmann::json save() const override;
 private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 };

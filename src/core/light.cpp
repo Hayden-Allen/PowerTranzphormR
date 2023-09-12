@@ -3,18 +3,18 @@
 
 
 light::light() :
-	xportable(std::string("Light"))
+	visibility_xportable(std::string("Light"))
 {
 	set_type(light_type::POINT);
 }
 light::light(const mgl::light& ml, const std::string& _name) :
-	xportable(_name),
+	visibility_xportable(_name),
 	mgl_light(ml)
 {
 	set_type(light_type::POINT);
 }
 light::light(const nlohmann::json& obj) :
-	xportable(obj)
+	visibility_xportable(obj)
 {
 	set_type(obj["ty"]);
 
@@ -43,7 +43,7 @@ std::vector<std::pair<std::string, generated_mesh_param>> light::get_params() co
 }
 nlohmann::json light::save() const
 {
-	nlohmann::json obj = xportable::save();
+	nlohmann::json obj = visibility_xportable::save();
 	obj["ty"] = m_type;
 	obj["t"] = mgl_light.mat.e;
 	obj["ca"] = mgl_light.ca;
