@@ -417,12 +417,16 @@ generated_mesh* scene_ctx::generated_textured_heightmap_static(const GLuint mtl_
 
 void scene_ctx::m_build_light_buffer()
 {
+	m_num_visible_lights = 0;
 	std::vector<mgl::light> mgl_lights;
 	mgl_lights.reserve(m_lights.size());
 	for (const light* const l : m_lights)
 	{
 		if (l->is_visible())
+		{
 			mgl_lights.push_back(l->mgl_light);
+			m_num_visible_lights++;
+		}
 	}
 	m_light_buffer.update((f32*)mgl_lights.data(), sizeof(mgl::light) / sizeof(f32) * (u32)mgl_lights.size(), 0);
 }
@@ -578,7 +582,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		mat->shaders->uniform_mat4("u_normal", normal.e);
 		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
 		mat->shaders->uniform_1f("u_time", glctx.time.now);
-		mat->shaders->uniform_1ui("u_num_lights", (u32)m_lights.size());
+		mat->shaders->uniform_1ui("u_num_lights", m_num_visible_lights);
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)

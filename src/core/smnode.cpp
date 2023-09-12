@@ -10,8 +10,8 @@ smnode::smnode(generated_mesh* const gen) :
 	copy_local_verts();
 	set_gen_dirty();
 }
-smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat) :
-	visibility_xportable(std::string("Static Mesh")),
+smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat, const std::string& name) :
+	visibility_xportable(name),
 	m_mat(mat),
 	m_gen(gen)
 {

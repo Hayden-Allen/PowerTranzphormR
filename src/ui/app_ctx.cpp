@@ -493,7 +493,7 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	assert(parent);
 
 	generated_static_mesh* const new_gen = new generated_static_mesh(carve_clone(node->get_gen()->mesh, &scene), &scene);
-	scene.add_static_mesh(new smnode(new_gen, node->accumulate_mats()));
+	scene.add_static_mesh(new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name()));
 }
 void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 {
@@ -983,6 +983,37 @@ void app_ctx::phorm_menu()
 		GLFW_MOD_CONTROL,
 	};
 
+	shortcut_menu_item phorm_hide = {
+		"Hide",
+		[&]()
+		{
+			get_selected_sgnode()->set_visibility(false);
+		},
+		[&]()
+		{
+			const sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root() && selected->is_visible();
+		},
+		"Ctrl+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_show = {
+		"Show",
+		[&]()
+		{
+			get_selected_sgnode()->set_visibility(true);
+		},
+		[&]()
+		{
+			const sgnode* const selected = get_selected_sgnode();
+			return selected && !selected->is_root() && !selected->is_visible();
+		},
+		"Ctrl+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL,
+	};
+
 	shortcut_menu_item phorm_phreeze = {
 		"Phreeze!",
 		[&]()
@@ -1012,6 +1043,21 @@ void app_ctx::phorm_menu()
 		"Ctrl+P",
 		GLFW_KEY_P,
 		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_clone_to_static = {
+		"Clone to Static Mesh",
+		[&]()
+		{
+			make_sgnode_static(get_selected_sgnode());
+		},
+		[&]()
+		{
+			const sgnode* const node = get_selected_sgnode();
+			return node && !node->is_root() && node->is_frozen();
+		},
+		"Ctrl+Shift+P",
+		GLFW_KEY_P,
+		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
 
 	shortcut_menu_item phorm_rename = {
@@ -1121,7 +1167,8 @@ void app_ctx::phorm_menu()
 	phorm_menu.groups.push_back({ phorm_undo, phorm_redo });
 	phorm_menu.groups.push_back({ phorm_cut, phorm_copy, phorm_paste });
 	phorm_menu.groups.push_back({ phorm_move_up, phorm_move_down });
-	phorm_menu.groups.push_back({ phorm_phreeze, phorm_unphreeze });
+	phorm_menu.groups.push_back({ phorm_hide, phorm_show });
+	phorm_menu.groups.push_back({ phorm_phreeze, phorm_unphreeze, phorm_clone_to_static });
 	phorm_menu.groups.push_back({ phorm_rename, phorm_destroy });
 	phorm_menu.groups.push_back({ gizmodes });
 	shortcut_menus.push_back(phorm_menu);
@@ -1231,9 +1278,57 @@ void app_ctx::static_meshes_menu()
 		0,
 	};
 
+	shortcut_menu_item sm_hide = {
+		"Hide",
+		[&]()
+		{
+			get_selected_static_mesh()->set_visibility(false);
+		},
+		[&]()
+		{
+			const smnode* const selected = get_selected_static_mesh();
+			return selected && selected->is_visible();
+		},
+		"Ctrl+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item sm_show = {
+		"Show",
+		[&]()
+		{
+			get_selected_static_mesh()->set_visibility(true);
+		},
+		[&]()
+		{
+			const smnode* const selected = get_selected_static_mesh();
+			return selected && !selected->is_visible();
+		},
+		"Ctrl+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL,
+	};
+
+	shortcut_menu_item sm_clone_to_sg = {
+		"Clone to Scene Graph",
+		[&]()
+		{
+			make_frozen_sgnode_from_smnode(get_selected_static_mesh());
+		},
+		[&]()
+		{
+			return get_selected_static_mesh();
+		},
+		"Ctrl+Shift+P",
+		GLFW_KEY_P,
+		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+
 	shortcut_menu sm_menu;
 	sm_menu.name = "Static Mesh";
 	sm_menu.groups.push_back({ sm_create, sm_rename, sm_destroy });
+	sm_menu.groups.push_back({ sm_hide, sm_show });
+	sm_menu.groups.push_back({ sm_clone_to_sg });
 	shortcut_menus.push_back(sm_menu);
 }
 void app_ctx::lights_menu()
@@ -1285,9 +1380,45 @@ void app_ctx::lights_menu()
 		0,
 	};
 
+	shortcut_menu_item light_hide = {
+		"Hide",
+		[&]()
+		{
+			light* const selected = get_selected_light();
+			selected->set_visibility(false);
+			scene.update_light(selected);
+		},
+		[&]()
+		{
+			const light* const selected = get_selected_light();
+			return selected && selected->is_visible();
+		},
+		"Ctrl+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item light_show = {
+		"Show",
+		[&]()
+		{
+			light* const selected = get_selected_light();
+			selected->set_visibility(true);
+			scene.update_light(selected);
+		},
+		[&]()
+		{
+			const light* const selected = get_selected_light();
+			return selected && !selected->is_visible();
+		},
+		"Ctrl+H",
+		GLFW_KEY_H,
+		GLFW_MOD_CONTROL,
+	};
+
 	shortcut_menu light_menu;
 	light_menu.name = "Lights";
 	light_menu.groups.push_back({ light_create, light_rename, light_destroy });
+	light_menu.groups.push_back({ light_hide, light_show });
 	shortcut_menus.push_back(light_menu);
 }
 void app_ctx::waypoints_menu()

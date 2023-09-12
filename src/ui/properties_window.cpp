@@ -406,7 +406,10 @@ void properties_window::handle_light_frame(light* const selected)
 	ImGui::PopID();
 
 	changed |= draw_params(selected->get_params());
-	m_app_ctx->scene.update_light(selected);
+	if (changed)
+	{
+		m_app_ctx->scene.update_light(selected);
+	}
 }
 void properties_window::handle_waypoint_frame(waypoint* const selected)
 {

@@ -225,7 +225,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 				if (ImGui::MenuItem("Phreeze!"))
 					m_app_ctx->freeze_action(node);
 			}
-			if (node->is_frozen() && ImGui::MenuItem("Make Static"))
+			if (node->is_frozen() && ImGui::MenuItem("Clone to Static Mesh"))
 			{
 				m_app_ctx->make_sgnode_static(node);
 			}
@@ -342,6 +342,19 @@ void scene_graph_window::handle_heightmap(smnode* const hmp)
 	if (ImGui::BeginPopupContextItem())
 	{
 		m_app_ctx->set_selected_static_mesh(hmp);
+
+		if (hmp->is_visible())
+		{
+			if (ImGui::MenuItem("Hide"))
+				hmp->set_visibility(false);
+		}
+		else
+		{
+			if (ImGui::MenuItem("Show"))
+				hmp->set_visibility(true);
+		}
+		ImGui::Separator();
+
 		if (!hmp->is_static())
 		{
 			if (ImGui::MenuItem("Phreeze!"))
@@ -349,15 +362,15 @@ void scene_graph_window::handle_heightmap(smnode* const hmp)
 				hmp->make_static(&m_app_ctx->scene);
 				hmp->set_name("Phrozen " + hmp->get_name());
 			}
-			ImGui::Separator();
 		}
 		else
 		{
-			if (ImGui::MenuItem("Make Non-Static"))
+			if (ImGui::MenuItem("Clone to Scene Graph"))
 			{
 				m_app_ctx->make_frozen_sgnode_from_smnode(hmp);
 			}
 		}
+		ImGui::Separator();
 
 		if (ImGui::MenuItem("Rename"))
 		{
@@ -467,6 +480,25 @@ void scene_graph_window::handle_light(light* const l)
 	if (ImGui::BeginPopupContextItem())
 	{
 		m_app_ctx->set_selected_light(l);
+
+		if (l->is_visible())
+		{
+			if (ImGui::MenuItem("Hide"))
+			{
+				l->set_visibility(false);
+				m_app_ctx->scene.update_light(l);
+			}
+		}
+		else
+		{
+			if (ImGui::MenuItem("Show"))
+			{
+				l->set_visibility(true);
+				m_app_ctx->scene.update_light(l);
+			}
+		}
+		ImGui::Separator();
+
 		if (ImGui::MenuItem("Rename"))
 		{
 			set_renaming_light(l);

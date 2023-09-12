@@ -110,6 +110,7 @@ private:
 	std::vector<waypoint*> m_waypoints;
 	sgnode* m_sg_root = nullptr;
 	mgl::static_uniform_buffer m_light_buffer;
+	u32 m_num_visible_lights = 0;
 	mgl::skybox_rgb_u8* m_skybox = nullptr;
 private:
 	void m_build_light_buffer();

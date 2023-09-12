@@ -112,6 +112,7 @@ void preview_window::handle_frame()
 					current_mat.t[3] = (f32)sl->get_type();
 					if (current_mat != sl->get_mat())
 						sl->set_mat(current_mat);
+					m_app_ctx->scene.update_light(sl);
 				}
 				// ImGuizmo not being used this frame, but was last frame
 				else if (m_was_using_imguizmo)

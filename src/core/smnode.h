@@ -10,7 +10,7 @@ class smnode : public visibility_xportable
 {
 public:
 	smnode(generated_mesh* const gen);
-	smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat);
+	smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat, const std::string& name);
 	smnode(const nlohmann::json& obj, scene_ctx* const scene);
 	virtual ~smnode();
 public:
