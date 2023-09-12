@@ -461,10 +461,11 @@ void read_weights(const mgl::retained_texture2d_rgba_u8* const map, const u32 x,
 	*w1 = (f64)(1.f * map->get_pixel_component(x, y, 1) / MAX_VALUE_TYPE(u8));
 	*w2 = (f64)(1.f * map->get_pixel_component(x, y, 2) / MAX_VALUE_TYPE(u8));
 	// normalize
-	const f64 blwt = *w0 + *w1 + *w2;
-	*w0 /= blwt;
-	*w1 /= blwt;
-	*w2 /= blwt;
+	const f64 total = *w0 + *w1 + *w2;
+	*w0 /= total;
+	*w1 /= total;
+	*w2 /= total;
+	// if no weights given, make first texture full weight
 	if (*w0 == 0 && *w1 == 0 && *w2 == 0)
 		*w0 = 1;
 	*w3 = 1 - *w0 - *w1 - *w2;
@@ -518,10 +519,10 @@ mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id
 			f64 trw0 = options.w0, trw1 = options.w1, trw2 = options.w2, trw3 = options.w3;
 			if (use_map)
 			{
-				read_weights(options.map, ix + 0, iz + 0, &blw0, &blw1, &blw2, &blw3);
-				read_weights(options.map, ix + 1, iz + 0, &brw0, &brw1, &brw2, &brw3);
-				read_weights(options.map, ix + 0, iz + 1, &tlw0, &tlw1, &tlw2, &tlw3);
-				read_weights(options.map, ix + 1, iz + 1, &trw0, &trw1, &trw2, &trw3);
+				read_weights(options.map, ix + 0, z_steps - 1 - iz, &blw0, &blw1, &blw2, &blw3);
+				read_weights(options.map, ix + 1, z_steps - 1 - iz, &brw0, &brw1, &brw2, &brw3);
+				read_weights(options.map, ix + 0, z_steps - 2 - iz, &tlw0, &tlw1, &tlw2, &tlw3);
+				read_weights(options.map, ix + 1, z_steps - 2 - iz, &trw0, &trw1, &trw2, &trw3);
 			}
 
 			// bottom right triangle
