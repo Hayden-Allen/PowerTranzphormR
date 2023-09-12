@@ -69,14 +69,14 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 {
 	handle_xportable(selected);
 
+	if (handle_transform(selected->get_mat().e))
+	{
+		selected->set_transform(selected->get_mat().e);
+	}
+
 	if (selected->is_root())
 	{
 		handle_sgnode_snapping_angle();
-	}
-	const bool changed = handle_transform(selected->get_mat().e);
-	if (changed)
-	{
-		selected->set_transform(selected->get_mat().e);
 	}
 
 	if (!selected->is_operation())
@@ -86,15 +86,40 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 }
 void properties_window::handle_sgnode_snapping_angle()
 {
-	ImGui::SeparatorText("Normals");
+	ImGui::SeparatorText("Shading");
 
 	const bool start_all = scene_ctx::s_snap_all;
-	ImGui::Checkbox("Snap All", &scene_ctx::s_snap_all);
+	// ImGui::Checkbox("Snap All", &scene_ctx::s_snap_all);
+	if (handle_snap_mode(start_all))
+		scene_ctx::s_snap_all ^= 1;
+
 	const f32 start_angle = scene_ctx::s_snap_angle;
-	ImGui::SliderAngle("Snap Angle", &scene_ctx::s_snap_angle, 0.f, 360.f);
+	ImGui::SliderAngle("##Snap Angle", &scene_ctx::s_snap_angle, 0.f, 360.f);
 
 	if (start_angle != scene_ctx::s_snap_angle || start_all != scene_ctx::s_snap_all)
 		m_app_ctx->scene.get_sg_root()->set_dirty();
+}
+bool properties_window::handle_snap_mode(const bool value)
+{
+	const std::string snap_text[2] = {
+		"Snap normals if ANY within",
+		"Snap normals if ALL within",
+	};
+	bool result = false;
+	if (ImGui::BeginCombo("##Condition", snap_text[value].c_str()))
+	{
+		for (u32 i = 0; i < 2; i++)
+		{
+			const bool selected = value == (bool)i;
+			if (ImGui::Selectable(snap_text[i].c_str(), &selected))
+			{
+				if (value != (bool)i)
+					result = true;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	return result;
 }
 bool properties_window::handle_transform(f32* const elements)
 {
@@ -391,21 +416,32 @@ void properties_window::handle_waypoint_frame(waypoint* const selected)
 void properties_window::handle_static_mesh_frame(smnode* const selected)
 {
 	handle_xportable(selected);
-
-	bool changed = false;
-	changed |= handle_transform(selected->get_mat().e);
+	handle_transform(selected->get_mat().e);
 
 	const u32 old_mtl_id = selected->get_material();
 	const u32 new_mtl_id = material_combo_box(old_mtl_id);
 	if (new_mtl_id != old_mtl_id)
 	{
 		selected->set_material(&m_app_ctx->scene, new_mtl_id);
-		changed = true;
 	}
+	bool snap = selected->should_snap();
+	if (ImGui::Checkbox("Snap Normals", &snap))
+	{
+		selected->set_should_snap(snap);
+	}
+	bool snap_all = selected->should_snap_all();
+	if (handle_snap_mode(snap_all))
+	{
+		snap_all ^= 1;
+		selected->set_should_snap_all(snap_all);
+	}
+
+	f32 snap_angle = selected->get_snap_angle();
+	ImGui::SliderAngle("##Snap Angle", &snap_angle, 0.f, 360.f);
 
 	if (!selected->is_static())
 	{
-		changed |= draw_params(selected->get_params());
+		draw_params(selected->get_params());
 		ImGui::SeparatorText("Heightmap");
 		if (ImGui::Button("Load Heightmap"))
 		{
@@ -417,19 +453,13 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 				const heightmap_options new_hm_opts = { .map = tex };
 				generated_mesh* const new_hm = m_app_ctx->scene.generated_textured_heightmap_static(material, new_hm_opts);
 				selected->set_gen(new_hm);
-				changed = true;
 			}
 		}
-	}
-
-	if (changed)
-	{
-		selected->set_gen_dirty();
 	}
 }
 u32 properties_window::material_combo_box(const u32 selected)
 {
-	ImGui::SeparatorText("Material");
+	ImGui::SeparatorText("Shading");
 	u32 new_selected = selected;
 	if (ImGui::BeginCombo("Material", m_app_ctx->scene.get_material(selected)->get_name().c_str()))
 	{

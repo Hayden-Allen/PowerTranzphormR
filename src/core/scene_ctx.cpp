@@ -41,7 +41,6 @@ const attr_material_t& scene_ctx::get_mtl_id_attr() const
 void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 {
 	m_skybox->draw(mats.view, mats.proj);
-	// m_draw_vaos(glctx, mats, m_sm_ros_for_mtl);
 	m_draw_vaos(glctx, mats, m_sg_ros_for_mtl);
 	for (const auto& pair : m_sm_ros)
 	{
@@ -453,11 +452,6 @@ void scene_ctx::m_build_sm_vaos()
 
 		std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
 		std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
-		/*for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
-		{
-			verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
-			indices_for_mtl.insert(std::make_pair(it->first, std::vector<u32>()));
-		}*/
 		const mesh_t* const mesh = sm2ro.first->get_mesh();
 		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 		{
@@ -479,9 +473,6 @@ void scene_ctx::m_build_sm_vaos()
 				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
 				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
 
-				// tess_vtx v(e->vert->v.x, e->vert->v.y, e->vert->v.z, t0, t1, t2, t3, w0, w1, w2, w3, color);
-				// v.target = &out_verts_for_mtl.at(mtl_id);
-				// verts.emplace_back(v);
 				verts_for_mtl[mtl_id].emplace_back((f32)e->vert->v.x, (f32)e->vert->v.y, (f32)e->vert->v.z, t0, t1, t2, t3, (f32)w0, (f32)w1, (f32)w2, (f32)w3, color);
 			}
 		}
@@ -489,8 +480,7 @@ void scene_ctx::m_build_sm_vaos()
 		const bool snap_norms = true;
 		for (auto& pair : verts_for_mtl)
 		{
-			// sm2ro.first->should_snap_norms();
-			if (snap_norms)
+			if (sm2ro.first->should_snap())
 				m_compute_norms_snap(pair.second, indices_for_mtl.at(pair.first));
 			else
 				m_compute_norms(pair.second, indices_for_mtl.at(pair.first));
@@ -506,49 +496,6 @@ void scene_ctx::m_build_sm_vaos()
 			m_sm_ros[sm2ro.first].emplace(it->first, std::move(ro));
 		}
 	}
-	// std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
-	// std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
-	// for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
-	//{
-	//	verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
-	//	indices_for_mtl.insert(std::make_pair(it->first, std::vector<u32>()));
-	// }
-
-	// for (smnode* const sm : m_static_meshes)
-	//{
-	//	if (sm->is_dirty())
-	//		sm->recompute(this);
-
-	//	const u32 mat = sm->get_material();
-	//	std::unordered_map<u32, std::vector<mesh_vertex>> sm_verts;
-	//	std::unordered_map<u32, std::vector<u32>> sm_indices;
-	//	sm_verts.insert({ mat, {} });
-	//	sm_indices.insert({ mat, {} });
-	//	m_tesselate(sm->get_mesh(), sm_verts, sm_indices, false);
-
-	//	auto& out_verts = verts_for_mtl.at(mat);
-	//	auto& out_indices = indices_for_mtl.at(mat);
-	//	auto& sm_indices_for_mat = sm_indices.at(mat);
-	//	const u64 oldsize = out_verts.size();
-	//	for (u32& i : sm_indices_for_mat)
-	//	{
-	//		i += (u32)oldsize;
-	//	}
-	//	// do as i say, not as i do
-	//	out_verts.insert(out_verts.end(), sm_verts.at(mat).begin(), sm_verts.at(mat).end());
-	//	out_indices.insert(out_indices.end(), sm_indices.at(mat).begin(), sm_indices.at(mat).end());
-	//}
-
-	// m_sm_ros_for_mtl.clear();
-	// for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
-	//{
-	//	if (it->second.empty())
-	//		continue;
-	//	const auto& verts = verts_for_mtl.at(it->first);
-	//	const auto& indices = indices_for_mtl.at(it->first);
-	//	mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
-	//	m_sm_ros_for_mtl.emplace(it->first, std::move(ro));
-	// }
 }
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms)
 {

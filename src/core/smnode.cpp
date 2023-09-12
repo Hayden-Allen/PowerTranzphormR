@@ -59,6 +59,18 @@ const tmat<space::OBJECT, space::WORLD>& smnode::get_mat() const
 {
 	return m_mat;
 }
+bool smnode::should_snap() const
+{
+	return m_should_snap;
+}
+bool smnode::should_snap_all() const
+{
+	return m_snap_all;
+}
+f32 smnode::get_snap_angle() const
+{
+	return m_snap_angle;
+}
 void smnode::set_gen_dirty()
 {
 	m_gen->set_dirty();
@@ -76,7 +88,25 @@ void smnode::set_gen(generated_mesh* const gen)
 {
 	delete m_gen;
 	m_gen = gen;
-	copy_local_verts();
+	set_gen_dirty();
+	// for nonstatic, recompute will do this
+	if (is_static())
+		copy_local_verts();
+}
+void smnode::set_should_snap(const bool snap)
+{
+	m_should_snap = snap;
+	set_gen_dirty();
+}
+void smnode::set_should_snap_all(const bool all)
+{
+	m_snap_all = all;
+	set_gen_dirty();
+}
+void smnode::set_snap_angle(const f32 snap)
+{
+	m_snap_angle = snap;
+	set_gen_dirty();
 }
 bool smnode::is_gen_dirty() const
 {

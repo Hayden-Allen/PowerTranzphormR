@@ -20,11 +20,17 @@ public:
 	u32 get_material() const;
 	tmat<space::OBJECT, space::WORLD>& get_mat();
 	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
+	bool should_snap() const;
+	bool should_snap_all() const;
+	f32 get_snap_angle() const;
 public:
 	void set_gen_dirty();
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
 	void set_material(scene_ctx* const scene, const u32 mat);
 	void set_gen(generated_mesh* const gen);
+	void set_should_snap(const bool snap);
+	void set_should_snap_all(const bool all);
+	void set_snap_angle(const f32 snap);
 public:
 	bool is_gen_dirty() const;
 	bool is_static() const;
@@ -36,6 +42,8 @@ private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;
 	std::vector<point<space::OBJECT>> m_local_verts;
+	bool m_should_snap = false, m_snap_all = false;
+	f32 m_snap_angle = 7 * c::PI / 24;
 private:
 	void copy_local_verts();
 	void copy_local_to_carve();
