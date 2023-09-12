@@ -31,7 +31,7 @@ void vertex_editor_window::handle_frame()
 	else
 	{
 		if (handle_frame_base(selected_sm->get_mesh(), selected_sm->get_local_verts(), selected_sm->get_mat(), selected_sm->get_material()))
-			selected_sm->set_dirty();
+			selected_sm->set_gen_dirty();
 	}
 }
 
@@ -372,7 +372,7 @@ bool vertex_editor_window::handle_frame_base(const mesh_t* const mesh, std::vect
 					const mesh_t::face_t* const f = *i;
 					for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
 					{
-						vec.push_back({{ f, e.idx(), e->vert }});
+						vec.push_back({ { f, e.idx(), e->vert } });
 					}
 				}
 			}

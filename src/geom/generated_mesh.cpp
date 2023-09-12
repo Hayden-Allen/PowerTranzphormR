@@ -30,7 +30,10 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_mesh::get_pa
 {
 	return {};
 }
-void generated_mesh::recompute(scene_ctx* const scene) {}
+void generated_mesh::recompute(scene_ctx* const scene)
+{
+	dirty = false;
+}
 generated_mesh* generated_mesh::clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat) const
 {
 	return new generated_mesh(nullptr);
@@ -65,7 +68,7 @@ void generated_mesh::set_mesh(mesh_t* const m)
 }
 void generated_mesh::set_dirty()
 {
-	assert(false);
+	dirty = true;
 }
 bool generated_mesh::is_dirty() const
 {
@@ -122,8 +125,8 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_primitive::g
 }
 void generated_primitive::recompute(scene_ctx* const scene)
 {
+	generated_mesh::recompute(scene);
 	delete mesh;
-	dirty = false;
 }
 GLuint generated_primitive::get_material() const
 {
@@ -156,10 +159,6 @@ nlohmann::json generated_primitive::save(scene_ctx* const scene, const tmat<spac
 		{ "c", { opts->r, opts->g, opts->b, opts->a } },
 	};
 	return obj;
-}
-void generated_primitive::set_dirty()
-{
-	dirty = true;
 }
 void generated_primitive::set_options(const nlohmann::json& obj)
 {
@@ -669,7 +668,6 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 
 	return obj;
 }
-void generated_static_mesh::set_dirty() {}
 bool generated_static_mesh::is_static() const
 {
 	return true;

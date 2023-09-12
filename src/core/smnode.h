@@ -21,13 +21,12 @@ public:
 	tmat<space::OBJECT, space::WORLD>& get_mat();
 	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
 public:
-	void set_dirty();
 	void set_gen_dirty();
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
 	void set_material(scene_ctx* const scene, const u32 mat);
 	void set_gen(generated_mesh* const gen);
 public:
-	bool is_dirty() const;
+	bool is_gen_dirty() const;
 	bool is_static() const;
 public:
 	void recompute(scene_ctx* const scene);
@@ -37,8 +36,7 @@ private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;
 	std::vector<point<space::OBJECT>> m_local_verts;
-	bool m_dirty = false;
 private:
 	void copy_local_verts();
-	void transform_verts();
+	void copy_local_to_carve();
 };

@@ -18,6 +18,17 @@ struct mesh_vertex
 	f32 w0 = 0.f, w1 = 0.f, w2 = 0.f, w3 = 0.f;
 	f32 r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 
+	mesh_vertex() {}
+	mesh_vertex(const f32 _x, const f32 _y, const f32 _z, const tex_coord_t& uv0, const tex_coord_t& uv1, const tex_coord_t& uv2, const tex_coord_t& uv3, const f32 _w0, const f32 _w1, const f32 _w2, const f32 _w3, const color_t& color) :
+		x(_x), y(_y), z(_z),
+		u0(uv0.u), v0(uv0.v), uo0(uv0.uo), vo0(uv0.vo),
+		u1(uv1.u), v1(uv1.v), uo1(uv1.uo), vo1(uv1.vo),
+		u2(uv2.u), v2(uv2.v), uo2(uv2.uo), vo2(uv2.vo),
+		u3(uv3.u), v3(uv3.v), uo3(uv3.uo), vo3(uv3.vo),
+		w0(_w0), w1(_w1), w2(_w2), w3(_w3),
+		r(color.r), g(color.g), b(color.b), a(color.a)
+	{}
+
 	bool operator==(const mesh_vertex& o) const
 	{
 		return x == o.x && y == o.y && z == o.z &&

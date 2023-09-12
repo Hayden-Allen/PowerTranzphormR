@@ -48,7 +48,7 @@ public:
 	virtual void set_material(scene_ctx* const scene, const GLuint mat);
 	virtual void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat);
 	virtual void set_mesh(mesh_t* const m);
-	virtual void set_dirty();
+	void set_dirty();
 	bool is_dirty() const;
 	void clear();
 	void copy_mesh_from(const generated_mesh* const other, scene_ctx* const scene);
@@ -70,7 +70,6 @@ public:
 	void set_material(scene_ctx* const scene, const GLuint mat) override;
 	void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat) override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
-	void set_dirty() override;
 protected:
 	GLuint m_material;
 protected:
@@ -205,7 +204,6 @@ public:
 	void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat) override;
 	generated_mesh* clone(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& inv_mat = tmat<space::WORLD, space::OBJECT>()) const override;
 	nlohmann::json save(scene_ctx* const scene, const tmat<space::WORLD, space::OBJECT>& mat) const override;
-	void set_dirty() override;
 	bool is_static() const override;
 	void set_mesh(mesh_t* const m) override;
 	GLuint get_material() const override;

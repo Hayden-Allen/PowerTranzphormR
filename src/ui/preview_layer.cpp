@@ -20,19 +20,21 @@ bool preview_layer::on_frame(const f32 dt)
 	const auto& mouse_delta = get_mouse().delta;
 	m_app_ctx->preview_cam.move(dt, move_dir * (get_key(GLFW_KEY_LEFT_ALT) ? .2f : 1.f), mouse_delta.x, mouse_delta.y);
 
-	const tmat<space::OBJECT, space::WORLD> obj;
+	// const tmat<space::OBJECT, space::WORLD> obj;
 	const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
-	const tmat<space::OBJECT, space::CAMERA>& mv = view * obj;
+	// const tmat<space::OBJECT, space::CAMERA>& mv = view * obj;
 	const pmat<space::CAMERA, space::CLIP>& proj = m_app_ctx->preview_cam.get_proj();
-	const mat<space::OBJECT, space::CLIP>& mvp = proj * mv;
+	// const mat<space::OBJECT, space::CLIP>& mvp = proj * mv;
+	const mat<space::WORLD, space::CLIP> vp = proj * view;
 	// HATODO slow
-	const tmat<space::OBJECT, space::WORLD> normal = obj.invert_copy().transpose_copy();
+	// const tmat<space::OBJECT, space::WORLD> normal = obj.invert_copy().transpose_copy();
 
 	// draw world into m_fb
 	m_app_ctx->preview_fb.bind();
 	m_app_ctx->mgl_ctx.clear();
 	m_app_ctx->scene.update();
-	const scene_ctx_uniforms& uniforms = { mvp, mv, view, proj, obj, normal, m_app_ctx->preview_cam.get_pos() };
+	// const scene_ctx_uniforms& uniforms = { mvp, mv, view, proj, obj, normal, m_app_ctx->preview_cam.get_pos() };
+	const scene_ctx_uniforms& uniforms = { vp, view, proj, m_app_ctx->preview_cam.get_pos() };
 	m_app_ctx->scene.draw(m_app_ctx->mgl_ctx, uniforms);
 	m_app_ctx->draw_vertex_editor_icon();
 	m_app_ctx->preview_fb.unbind();

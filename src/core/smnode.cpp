@@ -8,6 +8,7 @@ smnode::smnode(generated_mesh* const gen) :
 {
 	assert(!gen->is_static());
 	copy_local_verts();
+	set_gen_dirty();
 }
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	xportable(obj)
@@ -21,7 +22,7 @@ smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	}
 	m_mat = u::json2tmat<space::OBJECT, space::WORLD>(obj["t"]);
 	copy_local_verts();
-	transform_verts();
+	set_gen_dirty();
 }
 smnode::~smnode()
 {
@@ -58,32 +59,18 @@ const tmat<space::OBJECT, space::WORLD>& smnode::get_mat() const
 {
 	return m_mat;
 }
-void smnode::set_dirty()
-{
-	m_dirty = true;
-}
 void smnode::set_gen_dirty()
 {
-	assert(!is_static());
-	set_dirty();
 	m_gen->set_dirty();
 }
 void smnode::set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 {
 	m_mat = new_mat;
-	set_dirty();
 }
 void smnode::set_material(scene_ctx* const scene, const u32 mat)
 {
 	m_gen->set_material(scene, mat);
-	if (is_static())
-	{
-		set_dirty();
-	}
-	else
-	{
-		set_gen_dirty();
-	}
+	set_gen_dirty();
 }
 void smnode::set_gen(generated_mesh* const gen)
 {
@@ -91,9 +78,9 @@ void smnode::set_gen(generated_mesh* const gen)
 	m_gen = gen;
 	copy_local_verts();
 }
-bool smnode::is_dirty() const
+bool smnode::is_gen_dirty() const
 {
-	return m_dirty;
+	return m_gen->is_dirty();
 }
 bool smnode::is_static() const
 {
@@ -101,16 +88,15 @@ bool smnode::is_static() const
 }
 void smnode::recompute(scene_ctx* const scene)
 {
-	assert(m_dirty);
-	m_dirty = false;
-
-	if (m_gen->is_dirty())
+	m_gen->recompute(scene);
+	if (m_gen->is_static())
 	{
-		m_gen->recompute(scene);
+		copy_local_to_carve();
+	}
+	else
+	{
 		copy_local_verts();
 	}
-
-	transform_verts();
 }
 void smnode::make_static(scene_ctx* const scene)
 {
@@ -122,7 +108,7 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 {
 	nlohmann::json obj = xportable::save();
 	obj["t"] = m_mat.e;
-	obj["m"] = m_gen->save(scene, m_mat.invert_copy());
+	obj["m"] = m_gen->save(scene, tmat<space::WORLD, space::OBJECT>());
 	obj["s"] = is_static();
 	return obj;
 }
@@ -137,13 +123,12 @@ void smnode::copy_local_verts()
 		m_local_verts.emplace_back(point<space::OBJECT>(v.v.x, v.v.y, v.v.z));
 	}
 }
-void smnode::transform_verts()
+void smnode::copy_local_to_carve()
 {
 	size_t i = 0;
-	assert(m_gen->mesh);
 	m_gen->mesh->transform([&](vertex_t::vector_t& v)
 		{
-			const auto& out = u::hats2carve(m_local_verts[i].transform_copy(m_mat));
+			const auto& out = u::hats2carve(m_local_verts[i]);
 			++i;
 			return out;
 		});

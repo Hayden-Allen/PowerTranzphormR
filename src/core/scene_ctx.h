@@ -12,12 +12,13 @@ class smnode;
 
 struct scene_ctx_uniforms
 {
-	const mat<space::OBJECT, space::CLIP>& mvp;
-	const tmat<space::OBJECT, space::CAMERA>& mv;
+	/*const mat<space::OBJECT, space::CLIP>& mvp;
+	const tmat<space::OBJECT, space::CAMERA>& mv;*/
+	const mat<space::WORLD, space::CLIP> vp;
 	const tmat<space::WORLD, space::CAMERA>& view;
 	const pmat<space::CAMERA, space::CLIP>& proj;
-	const tmat<space::OBJECT, space::WORLD>& model;
-	const tmat<space::OBJECT, space::WORLD>& normal;
+	/*const tmat<space::OBJECT, space::WORLD>& model;
+	const tmat<space::OBJECT, space::WORLD>& normal;*/
 	const point<space::WORLD>& cam_pos;
 };
 
@@ -101,7 +102,8 @@ private:
 	attr_material_t m_mtl_id_attr;
 	carve_vert_attrs m_vert_attrs;
 	std::unordered_map<u32, scene_material*> m_mtls;
-	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl, m_sm_ros_for_mtl;
+	std::unordered_map<u32, mgl::static_retained_render_object> m_sg_ros_for_mtl;
+	std::unordered_map<smnode*, std::unordered_map<u32, mgl::static_retained_render_object>> m_sm_ros;
 	std::vector<smnode*> m_static_meshes;
 	std::vector<light*> m_lights;
 	std::vector<waypoint*> m_waypoints;
@@ -113,7 +115,7 @@ private:
 	void m_build_sg_vaos();
 	void m_build_sm_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms);
-	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros);
+	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model = tmat<space::OBJECT, space::WORLD>());
 	void m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices);
 	void m_compute_norms(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices);
 };

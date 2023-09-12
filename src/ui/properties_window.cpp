@@ -424,14 +424,7 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 
 	if (changed)
 	{
-		if (selected->is_static())
-		{
-			selected->set_dirty();
-		}
-		else
-		{
-			selected->set_gen_dirty();
-		}
+		selected->set_gen_dirty();
 	}
 }
 u32 properties_window::material_combo_box(const u32 selected)
