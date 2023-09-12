@@ -116,6 +116,6 @@ private:
 	void m_build_sm_vaos();
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms);
 	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model = tmat<space::OBJECT, space::WORLD>());
-	void m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices);
+	void m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices, const bool snap_all, const f32 snap_angle);
 	void m_compute_norms(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices);
 };

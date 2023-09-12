@@ -445,14 +445,15 @@ void scene_ctx::m_build_sm_vaos()
 {
 	for (auto& sm2ro : m_sm_ros)
 	{
-		if (!sm2ro.first->is_gen_dirty())
+		smnode* const node = sm2ro.first;
+		if (!node->is_gen_dirty())
 			continue;
 		sm2ro.second.clear();
-		sm2ro.first->recompute(this);
+		node->recompute(this);
 
 		std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
 		std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
-		const mesh_t* const mesh = sm2ro.first->get_mesh();
+		const mesh_t* const mesh = node->get_mesh();
 		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
 		{
 			const mesh_t::face_t* f = *i;
@@ -480,8 +481,8 @@ void scene_ctx::m_build_sm_vaos()
 		const bool snap_norms = true;
 		for (auto& pair : verts_for_mtl)
 		{
-			if (sm2ro.first->should_snap())
-				m_compute_norms_snap(pair.second, indices_for_mtl.at(pair.first));
+			if (node->should_snap())
+				m_compute_norms_snap(pair.second, indices_for_mtl.at(pair.first), node->should_snap_all(), node->get_snap_angle());
 			else
 				m_compute_norms(pair.second, indices_for_mtl.at(pair.first));
 		}
@@ -543,7 +544,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 	for (auto& pair : out_verts_for_mtl)
 	{
 		if (snap_norms)
-			m_compute_norms_snap(pair.second, out_indices_for_mtl.at(pair.first));
+			m_compute_norms_snap(pair.second, out_indices_for_mtl.at(pair.first), s_snap_all, s_snap_angle);
 		else
 			m_compute_norms(pair.second, out_indices_for_mtl.at(pair.first));
 	}
@@ -578,7 +579,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		glctx.draw(it->second, *mat->shaders);
 	}
 }
-void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices)
+void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices, const bool snap_all, const f32 snap_angle)
 {
 	std::vector<u32> output_vert2index;
 	std::unordered_map<std::string, std::unordered_map<u32, std::vector<direction<space::OBJECT>>>> vert2index;
@@ -624,10 +625,10 @@ void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std:
 							indices.push_back(instance.first);
 							goto next_vertex;
 						}
-						if (s_snap_all)
+						if (snap_all)
 						{
 							// current vertex cannot be added to this instance (ALL)
-							if (fabs(angle) >= s_snap_angle)
+							if (fabs(angle) >= snap_angle)
 							{
 								break;
 							}
@@ -645,7 +646,7 @@ void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std:
 						else
 						{
 							// current vertex can be added to this instance (ANY)
-							if (fabs(angle) < s_snap_angle)
+							if (fabs(angle) < snap_angle)
 							{
 								// vert2index.at(key).at(instance.first).push_back(norm);
 								instance.second.push_back(norm);
