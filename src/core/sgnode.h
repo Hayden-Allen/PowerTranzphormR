@@ -3,6 +3,7 @@
 #include "xportable.h"
 
 class generated_mesh;
+class generated_static_mesh;
 class scene_ctx;
 struct app_ctx;
 
@@ -11,6 +12,8 @@ class sgnode : public xportable
 public:
 	// nop node
 	sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>());
+	// frozen node
+	sgnode(sgnode* const parent, generated_static_mesh* const m, const std::string& name, const tmat<space::OBJECT, space::OBJECT>& t);
 	// operation node
 	sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t = tmat<space::OBJECT, space::PARENT>());
 	sgnode(const nlohmann::json& obj, scene_ctx* const scene);

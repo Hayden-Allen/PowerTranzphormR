@@ -330,13 +330,19 @@ const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {
 	return m_static_meshes;
 }
-smnode* const scene_ctx::add_heightmap()
+smnode* const scene_ctx::add_static_mesh()
 {
 	smnode* const result = new smnode(generated_textured_heightmap(0));
 	m_static_meshes.push_back(result);
 	m_sm_ros.insert({ result, {} });
 	m_build_sm_vaos();
 	return result;
+}
+void scene_ctx::add_static_mesh(smnode* const node)
+{
+	m_static_meshes.push_back(node);
+	m_sm_ros.insert({ node, {} });
+	m_build_sm_vaos();
 }
 void scene_ctx::destroy_static_mesh(smnode* const n)
 {

@@ -67,7 +67,8 @@ public:
 	void destroy_waypoint(waypoint* const w);
 public:
 	const std::vector<smnode*>& get_static_meshes();
-	smnode* const add_heightmap();
+	smnode* const add_static_mesh();
+	void add_static_mesh(smnode* const node);
 	void destroy_static_mesh(smnode* const n);
 public:
 	mesh_t* create_textured_cuboid(const GLuint mtl_id, const cuboid_options& options = {});

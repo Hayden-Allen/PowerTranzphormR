@@ -10,6 +10,7 @@ class smnode : public xportable
 {
 public:
 	smnode(generated_mesh* const gen);
+	smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat);
 	smnode(const nlohmann::json& obj, scene_ctx* const scene);
 	virtual ~smnode();
 public:

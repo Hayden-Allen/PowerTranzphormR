@@ -2,11 +2,26 @@
 #include "smnode.h"
 #include "geom/generated_mesh.h"
 
+
 smnode::smnode(generated_mesh* const gen) :
 	xportable(std::string("Static Mesh")),
 	m_gen(gen)
 {
-	assert(!gen->is_static());
+	copy_local_verts();
+	set_gen_dirty();
+}
+smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD>& mat) :
+	xportable(std::string("Static Mesh")),
+	m_mat(mat),
+	m_gen(gen)
+{
+	const auto& inv = mat.invert_copy();
+	m_gen->mesh->transform([&](vertex_t::vector_t& v)
+		{
+			const point<space::WORLD> p(v.x, v.y, v.z);
+			return u::hats2carve(p.transform_copy(inv));
+		});
+
 	copy_local_verts();
 	set_gen_dirty();
 }

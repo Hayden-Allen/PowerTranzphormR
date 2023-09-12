@@ -206,6 +206,10 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 				if (ImGui::MenuItem("Phreeze!"))
 					m_app_ctx->freeze_action(node);
 			}
+			if (node->is_frozen() && ImGui::MenuItem("Make Static"))
+			{
+				m_app_ctx->make_sgnode_static(node);
+			}
 		}
 		if (!node->is_root())
 		{
@@ -328,6 +332,14 @@ void scene_graph_window::handle_heightmap(smnode* const hmp)
 			}
 			ImGui::Separator();
 		}
+		else
+		{
+			if (ImGui::MenuItem("Make Non-Static"))
+			{
+				m_app_ctx->make_frozen_sgnode_from_smnode(hmp);
+			}
+		}
+
 		if (ImGui::MenuItem("Rename"))
 		{
 			set_renaming_sm(hmp);
@@ -370,7 +382,6 @@ void scene_graph_window::handle_heightmaps()
 		ImGui::TreePop();
 	}
 }
-
 void scene_graph_window::handle_light(light* const l)
 {
 	const f32 padding_x = 3.f;
@@ -451,7 +462,6 @@ void scene_graph_window::handle_light(light* const l)
 
 	ImGui::TreePop();
 }
-
 void scene_graph_window::handle_lights()
 {
 	const f32 padding_x = 3.f;
@@ -480,7 +490,6 @@ void scene_graph_window::handle_lights()
 		ImGui::TreePop();
 	}
 }
-
 // FIXME
 void scene_graph_window::handle_waypoint(waypoint* const w)
 {
@@ -562,7 +571,6 @@ void scene_graph_window::handle_waypoint(waypoint* const w)
 
 	ImGui::TreePop();
 }
-
 void scene_graph_window::handle_waypoints()
 {
 	const f32 padding_x = 3.f;

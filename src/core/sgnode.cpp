@@ -13,6 +13,17 @@ sgnode::sgnode(sgnode* p, generated_mesh* m, const std::string& n, const tmat<sp
 {
 	set_gen_dirty();
 }
+sgnode::sgnode(sgnode* const parent, generated_static_mesh* const m, const std::string& name, const tmat<space::OBJECT, space::OBJECT>& t) :
+	xportable(name),
+	m_parent(parent),
+	m_gen(m),
+	m_frozen(true),
+	m_mat(t.cast_copy<space::OBJECT, space::PARENT>())
+{
+	assert(m_gen->is_static());
+	copy_local_verts();
+	transform_verts();
+}
 // operation node
 sgnode::sgnode(sgnode* p, carve::csg::CSG::OP op, const tmat<space::OBJECT, space::PARENT>& t) :
 	xportable(u::operation_to_string(op)),

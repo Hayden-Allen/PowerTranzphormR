@@ -487,6 +487,23 @@ void app_ctx::destroy_waypoint(waypoint* const w)
 	}
 	scene.destroy_waypoint(w);
 }
+void app_ctx::make_sgnode_static(const sgnode* const node)
+{
+	const sgnode* const parent = node->get_parent();
+	assert(parent);
+
+	generated_static_mesh* const new_gen = new generated_static_mesh(carve_clone(node->get_gen()->mesh, &scene), &scene);
+	scene.add_static_mesh(new smnode(new_gen, node->accumulate_mats()));
+}
+void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
+{
+	generated_static_mesh* const new_gen = new generated_static_mesh(carve_clone(node->get_mesh(), &scene), &scene);
+	sgnode* const root = scene.get_sg_root();
+	const tmat<space::WORLD, space::OBJECT>& root_inv = root->accumulate_mats().invert_copy();
+	const tmat<space::OBJECT, space::OBJECT>& inv = root_inv * node->get_mat();
+	sgnode* const new_node = new sgnode(nullptr, new_gen, "Phrozen " + node->get_name(), inv);
+	create_action(new_node, root);
+}
 
 
 void app_ctx::transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
@@ -534,7 +551,7 @@ void app_ctx::create_torus_action()
 }
 void app_ctx::create_heightmap()
 {
-	set_selected_static_mesh(scene.add_heightmap());
+	set_selected_static_mesh(scene.add_static_mesh());
 }
 void app_ctx::create_union_action()
 {
@@ -1165,7 +1182,6 @@ void app_ctx::material_menu()
 	material_menu.groups.push_back({ material_create, material_rename, material_destroy });
 	shortcut_menus.push_back(material_menu);
 }
-
 void app_ctx::static_meshes_menu()
 {
 	shortcut_menu_item sm_create = {
@@ -1220,7 +1236,6 @@ void app_ctx::static_meshes_menu()
 	sm_menu.groups.push_back({ sm_create, sm_rename, sm_destroy });
 	shortcut_menus.push_back(sm_menu);
 }
-
 void app_ctx::lights_menu()
 {
 	shortcut_menu_item light_create = {
@@ -1275,7 +1290,6 @@ void app_ctx::lights_menu()
 	light_menu.groups.push_back({ light_create, light_rename, light_destroy });
 	shortcut_menus.push_back(light_menu);
 }
-
 void app_ctx::waypoints_menu()
 {
 	shortcut_menu_item waypoint_create = {
