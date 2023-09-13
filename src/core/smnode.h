@@ -24,6 +24,7 @@ public:
 	bool should_snap() const;
 	bool should_snap_all() const;
 	f32 get_snap_angle() const;
+	tex_coord_t get_uv_offset() const;
 public:
 	void set_gen_dirty();
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);

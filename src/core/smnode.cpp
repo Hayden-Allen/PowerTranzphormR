@@ -86,6 +86,10 @@ f32 smnode::get_snap_angle() const
 {
 	return m_snap_angle;
 }
+tex_coord_t smnode::get_uv_offset() const
+{
+	return m_gen->get_uv_offset();
+}
 void smnode::set_gen_dirty()
 {
 	m_gen->set_dirty();

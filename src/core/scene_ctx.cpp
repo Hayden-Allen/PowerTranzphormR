@@ -45,7 +45,7 @@ void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 	for (const auto& pair : m_sm_ros)
 	{
 		if (pair.first->is_visible())
-			m_draw_vaos(glctx, mats, pair.second, pair.first->get_mat());
+			m_draw_vaos(glctx, mats, pair.second, pair.first->get_mat(), pair.first->get_uv_offset());
 	}
 }
 void scene_ctx::update()
@@ -589,7 +589,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			m_compute_norms(pair.second, out_indices_for_mtl.at(pair.first));
 	}
 }
-void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model)
+void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model, const tex_coord_t& offset)
 {
 	const tmat<space::OBJECT, space::CAMERA>& mv = mats.view * model;
 	const mat<space::OBJECT, space::CLIP> mvp = mats.vp * model;
@@ -607,6 +607,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
 		mat->shaders->uniform_1f("u_time", glctx.time.now);
 		mat->shaders->uniform_1ui("u_num_lights", m_num_visible_lights);
+		mat->shaders->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)

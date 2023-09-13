@@ -54,6 +54,7 @@ public:
 	void copy_mesh_from(const generated_mesh* const other, scene_ctx* const scene);
 	virtual mesh_t* clone_mesh_to_local(scene_ctx* const scene, const tmat<space::OBJECT, space::WORLD>& mat) const;
 	virtual bool is_static() const;
+	virtual tex_coord_t get_uv_offset() const;
 protected:
 	virtual primitive_options* get_options() const;
 };
@@ -207,8 +208,11 @@ public:
 	bool is_static() const override;
 	void set_mesh(mesh_t* const m) override;
 	GLuint get_material() const override;
+	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
+	tex_coord_t get_uv_offset() const override;
 private:
 	void check_material_id(scene_ctx* const scene);
 private:
 	GLuint m_material = MAX_VALUE_TYPE(GLuint);
+	tex_coord_t m_uv_offset;
 };
