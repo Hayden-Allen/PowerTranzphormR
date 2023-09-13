@@ -186,49 +186,32 @@ void app_ctx::set_sel_type(const global_selection_type t)
 	if (sel_type == global_selection_type::sgnode)
 	{
 		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
-		m_selected_mtl = nullptr;
-		m_selected_light = nullptr;
-		m_selected_waypoint = nullptr;
-		m_selected_static_mesh = nullptr;
 	}
 	else if (sel_type == global_selection_type::material)
 	{
 		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
-		m_selected_sgnode = nullptr;
-		m_selected_mtl = nullptr;
-		m_selected_light = nullptr;
-		m_selected_waypoint = nullptr;
 	}
 	else if (sel_type == global_selection_type::light)
 	{
 		m_imgui_needs_select_unfocused_light = m_selected_light;
-		m_selected_sgnode = nullptr;
-		m_selected_mtl = nullptr;
-		m_selected_waypoint = nullptr;
-		m_selected_static_mesh = nullptr;
 	}
 	else if (sel_type == global_selection_type::waypoint)
 	{
 		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
-		m_selected_sgnode = nullptr;
-		m_selected_mtl = nullptr;
-		m_selected_light = nullptr;
-		m_selected_static_mesh = nullptr;
 	}
 	else if (sel_type == global_selection_type::static_mesh)
 	{
 		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
-		m_selected_sgnode = nullptr;
-		m_selected_mtl = nullptr;
-		m_selected_light = nullptr;
-		m_selected_waypoint = nullptr;
 	}
 }
 void app_ctx::set_selected_sgnode(sgnode* const node)
 {
-	if (m_selected_sgnode != node)
+	if (node)
 	{
 		set_sel_type(global_selection_type::sgnode);
+	}
+	if (m_selected_sgnode != node)
+	{
 		m_selected_sgnode = node;
 		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
 	}
@@ -247,9 +230,12 @@ void app_ctx::unset_imgui_needs_select_unfocused_sgnode()
 }
 void app_ctx::set_selected_material(scene_material* const mtl)
 {
-	if (m_selected_mtl != mtl)
+	if (mtl)
 	{
 		set_sel_type(global_selection_type::material);
+	}
+	if (m_selected_mtl != mtl)
+	{
 		m_selected_mtl = mtl;
 		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
 	}
@@ -320,9 +306,12 @@ void app_ctx::add_light()
 }
 void app_ctx::set_selected_light(light* const l)
 {
-	if (m_selected_light != l)
+	if (l)
 	{
 		set_sel_type(global_selection_type::light);
+	}
+	if (m_selected_light != l)
+	{
 		m_selected_light = l;
 		m_imgui_needs_select_unfocused_light = m_selected_light;
 	}
@@ -345,9 +334,12 @@ void app_ctx::add_waypoint()
 }
 void app_ctx::set_selected_waypoint(waypoint* const w)
 {
-	if (m_selected_waypoint != w)
+	if (w)
 	{
 		set_sel_type(global_selection_type::waypoint);
+	}
+	if (m_selected_waypoint != w)
+	{
 		m_selected_waypoint = w;
 		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
 	}
@@ -417,9 +409,12 @@ void app_ctx::check_vertex_editor_icon_switched()
 }
 void app_ctx::set_selected_static_mesh(smnode* const m)
 {
-	if (m_selected_static_mesh != m)
+	if (m)
 	{
 		set_sel_type(global_selection_type::static_mesh);
+	}
+	if (m_selected_static_mesh != m)
+	{
 		m_vertex_editor_icon.cur_selected_vtx = -1;
 		m_vertex_editor_icon.prev_selected_vtx = -1;
 		m_selected_static_mesh = m;

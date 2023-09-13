@@ -93,6 +93,9 @@ void main()
 			// current fragment is behind light
 			if(light_v_pos.z <= 0)
 				continue;
+			float cos_theta = light_v_pos.z / length(light_v_pos);
+			if(cos_theta <= cur_light.cos_tmin)
+				continue;
 
 			float d_pos_length = length(d_pos);
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
@@ -101,8 +104,7 @@ void main()
 			L = normalize(light_pos - v_pos);
 			amb_atten = float(dot(N, L) > 0);
 
-			float cos_theta = light_v_pos.z / length(light_v_pos);
-			float angular_atten = clamp((cos_theta - cur_light.cos_tmin) / (cur_light.cos_tmax - cur_light.cos_tmin), 0, 1);
+			float angular_atten = clamp((cur_light.cos_tmin - cos_theta) / (cur_light.cos_tmin - cur_light.cos_tmax), 0, 1);
 			atten *= angular_atten;
 		}
 

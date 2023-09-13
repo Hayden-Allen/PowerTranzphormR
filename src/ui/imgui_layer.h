@@ -21,6 +21,7 @@ public:
 private:
 	app_ctx* const m_app_ctx = nullptr;
 	std::vector<imgui_window*> m_windows;
+	imgui_window* m_prev_focused_window = nullptr;
 	std::function<void()> m_exit_callback;
 	f32 m_prev_x_scale = -1.0f, m_prev_y_scale = -1.0f;
 private:

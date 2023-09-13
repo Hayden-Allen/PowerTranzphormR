@@ -93,15 +93,28 @@ bool imgui_layer::on_frame(const f32 dt)
 		ImGuiID dockspace_id = ImGui::GetID("imgui_layer_dockspace");
 		ImGui::DockSpace(dockspace_id, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
 
+		imgui_window* focused_window = nullptr;
 		for (imgui_window* window : m_windows)
 		{
 			bool should_draw_window = ImGui::Begin(window->get_title().c_str());
-			window->handle_focused(ImGui::IsWindowFocused());
+			if (ImGui::IsWindowFocused())
+			{
+				focused_window = window;
+			}
 			if (should_draw_window)
 			{
 				window->handle_frame();
 			}
 			ImGui::End();
+		}
+		if (focused_window && m_prev_focused_window != focused_window)
+		{
+			if (m_prev_focused_window)
+			{
+				m_prev_focused_window->handle_focused(false);
+			}
+			focused_window->handle_focused(true);
+			m_prev_focused_window = focused_window;
 		}
 	}
 	ImGui::End();
