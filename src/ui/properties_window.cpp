@@ -442,9 +442,10 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	f32 snap_angle = selected->get_snap_angle();
 	ImGui::SliderAngle("##Snap Angle", &snap_angle, 0.f, 360.f);
 
+	draw_params(selected->get_params());
+
 	if (!selected->is_static())
 	{
-		draw_params(selected->get_params());
 		ImGui::SeparatorText("Heightmap");
 		if (ImGui::Button("Load Heightmap"))
 		{
