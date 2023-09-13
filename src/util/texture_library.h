@@ -78,31 +78,38 @@ public:
 			delete m_lib[fp];
 			m_lib.erase(fp);
 
-			bool should_delete = false;
-			std::filesystem::path fspath(fp);
-			while (!fspath.filename().empty())
+			if (m_autotex_cleanup_enabled)
 			{
-				if (std::filesystem::is_directory(fspath))
+				bool should_delete = false;
+				std::filesystem::path fspath(fp);
+				while (!fspath.filename().empty())
 				{
-					if (fspath.filename() == "_PowerTextuRe_")
+					if (std::filesystem::is_directory(fspath))
 					{
-						should_delete = true;
+						if (fspath.filename() == "_PowerTextuRe_")
+						{
+							should_delete = true;
+						}
 					}
+					fspath = fspath.parent_path();
 				}
-				fspath = fspath.parent_path();
-			}
-			if (should_delete)
-			{
-				try
+				if (should_delete)
 				{
-					std::filesystem::remove(fp);
-				}
-				catch (const std::exception&)
-				{
-					std::cerr << "Unable to delete file: " << fp << "\n";
+					try
+					{
+						std::filesystem::remove(fp);
+					}
+					catch (const std::exception&)
+					{
+						std::cerr << "Unable to delete file: " << fp << "\n";
+					}
 				}
 			}
 		}
+	}
+	void set_autotexture_cleanup_enabled(const bool enabled)
+	{
+		m_autotex_cleanup_enabled = enabled;
 	}
 private:
 	static mgl::texture2d_rgb_u8* load_file(const std::string& fp)
@@ -113,4 +120,5 @@ private:
 	mgl::texture2d_rgb_u8* m_deftex = nullptr;
 	std::unordered_map<std::string, mgl::texture2d_rgb_u8*> m_lib;
 	std::unordered_map<std::string, u32> m_counts;
+	bool m_autotex_cleanup_enabled = true;
 };

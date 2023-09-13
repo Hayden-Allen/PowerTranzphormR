@@ -72,9 +72,17 @@ void scene_ctx::clear(bool ready_for_default_material)
 	m_mtl_id_attr.installHooks(m_csg);
 	m_sg_root = new sgnode(nullptr, carve::csg::CSG::OP::UNION);
 
+	if (g::texlib)
+	{
+		g::texlib->set_autotexture_cleanup_enabled(false);
+	}
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
+	if (g::texlib)
+	{
+		g::texlib->set_autotexture_cleanup_enabled(true);
+	}
 
 	for (smnode* const sm : m_static_meshes)
 		delete sm;
@@ -106,9 +114,19 @@ void scene_ctx::destroy()
 {
 	delete m_sg_root;
 	m_sg_root = nullptr;
+
+	if (g::texlib)
+	{
+		g::texlib->set_autotexture_cleanup_enabled(false);
+	}
 	for (const auto& pair : m_mtls)
 		delete pair.second;
 	m_mtls.clear();
+	if (g::texlib)
+	{
+		g::texlib->set_autotexture_cleanup_enabled(true);
+	}
+
 	delete m_skybox;
 	m_skybox = nullptr;
 }
