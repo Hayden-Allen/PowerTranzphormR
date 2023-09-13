@@ -114,6 +114,23 @@ namespace u
 	{
 		return open_save_dialog_base(window, label, exts, true);
 	}
+	static std::string open_folder(GLFWwindow* const window)
+	{
+		nfdchar_t* nfd_path = nullptr;
+		nfdresult_t nfd_res = NFD_PickFolder(&nfd_path, nullptr);
+		std::string ret = "";
+		if (nfd_res == NFD_OKAY)
+		{
+			ret = nfd_path;
+			NFD_FreePath(nfd_path);
+		}
+		else if (nfd_res == NFD_ERROR)
+		{
+			std::cerr << "NFD Error: " << NFD_GetError() << "\n";
+		}
+		reset_imgui_io(window);
+		return ret;
+	}
 
 	static void info_message_box(GLFWwindow* const window, LPCWSTR const msg, LPCWSTR const title)
 	{

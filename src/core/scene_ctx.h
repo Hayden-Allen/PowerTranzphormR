@@ -44,6 +44,7 @@ public:
 	void save(std::ofstream& out, const std::string& out_fp);
 	const std::string load(std::ifstream& in, const std::string& in_fp);
 	void save_xport(mgl::output_file& out) const;
+	void load_skybox(const std::string& folder);
 public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;
@@ -112,6 +113,7 @@ private:
 	mgl::static_uniform_buffer m_light_buffer;
 	u32 m_num_visible_lights = 0;
 	mgl::skybox_rgb_u8* m_skybox = nullptr;
+	std::string m_skybox_folder;
 private:
 	void m_build_light_buffer();
 	void m_build_sg_vaos();

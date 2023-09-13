@@ -26,6 +26,7 @@ private:
 private:
 	void handle_sgnode_frame(sgnode* const selected);
 	void handle_sgnode_snapping_angle();
+	void handle_sgnode_skybox();
 	bool handle_snap_mode(const bool value);
 	bool handle_transform(f32* const elements);
 	void handle_xportable(xportable* x);

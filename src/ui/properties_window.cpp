@@ -77,6 +77,7 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 	if (selected->is_root())
 	{
 		handle_sgnode_snapping_angle();
+		handle_sgnode_skybox();
 	}
 
 	if (!selected->is_operation())
@@ -99,8 +100,21 @@ void properties_window::handle_sgnode_snapping_angle()
 	if (start_angle != scene_ctx::s_snap_angle || start_all != scene_ctx::s_snap_all)
 		m_app_ctx->scene.get_sg_root()->set_dirty();
 }
-bool properties_window::handle_snap_mode(const bool value)
+void properties_window::handle_sgnode_skybox() 
 {
+	ImGui::SeparatorText("Skybox");
+
+	if (ImGui::Button("Load Skybox"))
+	{
+		const std::string folder = u::open_folder(m_app_ctx->mgl_ctx.window);
+		if (!folder.empty())
+		{
+			m_app_ctx->scene.load_skybox(folder);
+		}
+	}
+}
+bool properties_window::handle_snap_mode(const bool value)
+	{
 	const std::string snap_text[2] = {
 		"Snap normals if ANY within",
 		"Snap normals if ALL within",

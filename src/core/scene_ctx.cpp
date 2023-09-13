@@ -99,16 +99,7 @@ void scene_ctx::clear(bool ready_for_default_material)
 		null_mtl->set_name(g::null_mtl_name);
 		m_mtls.insert(std::make_pair(0, null_mtl));
 
-		delete m_skybox;
-		m_skybox = u::load_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
-			{
-				"res/sb/px.png",
-				"res/sb/nx.png",
-				"res/sb/py.png",
-				"res/sb/ny.png",
-				"res/sb/pz.png",
-				"res/sb/nz.png",
-			});
+		load_skybox("");
 	}
 }
 void scene_ctx::destroy()
@@ -126,6 +117,7 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 	nlohmann::json obj;
 
 	obj["rid"] = m_sg_root->get_id();
+	obj["sb"] = u::absolute_to_relative(m_skybox_folder, out_fp);
 
 	obj["nm"] = m_mtls.size();
 	std::vector<nlohmann::json::array_t> mtls;
@@ -196,6 +188,8 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 		m_waypoints.emplace_back(new waypoint(wp));
 	}
 
+	load_skybox(u::relative_to_absolute(obj["sb"], in_fp));
+
 	return obj["rid"];
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
@@ -208,6 +202,36 @@ void scene_ctx::save_xport(mgl::output_file& out) const
 	{
 		for (const auto& pair2 : pair.second)
 			pair2.second.save(out);
+	}
+}
+void scene_ctx::load_skybox(const std::string& folder)
+{
+	delete m_skybox;
+	m_skybox_folder = folder;
+	if (folder.empty())
+	{
+		m_skybox = u::load_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
+			{
+				"res/skybox/px.png",
+				"res/skybox/nx.png",
+				"res/skybox/py.png",
+				"res/skybox/ny.png",
+				"res/skybox/pz.png",
+				"res/skybox/nz.png",
+
+			});
+	}
+	else
+	{
+		m_skybox = u::load_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
+			{
+				(std::filesystem::path(folder) / "px.png").string(),
+				(std::filesystem::path(folder) / "nx.png").string(),
+				(std::filesystem::path(folder) / "py.png").string(),
+				(std::filesystem::path(folder) / "ny.png").string(),
+				(std::filesystem::path(folder) / "pz.png").string(),
+				(std::filesystem::path(folder) / "nz.png").string(),
+			});
 	}
 }
 
