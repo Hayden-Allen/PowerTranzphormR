@@ -44,7 +44,7 @@ public:
 	void save(std::ofstream& out, const std::string& out_fp);
 	const std::string load(std::ifstream& in, const std::string& in_fp);
 	void save_xport(mgl::output_file& out) const;
-	void load_skybox(const std::string& folder);
+	void load_skybox(const std::string& folder, const std::string& phorm_base);
 public:
 	sgnode* get_sg_root();
 	const sgnode* get_sg_root() const;

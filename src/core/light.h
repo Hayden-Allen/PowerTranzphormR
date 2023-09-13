@@ -9,6 +9,7 @@ enum class light_type
 	NONE = -1,
 	DIRECTION,
 	POINT,
+	AREA,
 	SPOT,
 	COUNT
 };
@@ -18,6 +19,7 @@ static std::string light_type_string(const light_type l)
 	{
 	case light_type::DIRECTION: return "Directional";
 	case light_type::POINT: return "Point";
+	case light_type::AREA: return "Area";
 	case light_type::SPOT: return "Spotlight";
 	}
 	assert(false);

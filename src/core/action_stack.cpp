@@ -162,7 +162,6 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 {
 	clear();
 
-	std::string line;
 
 	// read in meta block
 	const nlohmann::json& meta = u::next_line_json(in);
@@ -172,8 +171,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 	nodes.reserve(meta["nn"]);
 	for (u64 i = 0; i < meta["nn"]; i++)
 	{
-		std::getline(in, line);
-		const nlohmann::json obj = nlohmann::json::parse(line);
+		const nlohmann::json obj = u::next_line_json(in);
 		sgnode* node = new sgnode(obj, &m_app_ctx->scene);
 		node->set_dirty();
 		nodes[obj["id"]] = node;
@@ -183,8 +181,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 	m_past.reserve(meta["np"]);
 	for (u64 i = 0; i < meta["np"]; i++)
 	{
-		std::getline(in, line);
-		const nlohmann::json obj = nlohmann::json::parse(line);
+		const nlohmann::json obj = u::next_line_json(in);
 		action* const a = action::create(obj, nodes);
 		m_past.push_back(a);
 		a->apply(m_ctx, m_app_ctx);
@@ -193,8 +190,7 @@ std::unordered_map<std::string, sgnode*> action_stack::load(std::ifstream& in)
 	m_future.reserve(meta["nf"]);
 	for (u64 i = 0; i < meta["nf"]; i++)
 	{
-		std::getline(in, line);
-		const nlohmann::json obj = nlohmann::json::parse(line);
+		const nlohmann::json obj = u::next_line_json(in);
 		action* const a = action::create(obj, nodes);
 		m_future.push_back(a);
 	}

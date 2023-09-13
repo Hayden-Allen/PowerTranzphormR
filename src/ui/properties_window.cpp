@@ -100,7 +100,7 @@ void properties_window::handle_sgnode_snapping_angle()
 	if (start_angle != scene_ctx::s_snap_angle || start_all != scene_ctx::s_snap_all)
 		m_app_ctx->scene.get_sg_root()->set_dirty();
 }
-void properties_window::handle_sgnode_skybox() 
+void properties_window::handle_sgnode_skybox()
 {
 	ImGui::SeparatorText("Skybox");
 
@@ -109,12 +109,12 @@ void properties_window::handle_sgnode_skybox()
 		const std::string folder = u::open_folder(m_app_ctx->mgl_ctx.window);
 		if (!folder.empty())
 		{
-			m_app_ctx->scene.load_skybox(folder);
+			m_app_ctx->scene.load_skybox(folder, "");
 		}
 	}
 }
 bool properties_window::handle_snap_mode(const bool value)
-	{
+{
 	const std::string snap_text[2] = {
 		"Snap normals if ANY within",
 		"Snap normals if ALL within",
@@ -388,7 +388,11 @@ void properties_window::handle_light_frame(light* const selected)
 
 	bool changed = false;
 	const light_type type = selected->get_type();
-	changed |= handle_transform(selected->get_mat().e);
+	if (handle_transform(selected->get_mat().e))
+	{
+		changed = true;
+		selected->set_mat(selected->get_mat());
+	}
 	// maintain type id in mat[3][3]
 	selected->set_type(type);
 
