@@ -1092,7 +1092,7 @@ void app_ctx::phorm_menu()
 		GLFW_MOD_CONTROL,
 	};
 	shortcut_menu_item phorm_group = {
-		"Group to...",
+		"Group to",
 		[&]() {},
 		[&]()
 		{
