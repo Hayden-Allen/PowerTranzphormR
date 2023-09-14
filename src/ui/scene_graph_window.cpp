@@ -267,9 +267,12 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 		}
 		else
 		{
-			//
-			// TODO
-			//
+			if (ImGui::MenuItem("Group to Union"))
+				m_app_ctx->group_to_union_action();
+			if (ImGui::MenuItem("Group to Subtract"))
+				m_app_ctx->group_to_subtract_action();
+			if (ImGui::MenuItem("Group to Intersect"))
+				m_app_ctx->group_to_intersect_action();
 		}
 
 		ImGui::EndPopup();

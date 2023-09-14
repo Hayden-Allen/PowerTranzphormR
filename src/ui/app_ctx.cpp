@@ -526,7 +526,30 @@ void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 	sgnode* const new_node = new sgnode(nullptr, new_gen, "Phrozen " + node->get_name(), inv);
 	create_action(new_node, root);
 }
-
+void app_ctx::group_to_union_action()
+{
+	//
+	// TODO
+	//
+	m_multiselect_sgnodes.clear();
+	// ... select grouped node
+}
+void app_ctx::group_to_subtract_action()
+{
+	//
+	// TODO
+	//
+	m_multiselect_sgnodes.clear();
+	// ... select grouped node
+}
+void app_ctx::group_to_intersect_action()
+{
+	//
+	// TODO
+	//
+	m_multiselect_sgnodes.clear();
+	// ... select grouped node
+}
 
 void app_ctx::transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
 {
@@ -1038,6 +1061,63 @@ void app_ctx::phorm_menu()
 		GLFW_MOD_CONTROL,
 	};
 
+	shortcut_menu_item phorm_group_to_union = {
+		"Union",
+		[&]()
+		{
+			group_to_union_action();
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+=",
+		GLFW_KEY_EQUAL,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_group_to_subtract = {
+		"Subtract",
+		[&]()
+		{
+			group_to_subtract_action();
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+-",
+		GLFW_KEY_MINUS,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_group_to_intersect = {
+		"Intersect",
+		[&]()
+		{
+			group_to_intersect_action();
+		},
+		[&]()
+		{
+			return true;
+		},
+		"Ctrl+8",
+		GLFW_KEY_8,
+		GLFW_MOD_CONTROL,
+	};
+	shortcut_menu_item phorm_group = {
+		"Group to...",
+		[&]() {},
+		[&]()
+		{
+			return m_multiselect_sgnodes.size() > 0;
+		},
+		"",
+		0,
+		0,
+		{
+			{ phorm_group_to_union, phorm_group_to_subtract, phorm_group_to_intersect },
+		}
+	};
+
 	shortcut_menu_item phorm_phreeze = {
 		"Phreeze!",
 		[&]()
@@ -1187,7 +1267,7 @@ void app_ctx::phorm_menu()
 
 	shortcut_menu phorm_menu;
 	phorm_menu.name = "Phorm";
-	phorm_menu.groups.push_back({ phorm_create });
+	phorm_menu.groups.push_back({ phorm_create, phorm_group });
 	phorm_menu.groups.push_back({ phorm_undo, phorm_redo });
 	phorm_menu.groups.push_back({ phorm_cut, phorm_copy, phorm_paste });
 	phorm_menu.groups.push_back({ phorm_move_up, phorm_move_down });
