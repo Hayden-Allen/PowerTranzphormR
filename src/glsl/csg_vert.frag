@@ -1,6 +1,7 @@
 #version 430 core
 layout(location = 0) out vec4 o_col;
 
+/*
 struct Light
 {
 	mat4 o2w, w2o;
@@ -8,35 +9,37 @@ struct Light
 	float sp, rmax;
 	float cos_tmin, cos_tmax;
 };
-
 layout(std140, binding = 0) uniform LightBlock
 {
 	Light lights[128];
 } u_light_block;
 uniform uint u_num_lights;
+*/
+
 uniform sampler2D u_tex0, u_tex1, u_tex2, u_tex3;
-uniform vec3 u_cam_pos;
-uniform mat4 u_m;
+// uniform vec3 u_cam_pos;
+// uniform mat4 u_m;
 uniform float u_time;
 
 in vec4 v_uv0, v_uv1, v_uv2, v_uv3;
 in vec4 v_weights, v_rgba;
-in vec3 v_pos, v_N;
-in float v_NdL;
+// in vec3 v_pos, v_N;
+// in float v_NdL;
+in vec3 v_light_ambient, v_light_diffuse, v_light_specular;
 
 void main()
 {
-	vec3 N = normalize(v_N);
+	// vec3 N = normalize(v_N);
 
 	vec4 multi_tex_res =	texture(u_tex0, v_uv0.xy - v_uv0.zw * u_time) * v_weights[0] +
 				texture(u_tex1, v_uv1.xy - v_uv1.zw * u_time) * v_weights[1] +
 				texture(u_tex2, v_uv2.xy - v_uv2.zw * u_time) * v_weights[2] +
 				texture(u_tex3, v_uv3.xy - v_uv3.zw * u_time) * v_weights[3];
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
-
+	
+	/*
 	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
 	vec3 V = normalize(world_pos - u_cam_pos);
-	vec3 total_light = vec3(0, 0, 0);
 	vec3 total_diff = vec3(0.0);
 	vec3 total_spec = vec3(0.0);
 	vec3 total_amb = vec3(0.0);
@@ -94,7 +97,7 @@ void main()
 			if(light_v_pos.z <= 0)
 				continue;
 			float cos_theta = light_v_pos.z / length(light_v_pos);
-			if(cos_theta <= cur_light.cos_tmin)
+			if(cos_theta <= cur_light.cos_tmax)
 				continue;
 
 			float d_pos_length = length(d_pos);
@@ -104,7 +107,7 @@ void main()
 			L = normalize(light_pos - v_pos);
 			amb_atten = float(dot(N, L) > 0);
 
-			float angular_atten = clamp((cur_light.cos_tmin - cos_theta) / (cur_light.cos_tmin - cur_light.cos_tmax), 0, 1);
+			float angular_atten = clamp((cos_theta - cur_light.cos_tmax) / (cur_light.cos_tmin - cur_light.cos_tmax), 0, 1);
 			atten *= angular_atten;
 		}
 
@@ -119,7 +122,9 @@ void main()
 		total_diff += diff.rgb * diff.a;
 		total_spec += spec.rgb * spec.a;
 	}
-	
-	o_col = vec4(clamp((total_amb + total_diff) * mixed_res + total_spec, vec3(0), vec3(1)), 1);
+	*/
+
+	// o_col = vec4(clamp((total_amb + total_diff) * mixed_res + total_spec, vec3(0), vec3(1)), 1);
+	o_col = vec4(clamp((v_light_ambient + v_light_diffuse) * mixed_res + v_light_specular, vec3(0), vec3(1)), 1);
 	// o_col = vec4(abs(N), 1);
 }
