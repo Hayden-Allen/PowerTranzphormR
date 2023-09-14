@@ -110,7 +110,8 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
-		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->get_multiselected_sgnodes().contains(node);
+		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -143,8 +144,11 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	}
 	else
 	{
-		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (node == m_app_ctx->get_selected_sgnode() ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->get_multiselected_sgnodes().contains(node);
+		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
+
+	
 
 	sgnode* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_sgnode();
 	if (needs_select)
@@ -152,11 +156,29 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 		if (node == needs_select)
 		{
 			ImGui::SetKeyboardFocusHere(-1);
+			m_app_ctx->set_selected_sgnode(node);
 		}
 	}
-	else if (ImGui::IsItemFocused())
+	else if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift))
 	{
-		m_app_ctx->set_selected_sgnode(node);
+		if (!node->is_root())
+		{
+			if (ImGui::IsItemClicked())
+			{
+				m_app_ctx->toggle_sgnode_multiselected(node);
+			}
+			else if (ImGui::IsItemFocused() && !m_app_ctx->get_multiselected_sgnodes().contains(node))
+			{
+				m_app_ctx->toggle_sgnode_multiselected(node);
+			}
+		}
+	}
+	else
+	{
+		if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && !m_app_ctx->get_multiselected_sgnodes().contains(node)))
+		{
+			m_app_ctx->set_selected_sgnode(node);
+		}
 	}
 
 	ImGui::PopStyleVar();
@@ -167,79 +189,88 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	ImGui::PushID(node->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		m_app_ctx->set_selected_sgnode(node);
-
-		if (node->is_operation())
+		if (m_app_ctx->get_multiselected_sgnodes().size() <= 1)
 		{
-			if (ImGui::MenuItem("Add Cube"))
-				m_app_ctx->create_cube_action();
-			if (ImGui::MenuItem("Add Sphere"))
-				m_app_ctx->create_sphere_action();
-			if (ImGui::MenuItem("Add Cylinder"))
-				m_app_ctx->create_cylinder_action();
-			if (ImGui::MenuItem("Add Cone"))
-				m_app_ctx->create_cone_action();
-			if (ImGui::MenuItem("Add Torus"))
-				m_app_ctx->create_torus_action();
-			ImGui::Separator();
-			if (ImGui::MenuItem("Add Union"))
-				m_app_ctx->create_union_action();
-			if (ImGui::MenuItem("Add Subtract"))
-				m_app_ctx->create_subtract_action();
-			if (ImGui::MenuItem("Add Intersect"))
-				m_app_ctx->create_intersect_action();
-		}
+			m_app_ctx->set_selected_sgnode(node);
 
-		if (!node->is_root())
-		{
 			if (node->is_operation())
-				ImGui::Separator();
-			if (node->is_visible())
 			{
-				if (ImGui::MenuItem("Hide"))
-					node->set_visibility(false);
-			}
-			else
-			{
-				if (ImGui::MenuItem("Show"))
-					node->set_visibility(true);
-			}
-			if (!node->is_operation())
+				if (ImGui::MenuItem("Add Cube"))
+					m_app_ctx->create_cube_action();
+				if (ImGui::MenuItem("Add Sphere"))
+					m_app_ctx->create_sphere_action();
+				if (ImGui::MenuItem("Add Cylinder"))
+					m_app_ctx->create_cylinder_action();
+				if (ImGui::MenuItem("Add Cone"))
+					m_app_ctx->create_cone_action();
+				if (ImGui::MenuItem("Add Torus"))
+					m_app_ctx->create_torus_action();
 				ImGui::Separator();
-		}
+				if (ImGui::MenuItem("Add Union"))
+					m_app_ctx->create_union_action();
+				if (ImGui::MenuItem("Add Subtract"))
+					m_app_ctx->create_subtract_action();
+				if (ImGui::MenuItem("Add Intersect"))
+					m_app_ctx->create_intersect_action();
+			}
 
-		if (!node->is_root() && node->get_gen()->mesh)
-		{
-			if (node->is_operation())
+			if (!node->is_root())
+			{
+				if (node->is_operation())
+					ImGui::Separator();
+				if (node->is_visible())
+				{
+					if (ImGui::MenuItem("Hide"))
+						node->set_visibility(false);
+				}
+				else
+				{
+					if (ImGui::MenuItem("Show"))
+						node->set_visibility(true);
+				}
+				if (!node->is_operation())
+					ImGui::Separator();
+			}
+
+			if (!node->is_root() && node->get_gen()->mesh)
+			{
+				if (node->is_operation())
+					ImGui::Separator();
+				// if the current node is the original frozen version of a subtree
+				const bool has_unfrozen = m_app_ctx->has_unfrozen(node);
+				if (has_unfrozen)
+				{
+					if (ImGui::MenuItem("Unphreeze!"))
+						m_app_ctx->unfreeze_action(node);
+				}
+				// if the current node is NOT a clone of an original frozen node
+				else if (!node->is_frozen())
+				{
+					if (ImGui::MenuItem("Phreeze!"))
+						m_app_ctx->freeze_action(node);
+				}
+				if (node->is_frozen() && ImGui::MenuItem("Clone to Static Mesh"))
+				{
+					m_app_ctx->make_sgnode_static(node);
+				}
+			}
+			if (!node->is_root())
+			{
 				ImGui::Separator();
-			// if the current node is the original frozen version of a subtree
-			const bool has_unfrozen = m_app_ctx->has_unfrozen(node);
-			if (has_unfrozen)
-			{
-				if (ImGui::MenuItem("Unphreeze!"))
-					m_app_ctx->unfreeze_action(node);
+				if (ImGui::MenuItem("Rename"))
+				{
+					set_renaming(node);
+				}
 			}
-			// if the current node is NOT a clone of an original frozen node
-			else if (!node->is_frozen())
-			{
-				if (ImGui::MenuItem("Phreeze!"))
-					m_app_ctx->freeze_action(node);
-			}
-			if (node->is_frozen() && ImGui::MenuItem("Clone to Static Mesh"))
-			{
-				m_app_ctx->make_sgnode_static(node);
-			}
+			if (!node->is_root() && ImGui::MenuItem("Destroy"))
+				m_app_ctx->destroy_selected_action();
 		}
-		if (!node->is_root())
+		else
 		{
-			ImGui::Separator();
-			if (ImGui::MenuItem("Rename"))
-			{
-				set_renaming(node);
-			}
+			//
+			// TODO
+			//
 		}
-		if (!node->is_root() && ImGui::MenuItem("Destroy"))
-			m_app_ctx->destroy_selected_action();
 
 		ImGui::EndPopup();
 	}
