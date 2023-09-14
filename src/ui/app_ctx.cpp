@@ -158,6 +158,7 @@ void app_ctx::load(const std::string& fp)
 }
 void app_ctx::undo()
 {
+	m_multiselect_sgnodes.clear();
 	const sgnode* const selected = get_selected_sgnode();
 	const action* const a = actions.undo();
 	if (a)
@@ -168,6 +169,7 @@ void app_ctx::undo()
 }
 void app_ctx::redo()
 {
+	m_multiselect_sgnodes.clear();
 	const sgnode* const selected = get_selected_sgnode();
 	const action* const a = actions.redo();
 	if (a)
@@ -210,15 +212,40 @@ void app_ctx::set_selected_sgnode(sgnode* const node)
 	{
 		set_sel_type(global_selection_type::sgnode);
 	}
-	if (m_selected_sgnode != node)
+	if (m_selected_sgnode != node || m_multiselect_sgnodes.size() > 0)
 	{
+		m_multiselect_sgnodes.clear();
 		m_selected_sgnode = node;
 		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
 	}
 }
+void app_ctx::toggle_sgnode_multiselected(sgnode* const node)
+{
+	if (m_multiselect_sgnodes.size() == 0)
+	{
+		sgnode* const prev_selected = get_selected_sgnode();
+		if (prev_selected)
+		{
+			set_selected_sgnode(nullptr);
+			m_multiselect_sgnodes.insert(prev_selected);
+		}
+	}
+	if (m_multiselect_sgnodes.contains(node))
+	{
+		m_multiselect_sgnodes.erase(node);
+	}
+	else
+	{
+		m_multiselect_sgnodes.insert(node);
+	}
+}
+const std::unordered_set<sgnode*> app_ctx::get_multiselected_sgnodes() const
+{
+	return m_multiselect_sgnodes;
+}
 sgnode* app_ctx::get_selected_sgnode()
 {
-	return sel_type == global_selection_type::sgnode ? m_selected_sgnode : nullptr;
+	return (sel_type == global_selection_type::sgnode && m_multiselect_sgnodes.size() == 0) ? m_selected_sgnode : nullptr;
 }
 sgnode* app_ctx::get_imgui_needs_select_unfocused_sgnode()
 {
