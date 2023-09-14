@@ -21,12 +21,12 @@ public:
 	void set_renaming_waypoint(waypoint* const w);
 	const waypoint* get_renaming_waypoint() const;
 private:
-	rect handle_node(sgnode* const node);
-	void handle_heightmap(smnode* const hmp);
+	rect handle_node(sgnode* const node, bool& performed_destructive_action);
+	void handle_heightmap(smnode* const hmp, bool& performed_destructive_action);
 	void handle_heightmaps();
-	void handle_light(light* const l);
+	void handle_light(light* const l, bool& performed_destructive_action);
 	void handle_lights();
-	void handle_waypoint(waypoint* const w);
+	void handle_waypoint(waypoint* const w, bool& performed_destructive_action);
 	void handle_waypoints();
 private:
 	sgnode* m_show_add_child = nullptr;

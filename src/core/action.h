@@ -50,7 +50,7 @@ public:
 	sgnode *old_parent, *new_parent;
 	s64 old_index = -1, new_index = -1;
 public:
-	reparent_action(sgnode* const target, sgnode* const _new_parent, const s64 _new_index);
+	reparent_action(sgnode* const target, sgnode* const _new_parent, const s64 _new_index, const u32 _skip_count);
 	reparent_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes);
 	MGL_DCM(reparent_action);
 public:

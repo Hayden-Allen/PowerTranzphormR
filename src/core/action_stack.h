@@ -14,7 +14,7 @@ public:
 	virtual ~action_stack();
 public:
 	void transform(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
-	void reparent(sgnode* const target, sgnode* const new_parent, const s64 new_index);
+	void reparent(sgnode* const target, sgnode* const new_parent, const s64 new_index, const u32 skip_count = 0);
 	void create(sgnode* const target, sgnode* const parent, const u32 skip_count = 0);
 	void destroy(sgnode* const target);
 	sgnode* freeze(sgnode* const target);

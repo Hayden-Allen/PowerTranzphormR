@@ -227,21 +227,26 @@ void app_ctx::toggle_sgnode_multiselected(sgnode* const node)
 		if (prev_selected)
 		{
 			set_selected_sgnode(nullptr);
-			m_multiselect_sgnodes.insert(prev_selected);
+			m_multiselect_sgnodes.emplace_back(prev_selected);
 		}
 	}
-	if (m_multiselect_sgnodes.contains(node))
+	const auto& it = std::find(m_multiselect_sgnodes.begin(), m_multiselect_sgnodes.end(), node);
+	if (it != m_multiselect_sgnodes.end())
 	{
-		m_multiselect_sgnodes.erase(node);
+		m_multiselect_sgnodes.erase(it);
 	}
 	else
 	{
-		m_multiselect_sgnodes.insert(node);
+		m_multiselect_sgnodes.emplace_back(node);
 	}
 }
-const std::unordered_set<sgnode*> app_ctx::get_multiselected_sgnodes() const
+size_t app_ctx::get_num_multiselected_sgnodes() const
 {
-	return m_multiselect_sgnodes;
+	return m_multiselect_sgnodes.size();
+}
+bool app_ctx::is_sgnode_multiselected(sgnode* const node) const
+{
+	return std::find(m_multiselect_sgnodes.cbegin(), m_multiselect_sgnodes.cend(), node) != m_multiselect_sgnodes.cend();
 }
 sgnode* app_ctx::get_selected_sgnode()
 {
@@ -526,29 +531,17 @@ void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 	sgnode* const new_node = new sgnode(nullptr, new_gen, "Phrozen " + node->get_name(), inv);
 	create_action(new_node, root);
 }
-void app_ctx::group_to_union_action()
+void app_ctx::group_to_operation_action(const carve::csg::CSG::OP op_type)
 {
-	//
-	// TODO
-	//
+	const u32 skip_count = (u32)m_multiselect_sgnodes.size();
+	sgnode* const op = new sgnode(nullptr, op_type);
+	actions.create(op, scene.get_sg_root(), skip_count);
+	for (sgnode* const node : m_multiselect_sgnodes)
+	{
+		actions.reparent(node, op, -1, skip_count);
+	}
 	m_multiselect_sgnodes.clear();
-	// ... select grouped node
-}
-void app_ctx::group_to_subtract_action()
-{
-	//
-	// TODO
-	//
-	m_multiselect_sgnodes.clear();
-	// ... select grouped node
-}
-void app_ctx::group_to_intersect_action()
-{
-	//
-	// TODO
-	//
-	m_multiselect_sgnodes.clear();
-	// ... select grouped node
+	set_selected_sgnode(op);
 }
 
 void app_ctx::transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat)
@@ -1065,7 +1058,7 @@ void app_ctx::phorm_menu()
 		"Union",
 		[&]()
 		{
-			group_to_union_action();
+			group_to_operation_action(carve::csg::CSG::OP::UNION);
 		},
 		[&]()
 		{
@@ -1079,7 +1072,7 @@ void app_ctx::phorm_menu()
 		"Subtract",
 		[&]()
 		{
-			group_to_subtract_action();
+			group_to_operation_action(carve::csg::CSG::OP::A_MINUS_B);
 		},
 		[&]()
 		{
@@ -1093,7 +1086,7 @@ void app_ctx::phorm_menu()
 		"Intersect",
 		[&]()
 		{
-			group_to_intersect_action();
+			group_to_operation_action(carve::csg::CSG::OP::INTERSECTION);
 		},
 		[&]()
 		{

@@ -58,7 +58,8 @@ public:
 	void set_sel_type(const global_selection_type t);
 	void set_selected_sgnode(sgnode* const node);
 	void toggle_sgnode_multiselected(sgnode* const node);
-	const std::unordered_set<sgnode*> get_multiselected_sgnodes() const;
+	size_t get_num_multiselected_sgnodes() const;
+	bool is_sgnode_multiselected(sgnode* const node) const;
 	sgnode* get_selected_sgnode();
 	sgnode* get_imgui_needs_select_unfocused_sgnode();
 	void unset_imgui_needs_select_unfocused_sgnode();
@@ -95,9 +96,7 @@ public:
 	void destroy_waypoint(waypoint* const w);
 	void make_sgnode_static(const sgnode* const node);
 	void make_frozen_sgnode_from_smnode(const smnode* const node);
-	void group_to_union_action();
-	void group_to_subtract_action();
-	void group_to_intersect_action();
+	void group_to_operation_action(const carve::csg::CSG::OP op_type);
 public:
 	void transform_action(sgnode* const t, const tmat<space::OBJECT, space::PARENT>& old_mat, const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void reparent_action(sgnode* const target, sgnode* const new_parent, const s64 new_index);
@@ -131,7 +130,7 @@ private:
 private:
 	sgnode* m_selected_sgnode = nullptr;
 	sgnode* m_imgui_needs_select_unfocused_sgnode = nullptr;
-	std::unordered_set<sgnode*> m_multiselect_sgnodes;
+	std::vector<sgnode*> m_multiselect_sgnodes;
 	scene_material* m_selected_mtl = nullptr;
 	scene_material* m_imgui_needs_select_unfocused_mtl = nullptr;
 	light* m_selected_light = nullptr;
