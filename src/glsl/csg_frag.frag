@@ -46,7 +46,7 @@ void main()
 		float cur_type = cur_light.o2w[3][3];
 		vec3 light_pos = vec3(cur_light.o2w[3][0], cur_light.o2w[3][1], cur_light.o2w[3][2]);
 		vec3 L = vec3(0, 0, 0);
-		float atten = 1.f, amb_atten = 1.f;
+		float amb_atten = 1, diff_atten = 1, spec_atten = 1;
 
 		// directional light
 		if(cur_type == 0)
@@ -64,10 +64,10 @@ void main()
 				continue;
 			float d_pos_length = length(d_pos);
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
-			atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
+			amb_atten = diff_atten = spec_atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
 			L = normalize(light_pos - v_pos);
-			amb_atten = float(dot(N, L) > 0);
+			amb_atten *= float(dot(N, L) > 0);
 		}
 		// area light
 		else if(cur_type == 2)
@@ -78,6 +78,10 @@ void main()
 			// current fragment beyond lights AOE
 			if(d_pos_length2 >= rmax2)
 				continue;
+			float d_pos_length = length(d_pos);
+			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
+			amb_atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
+			diff_atten = spec_atten = 0;
 		}
 		// spotlight
 		else if(cur_type == 3)
@@ -94,27 +98,28 @@ void main()
 			if(light_v_pos.z <= 0)
 				continue;
 			float cos_theta = light_v_pos.z / length(light_v_pos);
-			if(cos_theta <= cur_light.cos_tmax)
-				continue;
 
 			float d_pos_length = length(d_pos);
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
-			atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
+			amb_atten = diff_atten = spec_atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
 			L = normalize(light_pos - v_pos);
-			amb_atten = float(dot(N, L) > 0);
+			amb_atten *= float(dot(N, L) > 0);
+			amb_atten *= float(cos_theta >= cur_light.cos_tmin);
 
-			float angular_atten = clamp((cos_theta - cur_light.cos_tmax) / (cur_light.cos_tmin - cur_light.cos_tmax), 0, 1);
-			atten *= angular_atten;
+			// float angular_atten = clamp((cos_theta - cur_light.cos_tmax) / (cur_light.cos_tmin - cur_light.cos_tmax), 0, 1);
+			float angular_atten = clamp(abs(cos_theta - cur_light.cos_tmin) / (cur_light.cos_tmax - cur_light.cos_tmin) + 1, 0, 1);
+			diff_atten *= angular_atten;
+			spec_atten *= angular_atten;
 		}
 
 		vec3 R = normalize(reflect(L, N));
 		float RdV = max(0, dot(V, R));
 		float NdL = max(0, dot(N, L));
 
-		vec4 amb  = atten * amb_atten * cur_light.ca;
-		vec4 diff = atten * NdL * cur_light.cd;
-		vec4 spec = atten * pow(RdV, cur_light.sp) * cur_light.cs;
+		vec4 amb  = amb_atten * cur_light.ca;
+		vec4 diff = diff_atten * NdL * cur_light.cd;
+		vec4 spec = spec_atten * pow(RdV, cur_light.sp) * cur_light.cs;
 		total_amb += amb.rgb * amb.a;
 		total_diff += diff.rgb * diff.a;
 		total_spec += spec.rgb * spec.a;

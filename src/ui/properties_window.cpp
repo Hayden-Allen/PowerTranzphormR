@@ -423,7 +423,20 @@ void properties_window::handle_light_frame(light* const selected)
 	}
 	ImGui::PopID();
 
+	f32 last_tmin = -1.f, last_tmax = -1.f;
+	if (selected->get_type() == light_type::SPOT)
+	{
+		last_tmin = selected->mgl_light.cos_tmin;
+		last_tmax = selected->mgl_light.cos_tmax;
+	}
 	changed |= draw_params(selected->get_params());
+	if (selected->get_type() == light_type::SPOT)
+	{
+		if (selected->mgl_light.cos_tmin != last_tmin)
+			selected->mgl_light.cos_tmin = std::clamp(selected->mgl_light.cos_tmin, selected->mgl_light.cos_tmax + c::EPSILON, 1.f);
+		if (selected->mgl_light.cos_tmax != last_tmax)
+			selected->mgl_light.cos_tmax = std::clamp(selected->mgl_light.cos_tmax, 0.f, selected->mgl_light.cos_tmin - c::EPSILON);
+	}
 	if (changed)
 	{
 		m_app_ctx->scene.update_light(selected);
