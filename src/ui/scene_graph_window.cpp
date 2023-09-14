@@ -189,7 +189,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	ImGui::PushID(node->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		if (m_app_ctx->get_multiselected_sgnodes().size() <= 1)
+		if (m_app_ctx->get_multiselected_sgnodes().size() <= 1 || !m_app_ctx->get_multiselected_sgnodes().contains(node))
 		{
 			m_app_ctx->set_selected_sgnode(node);
 
