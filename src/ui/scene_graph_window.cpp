@@ -30,7 +30,8 @@ void scene_graph_window::handle_frame()
 {
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	ImGui::PushID("hfsgn");
-	handle_node(root);
+	bool performed_destructive_action = false;
+	handle_node(root, performed_destructive_action);
 	ImGui::PopID();
 	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
 
@@ -89,7 +90,7 @@ const waypoint* scene_graph_window::get_renaming_waypoint() const
 {
 	return m_renaming_waypoint;
 }
-scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
+scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, bool& performed_destructive_action)
 {
 	// draw current node
 	std::string display_name = node->get_name();
@@ -148,7 +149,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
 
-	
+
 
 	sgnode* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_sgnode();
 	if (needs_select)
@@ -167,7 +168,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 			{
 				m_app_ctx->toggle_sgnode_multiselected(node);
 			}
-			else if (ImGui::IsItemFocused() && !m_app_ctx->get_multiselected_sgnodes().contains(node))
+			else if (ImGui::IsItemFocused() && !m_app_ctx->get_multiselected_sgnodes().contains(node) && m_app_ctx->get_multiselected_sgnodes().size() > 0)
 			{
 				m_app_ctx->toggle_sgnode_multiselected(node);
 			}
@@ -185,6 +186,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	const ImVec2& cur_min = ImGui::GetItemRectMin();
 	const ImVec2& cur_max = ImGui::GetItemRectMax();
 
+	bool group_happened = false;
 	// handle controls
 	ImGui::PushID(node->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
@@ -196,22 +198,46 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 			if (node->is_operation())
 			{
 				if (ImGui::MenuItem("Add Cube"))
+				{
 					m_app_ctx->create_cube_action();
+					performed_destructive_action = true;
+				}
 				if (ImGui::MenuItem("Add Sphere"))
+				{
 					m_app_ctx->create_sphere_action();
+					performed_destructive_action = true;
+				}
 				if (ImGui::MenuItem("Add Cylinder"))
+				{
 					m_app_ctx->create_cylinder_action();
+					performed_destructive_action = true;
+				}
 				if (ImGui::MenuItem("Add Cone"))
+				{
 					m_app_ctx->create_cone_action();
+					performed_destructive_action = true;
+				}
 				if (ImGui::MenuItem("Add Torus"))
+				{
 					m_app_ctx->create_torus_action();
+					performed_destructive_action = true;
+				}
 				ImGui::Separator();
 				if (ImGui::MenuItem("Add Union"))
+				{
 					m_app_ctx->create_union_action();
+					performed_destructive_action = true;
+				}
 				if (ImGui::MenuItem("Add Subtract"))
+				{
 					m_app_ctx->create_subtract_action();
+					performed_destructive_action = true;
+				}
 				if (ImGui::MenuItem("Add Intersect"))
+				{
 					m_app_ctx->create_intersect_action();
+					performed_destructive_action = true;
+				}
 			}
 
 			if (!node->is_root())
@@ -241,13 +267,19 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 				if (has_unfrozen)
 				{
 					if (ImGui::MenuItem("Unphreeze!"))
+					{
 						m_app_ctx->unfreeze_action(node);
+						performed_destructive_action = true;
+					}
 				}
 				// if the current node is NOT a clone of an original frozen node
 				else if (!node->is_frozen())
 				{
 					if (ImGui::MenuItem("Phreeze!"))
+					{
 						m_app_ctx->freeze_action(node);
+						performed_destructive_action = true;
+					}
 				}
 				if (node->is_frozen() && ImGui::MenuItem("Clone to Static Mesh"))
 				{
@@ -263,16 +295,28 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 				}
 			}
 			if (!node->is_root() && ImGui::MenuItem("Destroy"))
+			{
 				m_app_ctx->destroy_selected_action();
+				performed_destructive_action = true;
+			}
 		}
 		else
 		{
 			if (ImGui::MenuItem("Group to Union"))
-				m_app_ctx->group_to_union_action();
+			{
+				m_app_ctx->group_to_operation_action(carve::csg::CSG::OP::UNION);
+				performed_destructive_action = true;
+			}
 			if (ImGui::MenuItem("Group to Subtract"))
-				m_app_ctx->group_to_subtract_action();
+			{
+				m_app_ctx->group_to_operation_action(carve::csg::CSG::OP::A_MINUS_B);
+				performed_destructive_action = true;
+			}
 			if (ImGui::MenuItem("Group to Intersect"))
-				m_app_ctx->group_to_intersect_action();
+			{
+				m_app_ctx->group_to_operation_action(carve::csg::CSG::OP::INTERSECTION);
+				performed_destructive_action = true;
+			}
 		}
 
 		ImGui::EndPopup();
@@ -282,7 +326,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 	if (open)
 	{
 		// draw children if it has any
-		if (node->get_children().size())
+		if (!performed_destructive_action && node->get_children().size())
 		{
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			const ImColor line_color(128, 128, 128);
@@ -291,9 +335,15 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 			vertical_start.x -= 8.f;
 			vertical_start.y -= 8.f;
 			ImVec2 vertical_end = vertical_start;
-			for (sgnode* child : node->get_children())
+			for (sgnode* const child : node->get_children())
 			{
-				const rect& child_rect = handle_node(child);
+				bool child_performed_destructive_action = false;
+				const rect& child_rect = handle_node(child, child_performed_destructive_action);
+				if (child_performed_destructive_action)
+				{
+					performed_destructive_action = true;
+					break;
+				}
 				// draw horizontal line from vertical line to current child
 				const f32 horizontal_size = child->get_children().size() > 0 ? 12.f : 24.f;
 				const f32 midpoint = (child_rect.first.y + child_rect.second.y) / 2.f;
@@ -310,7 +360,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node)
 
 	return std::make_pair(cur_min, cur_max);
 }
-void scene_graph_window::handle_heightmap(smnode* const hmp)
+void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -395,6 +445,7 @@ void scene_graph_window::handle_heightmap(smnode* const hmp)
 			{
 				hmp->make_static(&m_app_ctx->scene);
 				hmp->set_name("Phrozen " + hmp->get_name());
+				performed_destructive_action = true;
 			}
 		}
 		else
@@ -413,6 +464,7 @@ void scene_graph_window::handle_heightmap(smnode* const hmp)
 		if (ImGui::MenuItem("Destroy"))
 		{
 			m_app_ctx->destroy_static_mesh(hmp);
+			performed_destructive_action = true;
 		}
 		ImGui::EndPopup();
 	}
@@ -443,12 +495,17 @@ void scene_graph_window::handle_heightmaps()
 		auto& sms = m_app_ctx->scene.get_static_meshes();
 		for (u32 i = 0; i < sms.size(); i++)
 		{
-			handle_heightmap(sms[i]);
+			bool performed_destructive_action = false;
+			handle_heightmap(sms[i], performed_destructive_action);
+			if (performed_destructive_action)
+			{
+				break;
+			}
 		}
 		ImGui::TreePop();
 	}
 }
-void scene_graph_window::handle_light(light* const l)
+void scene_graph_window::handle_light(light* const l, bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -540,6 +597,7 @@ void scene_graph_window::handle_light(light* const l)
 		if (ImGui::MenuItem("Destroy"))
 		{
 			m_app_ctx->destroy_light(l);
+			performed_destructive_action = true;
 		}
 		ImGui::EndPopup();
 	}
@@ -570,13 +628,18 @@ void scene_graph_window::handle_lights()
 		auto& lights = m_app_ctx->scene.get_lights();
 		for (u32 i = 0; i < lights.size(); i++)
 		{
-			handle_light(lights[i]);
+			bool performed_destructive_action = false;
+			handle_light(lights[i], performed_destructive_action);
+			if (performed_destructive_action)
+			{
+				break;
+			}
 		}
 		ImGui::TreePop();
 	}
 }
 // FIXME
-void scene_graph_window::handle_waypoint(waypoint* const w)
+void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -649,6 +712,7 @@ void scene_graph_window::handle_waypoint(waypoint* const w)
 		if (ImGui::MenuItem("Destroy"))
 		{
 			m_app_ctx->destroy_waypoint(w);
+			performed_destructive_action = true;
 		}
 		ImGui::EndPopup();
 	}
@@ -679,7 +743,12 @@ void scene_graph_window::handle_waypoints()
 		auto& waypoints = m_app_ctx->scene.get_waypoints();
 		for (u32 i = 0; i < waypoints.size(); i++)
 		{
-			handle_waypoint(waypoints[i]);
+			bool performed_destructive_action = false;
+			handle_waypoint(waypoints[i], performed_destructive_action);
+			if (performed_destructive_action)
+			{
+				break;
+			}
 		}
 		ImGui::TreePop();
 	}

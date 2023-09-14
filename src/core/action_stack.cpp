@@ -37,9 +37,9 @@ void action_stack::transform(sgnode* const t, const tmat<space::OBJECT, space::P
 {
 	new_action(new transform_action(t, old_mat, new_mat), true);
 }
-void action_stack::reparent(sgnode* const target, sgnode* const new_parent, const s64 new_index)
+void action_stack::reparent(sgnode* const target, sgnode* const new_parent, const s64 new_index, const u32 skip_count)
 {
-	new_action(new reparent_action(target, new_parent, new_index), true);
+	new_action(new reparent_action(target, new_parent, new_index, skip_count), true);
 }
 void action_stack::create(sgnode* const target, sgnode* const parent, const u32 skip_count)
 {

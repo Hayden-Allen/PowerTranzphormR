@@ -79,8 +79,8 @@ nlohmann::json transform_action::save() const
 
 
 
-reparent_action::reparent_action(sgnode* const target, sgnode* const _new_parent, const s64 _new_index) :
-	action(target),
+reparent_action::reparent_action(sgnode* const target, sgnode* const _new_parent, const s64 _new_index, const u32 _skip_count) :
+	action(target, _skip_count),
 	old_parent(target->get_parent()),
 	new_parent(_new_parent),
 	new_index(_new_index)
