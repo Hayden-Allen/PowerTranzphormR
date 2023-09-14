@@ -1454,7 +1454,8 @@ void app_ctx::lights_menu()
 		},
 		[&]()
 		{
-			return get_selected_light();
+			const bool is_camera_light = (get_selected_light() == scene.get_lights()[0]);
+			return !is_camera_light;
 		},
 		"Ctrl+R",
 		GLFW_KEY_R,
@@ -1470,7 +1471,8 @@ void app_ctx::lights_menu()
 		},
 		[&]()
 		{
-			return get_selected_light();
+			const bool is_camera_light = (get_selected_light() == scene.get_lights()[0]);
+			return !is_camera_light;
 		},
 		"Delete",
 		GLFW_KEY_DELETE,

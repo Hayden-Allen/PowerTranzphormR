@@ -25,6 +25,7 @@ private:
 	bool m_autotex_needs_load = true;
 private:
 	void handle_sgnode_frame(sgnode* const selected);
+	void handle_sgnode_camera_light();
 	void handle_sgnode_snapping_angle();
 	void handle_sgnode_skybox();
 	bool handle_snap_mode(const bool value);

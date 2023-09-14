@@ -24,7 +24,7 @@ private:
 	rect handle_node(sgnode* const node, bool& performed_destructive_action);
 	void handle_heightmap(smnode* const hmp, bool& performed_destructive_action);
 	void handle_heightmaps();
-	void handle_light(light* const l, bool& performed_destructive_action);
+	void handle_light(const u32 index, bool& performed_destructive_action);
 	void handle_lights();
 	void handle_waypoint(waypoint* const w, bool& performed_destructive_action);
 	void handle_waypoints();

@@ -505,8 +505,9 @@ void scene_graph_window::handle_heightmaps()
 		ImGui::TreePop();
 	}
 }
-void scene_graph_window::handle_light(light* const l, bool& performed_destructive_action)
+void scene_graph_window::handle_light(const u32 index, bool& performed_destructive_action)
 {
+	light* const l = m_app_ctx->scene.get_lights()[index];
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
 	if (l == m_renaming_light)
@@ -590,14 +591,18 @@ void scene_graph_window::handle_light(light* const l, bool& performed_destructiv
 		}
 		ImGui::Separator();
 
-		if (ImGui::MenuItem("Rename"))
+		// don't allow renaming or destroying camera light
+		if (index != 0)
 		{
-			set_renaming_light(l);
-		}
-		if (ImGui::MenuItem("Destroy"))
-		{
-			m_app_ctx->destroy_light(l);
-			performed_destructive_action = true;
+			if (ImGui::MenuItem("Rename"))
+			{
+				set_renaming_light(l);
+			}
+			if (ImGui::MenuItem("Destroy"))
+			{
+				m_app_ctx->destroy_light(l);
+				performed_destructive_action = true;
+			}
 		}
 		ImGui::EndPopup();
 	}
@@ -625,11 +630,10 @@ void scene_graph_window::handle_lights()
 
 	if (open)
 	{
-		auto& lights = m_app_ctx->scene.get_lights();
-		for (u32 i = 0; i < lights.size(); i++)
+		for (u32 i = 0; i < m_app_ctx->scene.get_lights().size(); i++)
 		{
 			bool performed_destructive_action = false;
-			handle_light(lights[i], performed_destructive_action);
+			handle_light(i, performed_destructive_action);
 			if (performed_destructive_action)
 			{
 				break;

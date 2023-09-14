@@ -32,7 +32,7 @@ bool preview_layer::on_frame(const f32 dt)
 	// draw world into m_fb
 	m_app_ctx->preview_fb.bind();
 	m_app_ctx->mgl_ctx.clear();
-	m_app_ctx->scene.update();
+	m_app_ctx->scene.update(m_app_ctx);
 	// const scene_ctx_uniforms& uniforms = { mvp, mv, view, proj, obj, normal, m_app_ctx->preview_cam.get_pos() };
 	const scene_ctx_uniforms& uniforms = { vp, view, proj, m_app_ctx->preview_cam.get_pos() };
 	m_app_ctx->scene.draw(m_app_ctx->mgl_ctx, uniforms);

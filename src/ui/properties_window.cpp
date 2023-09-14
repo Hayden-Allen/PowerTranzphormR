@@ -76,6 +76,7 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 
 	if (selected->is_root())
 	{
+		handle_sgnode_camera_light();
 		handle_sgnode_snapping_angle();
 		handle_sgnode_skybox();
 	}
@@ -84,6 +85,9 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 	{
 		handle_sgnode_mesh(selected);
 	}
+}
+void properties_window::handle_sgnode_camera_light()
+{
 }
 void properties_window::handle_sgnode_snapping_angle()
 {

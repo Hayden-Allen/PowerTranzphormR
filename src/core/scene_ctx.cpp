@@ -5,6 +5,7 @@
 #include "geom/carve.h"
 #include "geom/generated_mesh.h"
 #include "smnode.h"
+#include "ui/app_ctx.h"
 
 scene_ctx::scene_ctx() :
 	m_light_buffer(sizeof(mgl::light) * s_num_lights)
@@ -48,7 +49,7 @@ void scene_ctx::draw(const mgl::context& glctx, const scene_ctx_uniforms& mats)
 			m_draw_vaos(glctx, mats, pair.second, pair.first->get_mat(), pair.first->get_uv_offset());
 	}
 }
-void scene_ctx::update()
+void scene_ctx::update(app_ctx* const app)
 {
 	if (m_sg_root->is_dirty())
 	{
@@ -57,6 +58,15 @@ void scene_ctx::update()
 	}
 
 	m_build_sm_vaos();
+
+	assert(m_lights.size() >= 1);
+	light* const cam_light = m_lights[0];
+	if (cam_light->is_visible())
+	{
+		const tmat<space::CAMERA, space::WORLD>& cam_mat = app->preview_cam.get_view().invert_copy();
+		cam_light->set_mat(cam_mat.cast_copy<space::OBJECT, space::WORLD>());
+		m_build_light_buffer();
+	}
 }
 void scene_ctx::clear(bool ready_for_default_material)
 {
@@ -92,6 +102,8 @@ void scene_ctx::clear(bool ready_for_default_material)
 	for (light* const l : m_lights)
 		delete l;
 	m_lights.clear();
+	// camera light
+	add_light(new light({}, "Camera Light"));
 
 	for (waypoint* const w : m_waypoints)
 		delete w;
@@ -322,13 +334,12 @@ scene_material* scene_ctx::get_material(const GLuint id)
 {
 	return m_mtls[id];
 }
+
+
+
 std::vector<light*>& scene_ctx::get_lights()
 {
 	return m_lights;
-}
-std::vector<waypoint*>& scene_ctx::get_waypoints()
-{
-	return m_waypoints;
 }
 light* scene_ctx::add_light()
 {
@@ -363,6 +374,13 @@ void scene_ctx::update_light(const light* const l)
 	m_light_buffer.update((f32*)&l->mgl_light, sizeof(mgl::light) / sizeof(f32), index * sizeof(mgl::light));*/
 	m_build_light_buffer();
 }
+
+
+
+std::vector<waypoint*>& scene_ctx::get_waypoints()
+{
+	return m_waypoints;
+}
 waypoint* scene_ctx::add_waypoint()
 {
 	return add_waypoint(new waypoint());
@@ -379,6 +397,9 @@ void scene_ctx::destroy_waypoint(waypoint* const w)
 	m_waypoints.erase(it);
 	delete w;
 }
+
+
+
 const std::vector<smnode*>& scene_ctx::get_static_meshes()
 {
 	return m_static_meshes;
@@ -470,6 +491,7 @@ void scene_ctx::m_build_light_buffer()
 	m_num_visible_lights = 0;
 	std::vector<mgl::light> mgl_lights;
 	mgl_lights.reserve(m_lights.size());
+
 	for (const light* const l : m_lights)
 	{
 		if (l->is_visible())

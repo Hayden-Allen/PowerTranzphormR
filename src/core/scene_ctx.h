@@ -9,6 +9,7 @@ class generated_mesh;
 class generated_heightmap;
 struct scene_material;
 class smnode;
+struct app_ctx;
 
 struct scene_ctx_uniforms
 {
@@ -38,7 +39,7 @@ public:
 	const carve_vert_attrs& get_vert_attrs() const;
 	const attr_material_t& get_mtl_id_attr() const;
 	void draw(const mgl::context& glctx, const scene_ctx_uniforms& mats);
-	void update();
+	void update(app_ctx* const app);
 	void clear(bool ready_for_default_material = true);
 	void destroy();
 	void save(std::ofstream& out, const std::string& out_fp);
@@ -58,11 +59,12 @@ public:
 	scene_material* get_material(const GLuint id);
 public:
 	std::vector<light*>& get_lights();
-	std::vector<waypoint*>& get_waypoints();
 	light* add_light();
 	light* add_light(light* const l);
 	void destroy_light(light* const l);
 	void update_light(const light* const l);
+public:
+	std::vector<waypoint*>& get_waypoints();
 	waypoint* add_waypoint();
 	waypoint* add_waypoint(waypoint* const w);
 	void destroy_waypoint(waypoint* const w);
