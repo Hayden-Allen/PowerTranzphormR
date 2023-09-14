@@ -285,6 +285,9 @@ void sgnode::recompute(scene_ctx* const scene)
 			// sometimes carve makes weird cases with empty meshes
 			if (!(child->m_gen->mesh && child->m_gen->mesh->meshes.size()))
 				continue;
+			// happens on subtract nodes when subtracting from empty mesh
+			if (m_gen->mesh && !m_gen->mesh->meshes.size())
+				continue;
 			if (!m_gen->mesh)
 			{
 				m_gen->copy_mesh_from(child->m_gen, scene);

@@ -227,21 +227,26 @@ void app_ctx::toggle_sgnode_multiselected(sgnode* const node)
 		if (prev_selected)
 		{
 			set_selected_sgnode(nullptr);
-			m_multiselect_sgnodes.insert(prev_selected);
+			m_multiselect_sgnodes.emplace_back(prev_selected);
 		}
 	}
-	if (m_multiselect_sgnodes.contains(node))
+	const auto& it = std::find(m_multiselect_sgnodes.begin(), m_multiselect_sgnodes.end(), node);
+	if (it != m_multiselect_sgnodes.end())
 	{
-		m_multiselect_sgnodes.erase(node);
+		m_multiselect_sgnodes.erase(it);
 	}
 	else
 	{
-		m_multiselect_sgnodes.insert(node);
+		m_multiselect_sgnodes.emplace_back(node);
 	}
 }
-const std::unordered_set<sgnode*> app_ctx::get_multiselected_sgnodes() const
+size_t app_ctx::get_num_multiselected_sgnodes() const
 {
-	return m_multiselect_sgnodes;
+	return m_multiselect_sgnodes.size();
+}
+bool app_ctx::is_sgnode_multiselected(sgnode* const node) const
+{
+	return std::find(m_multiselect_sgnodes.cbegin(), m_multiselect_sgnodes.cend(), node) != m_multiselect_sgnodes.cend();
 }
 sgnode* app_ctx::get_selected_sgnode()
 {

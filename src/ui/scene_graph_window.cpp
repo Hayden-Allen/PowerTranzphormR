@@ -111,7 +111,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
-		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->get_multiselected_sgnodes().contains(node);
+		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->is_sgnode_multiselected(node);
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 
 		constexpr u32 BUF_SIZE = 32;
@@ -145,7 +145,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 	}
 	else
 	{
-		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->get_multiselected_sgnodes().contains(node);
+		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->is_sgnode_multiselected(node);
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
 	}
 
@@ -168,7 +168,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 			{
 				m_app_ctx->toggle_sgnode_multiselected(node);
 			}
-			else if (ImGui::IsItemFocused() && !m_app_ctx->get_multiselected_sgnodes().contains(node) && m_app_ctx->get_multiselected_sgnodes().size() > 0)
+			else if (ImGui::IsItemFocused() && m_app_ctx->get_num_multiselected_sgnodes() > 0 && !m_app_ctx->is_sgnode_multiselected(node))
 			{
 				m_app_ctx->toggle_sgnode_multiselected(node);
 			}
@@ -176,7 +176,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 	}
 	else
 	{
-		if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && !m_app_ctx->get_multiselected_sgnodes().contains(node)))
+		if (ImGui::IsItemClicked() || (ImGui::IsItemFocused() && !m_app_ctx->is_sgnode_multiselected(node)))
 		{
 			m_app_ctx->set_selected_sgnode(node);
 		}
@@ -191,7 +191,7 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 	ImGui::PushID(node->get_id().c_str());
 	if (ImGui::BeginPopupContextItem())
 	{
-		if (m_app_ctx->get_multiselected_sgnodes().size() <= 1 || !m_app_ctx->get_multiselected_sgnodes().contains(node))
+		if (m_app_ctx->get_num_multiselected_sgnodes() <= 1 || !m_app_ctx->is_sgnode_multiselected(node))
 		{
 			m_app_ctx->set_selected_sgnode(node);
 
