@@ -13,7 +13,8 @@ namespace g
 	{
 		texlib = new texture_library();
 		texlib->init_deftex();
-		shaders = new mgl::shaders("src/glsl/csg.vert", "src/glsl/csg.frag");
+		// shaders = new mgl::shaders("src/glsl/csg_vert.vert", "src/glsl/csg_vert.frag");
+		shaders = new mgl::shaders("src/glsl/csg_frag.vert", "src/glsl/csg_frag.frag");
 	}
 	void clear()
 	{
