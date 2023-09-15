@@ -267,7 +267,7 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 			m_app_ctx->set_material(selected, new_mtl_id);
 	}
 
-	const bool changed = draw_params(selected->get_gen()->get_params());
+	const bool changed = !selected->is_frozen() ? draw_params(selected->get_gen()->get_params()) : false;
 	if (changed)
 		selected->set_gen_dirty();
 }
