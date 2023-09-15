@@ -10,7 +10,7 @@ struct autotexture_params
 	s32 seed = 0, steps = 20;
 	f32 cfg_scale = 7.5f;
 	s32 dims[2] = { 512, 512 };
-	s32 post_dims[2] = { 64, 64 };
+	s32 post_dims[2] = { 32, 32 };
 };
 
 struct scene_material : public xportable
