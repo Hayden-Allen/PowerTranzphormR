@@ -3,19 +3,23 @@
 
 scene_material::scene_material() :
 	xportable(std::string("Material")),
-	shaders(nullptr)
+	opaque_shaders(nullptr),
+	alpha_shaders(nullptr)
 {}
-scene_material::scene_material(const std::string& n, mgl::shaders* const s) :
+scene_material::scene_material(const std::string& n, mgl::shaders* const os, mgl::shaders* const as) :
 	xportable(n),
-	shaders(s)
+	opaque_shaders(os),
+	alpha_shaders(as)
 {}
 scene_material::scene_material(const scene_material& o) noexcept :
 	xportable(o.get_name()),
-	shaders(o.shaders)
+	opaque_shaders(o.opaque_shaders),
+	alpha_shaders(o.alpha_shaders)
 {}
-scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const s) :
+scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const os, mgl::shaders* const as) :
 	xportable(obj),
-	shaders(s)
+	opaque_shaders(os),
+	alpha_shaders(as)
 {
 	const nlohmann::json::array_t& texs = obj["texs"];
 	for (const nlohmann::json::array_t& tex : texs)

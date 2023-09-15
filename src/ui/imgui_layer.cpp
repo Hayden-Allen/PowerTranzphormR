@@ -123,6 +123,7 @@ bool imgui_layer::on_frame(const f32 dt)
 	ImGui::Render();
 
 	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 	m_app_ctx->mgl_ctx.clear();
 	m_app_ctx->mgl_ctx.reset_viewport();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -134,6 +135,7 @@ bool imgui_layer::on_frame(const f32 dt)
 		glfwMakeContextCurrent(backup_current_context);
 	}
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 
 	return false;
 }

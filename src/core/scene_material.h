@@ -16,12 +16,12 @@ struct autotexture_params
 struct scene_material : public xportable
 {
 public:
-	mgl::shaders* shaders;
+	mgl::shaders* opaque_shaders = nullptr, *alpha_shaders = nullptr;
 public:
 	scene_material();
-	scene_material(const std::string& n, mgl::shaders* const s);
+	scene_material(const std::string& n, mgl::shaders* const os, mgl::shaders* const as);
 	scene_material(const scene_material& o) noexcept;
-	scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const s);
+	scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const os, mgl::shaders* const as);
 	~scene_material();
 public:
 	void remove_texture(const std::string& tex_name);

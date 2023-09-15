@@ -111,6 +111,10 @@ void scene_ctx::clear(bool ready_for_default_material)
 		{
 			*static_cast<float*>(param.second.value) = 100000.0f;
 		}
+		if (param.first == "Ambient Color")
+		{
+			static_cast<float*>(param.second.value)[3] = 0.3f;
+		}
 	}
 
 	for (waypoint* const w : m_waypoints)
@@ -206,7 +210,7 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	for (const nlohmann::json::array_t& mtl : obj["m"])
 	{
 		const u32 id = mtl[0];
-		scene_material* const sm = new scene_material(in_fp, mtl[1], g::shaders);
+		scene_material* const sm = new scene_material(in_fp, mtl[1], g::opaque_shaders, g::alpha_shaders);
 		m_mtls.insert({ id, sm });
 	}
 
@@ -312,7 +316,8 @@ const std::unordered_map<u32, scene_material*>& scene_ctx::get_materials()
 scene_material* scene_ctx::create_default_material()
 {
 	scene_material* mtl = new scene_material;
-	mtl->shaders = g::shaders;
+	mtl->opaque_shaders = g::opaque_shaders;
+	mtl->alpha_shaders = g::alpha_shaders;
 	mtl->set_texture("u_tex0", g::null_tex_fp);
 	mtl->set_texture("u_tex1", g::null_tex_fp);
 	mtl->set_texture("u_tex2", g::null_tex_fp);
@@ -660,25 +665,26 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 	for (auto it = ros.begin(); it != ros.end(); ++it)
 	{
 		const scene_material* mat = m_mtls[it->first];
-		mat->shaders->bind();
-		mat->shaders->uniform_mat4("u_mvp", mvp.e);
-		mat->shaders->uniform_mat4("u_mv", mv.e);
-		mat->shaders->uniform_mat4("u_m", model.e);
-		mat->shaders->uniform_mat4("u_normal", normal.e);
-		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
-		mat->shaders->uniform_1f("u_time", glctx.time.now);
-		mat->shaders->uniform_1ui("u_num_lights", m_num_visible_lights);
-		mat->shaders->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
+		mgl::shaders* s = mat->get_use_alpha() ? mat->alpha_shaders : mat->opaque_shaders;
+		s->bind();
+		s->uniform_mat4("u_mvp", mvp.e);
+		s->uniform_mat4("u_mv", mv.e);
+		s->uniform_mat4("u_m", model.e);
+		s->uniform_mat4("u_normal", normal.e);
+		s->uniform_3fv("u_cam_pos", mats.cam_pos.e);
+		s->uniform_1f("u_time", glctx.time.now);
+		s->uniform_1ui("u_num_lights", m_num_visible_lights);
+		s->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
 			{
 				tex->bind(slot);
-				mat->shaders->uniform_1i(name.c_str(), slot);
+				s->uniform_1i(name.c_str(), slot);
 				++slot;
 			});
 
-		glctx.draw(it->second, *mat->shaders);
+		glctx.draw(it->second, *s);
 	}
 }
 void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices, const bool snap_all, const f32 snap_angle)
