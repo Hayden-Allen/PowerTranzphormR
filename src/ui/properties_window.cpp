@@ -30,30 +30,50 @@ void properties_window::handle_frame()
 
 	if (selected_sgnode)
 	{
+		if (selected_sgnode != m_prev_xportable)
+		{
+			m_needs_extract_transform = true;
+		}
 		ImGui::PushID(selected_sgnode->get_id().c_str());
 		handle_sgnode_frame(selected_sgnode);
 		ImGui::PopID();
 	}
 	else if (selected_material)
 	{
+		if (selected_material != m_prev_xportable)
+		{
+			m_needs_extract_transform = true;
+		}
 		ImGui::PushID(selected_material->get_id().c_str());
 		handle_material_frame(selected_material);
 		ImGui::PopID();
 	}
 	else if (selected_light)
 	{
+		if (selected_light != m_prev_xportable)
+		{
+			m_needs_extract_transform = true;
+		}
 		ImGui::PushID(selected_light->get_id().c_str());
 		handle_light_frame(selected_light);
 		ImGui::PopID();
 	}
 	else if (selected_waypoint)
 	{
+		if (selected_waypoint != m_prev_xportable)
+		{
+			m_needs_extract_transform = true;
+		}
 		ImGui::PushID(selected_waypoint->get_id().c_str());
 		handle_waypoint_frame(selected_waypoint);
 		ImGui::PopID();
 	}
 	else if (selected_static_mesh)
 	{
+		if (selected_static_mesh != m_prev_xportable)
+		{
+			m_needs_extract_transform = true;
+		}
 		ImGui::PushID(selected_static_mesh->get_id().c_str());
 		handle_static_mesh_frame(selected_static_mesh);
 		ImGui::PopID();
@@ -141,25 +161,42 @@ bool properties_window::handle_snap_mode(const bool value)
 }
 bool properties_window::handle_transform(f32* const elements)
 {
-	ImGui::SeparatorText("Transform");
+	if (m_needs_extract_transform) // true when selection has changed
+	{
+		ImGuizmo::DecomposeMatrixToComponents(elements, m_transform_pos, m_transform_rot, m_transform_scale);
+		m_needs_extract_transform = false;
+	}
+	else // check if something else something else (e.g. gizmo) modified the matrix even though selection didn't change
+	{
+		f32 orig_recomposed[16] = { 0.0f };
+		ImGuizmo::RecomposeMatrixFromComponents(m_transform_pos, m_transform_rot, m_transform_scale, orig_recomposed);
+		for (s32 i = 0; i < 16; ++i)
+		{
+			if (fabsf(elements[i] - orig_recomposed[i]) > FLT_EPSILON * 2.0f)
+			{
+				ImGuizmo::DecomposeMatrixToComponents(elements, m_transform_pos, m_transform_rot, m_transform_scale);
+			}
+		}
+	}
+
+	// actual UI and recompose the new matrix after change
 	bool dirty = false;
-	float trans[3] = { 0.f }, rot[3] = { 0.f }, scale[3] = { 0.f };
-	ImGuizmo::DecomposeMatrixToComponents(elements, trans, rot, scale);
-	if (ImGui::DragFloat3("Position", trans, 0.01f))
+	ImGui::SeparatorText("Transform");
+	if (ImGui::DragFloat3("Position", m_transform_pos, 0.01f))
 	{
 		dirty = true;
 	}
-	if (ImGui::DragFloat3("Rotation", rot, 0.2f))
+	if (ImGui::DragFloat3("Rotation", m_transform_rot, 0.2f))
 	{
 		dirty = true;
 	}
-	if (ImGui::DragFloat3("Scale", scale, 0.01f))
+	if (ImGui::DragFloat3("Scale", m_transform_scale, 0.01f, 0.01f, 1000.0f))
 	{
 		dirty = true;
 	}
 	if (dirty)
 	{
-		ImGuizmo::RecomposeMatrixFromComponents(trans, rot, scale, elements);
+		ImGuizmo::RecomposeMatrixFromComponents(m_transform_pos, m_transform_rot, m_transform_scale, elements);
 	}
 	return dirty;
 }
