@@ -275,6 +275,14 @@ void properties_window::handle_material_frame(scene_material* const selected)
 {
 	handle_xportable(selected);
 
+	ImGui::SeparatorText("Shading");
+
+	bool use_alpha = selected->get_use_alpha();
+	if (ImGui::Checkbox("Use Alpha Shader", &use_alpha))
+	{
+		selected->set_use_alpha(use_alpha);
+	}
+
 	ImGui::SeparatorText("Textures");
 
 	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
@@ -364,10 +372,40 @@ void properties_window::handle_autotexture_server()
 void properties_window::handle_material_autotexture(scene_material* const selected_mtl, const std::string& name)
 {
 	autotexture_params& at_params = selected_mtl->get_autotexture_params(name);
-	ImGui::DragInt2("Size", at_params.dims, 1.0f, 0, 512);
+	ImGui::DragInt2("Size", at_params.dims, 1.0f, 0, 1024);
+	ImGui::DragInt2("Resize", at_params.post_dims, 1.0f, 0, 1024);
 	if (ImGui::BeginCombo("Sampler", at_params.sampler.c_str()))
 	{
+		autotex_sampler_combo(at_params, "DPM++ 2M Karras");
+		autotex_sampler_combo(at_params, "DPM++ SDE Karras");
+		autotex_sampler_combo(at_params, "DPM++ 2M SDE Exponential");
+		autotex_sampler_combo(at_params, "DPM++ 2M SDE Karras");
+		autotex_sampler_combo(at_params, "Euler a");
 		autotex_sampler_combo(at_params, "Euler");
+		autotex_sampler_combo(at_params, "LMS");
+		autotex_sampler_combo(at_params, "Heun");
+		autotex_sampler_combo(at_params, "DPM2");
+		autotex_sampler_combo(at_params, "DPM2 a");
+		autotex_sampler_combo(at_params, "DPM++ 2S a");
+		autotex_sampler_combo(at_params, "DPM++ 2M");
+		autotex_sampler_combo(at_params, "DPM++ SDE");
+		autotex_sampler_combo(at_params, "DPM++ 2M SDE");
+		autotex_sampler_combo(at_params, "DPM++ 2M SDE Heun");
+		autotex_sampler_combo(at_params, "DPM++ 2M SDE Heun Karras");
+		autotex_sampler_combo(at_params, "DPM++ 2M SDE Heun Exponential");
+		autotex_sampler_combo(at_params, "DPM++ 3M SDE");
+		autotex_sampler_combo(at_params, "DPM++ 3M SDE Karras");
+		autotex_sampler_combo(at_params, "DPM++ 3M SDE Exponential");
+		autotex_sampler_combo(at_params, "DPM fast");
+		autotex_sampler_combo(at_params, "DPM adaptive");
+		autotex_sampler_combo(at_params, "LMS Karras");
+		autotex_sampler_combo(at_params, "DPM2 Karras");
+		autotex_sampler_combo(at_params, "DPM2 a Karras");
+		autotex_sampler_combo(at_params, "DPM++ 2S a Karras");
+		autotex_sampler_combo(at_params, "Restart");
+		autotex_sampler_combo(at_params, "DDIM");
+		autotex_sampler_combo(at_params, "PLMS");
+		autotex_sampler_combo(at_params, "UniPC");
 		ImGui::EndCombo();
 	}
 	ImGui::DragInt("Seed", &at_params.seed, u::rand(99.0f, 1999.0f), 0, MAX_VALUE_TYPE(s32));
@@ -375,6 +413,7 @@ void properties_window::handle_material_autotexture(scene_material* const select
 	ImGui::DragFloat("CFG Scale", &at_params.cfg_scale, 1.0f, 0.0f, 15.0f);
 	ImGui::InputText("Prompt", &at_params.prompt);
 	ImGui::InputText("Negative Prompt", &at_params.neg_prompt);
+	ImGui::Checkbox("Tiling", &at_params.tiling);
 	if (ImGui::Button("Randomize & Generate"))
 	{
 		at_params.seed = (s32)u::rand(0.0f, (f32)MAX_VALUE_TYPE(s32));
@@ -628,7 +667,7 @@ void properties_window::handle_material_autotexture_generate(scene_material* con
 	img_req["negative_prompt"] = at_params.neg_prompt;
 	img_req["width"] = at_params.dims[0];
 	img_req["height"] = at_params.dims[1];
-	img_req["tiling"] = true;
+	img_req["tiling"] = at_params.tiling;
 	nlohmann::json img_res;
 	if (!autotex_fetch_post(m_autotex_url, "/sdapi/v1/txt2img", img_req, img_res))
 	{
@@ -643,11 +682,20 @@ void properties_window::handle_material_autotexture_generate(scene_material* con
 	std::filesystem::path lfpp = lfp.parent_path();
 	std::filesystem::path outdirp = lfpp / "_PowerTextuRe_";
 	std::filesystem::create_directory(outdirp);
+
+	stbi_set_flip_vertically_on_load(true);
+	int src_w = -1, src_h = -1, src_c = -1;
+	stbi_uc* const src_data = stbi_load_from_memory(reinterpret_cast<stbi_uc*>(b64_decoded.data()), (s32)b64_decoded.size(), &src_w, &src_h, &src_c, 3);
+	assert(src_c >= 3);
+	int dst_w = at_params.post_dims[0], dst_h = at_params.post_dims[1];
+	stbi_uc* const dst_data = new stbi_uc[dst_w * dst_h * 3];
+	stbir_resize_uint8(src_data, src_w, src_h, 0, dst_data, dst_w, dst_h, 0, 3);
+	stbi_image_free(src_data);
 	s32 cur_sec = (s32)std::floor(m_app_ctx->mgl_ctx.time.now);
 	std::filesystem::path outp = outdirp / (std::to_string(cur_sec) + ".png");
-	std::ofstream outf(outp, std::ios::out | std::ios::binary);
-	outf << b64_decoded;
-	outf.close();
+	stbi_write_png(outp.string().c_str(), dst_w, dst_h, 3, dst_data, 0);
+	delete[] dst_data;
+
 	selected_mtl->set_texture(name, outp.string());
 }
 void properties_window::load_autotex_settings()

@@ -211,6 +211,11 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	}
 	m_build_sm_vaos();
 
+	// need to erase the default camera light before adding the one for this scene
+	for (light* const l : m_lights)
+		delete l;
+	m_lights.clear();
+
 	m_lights.reserve(obj["nl"]);
 	for (const nlohmann::json& l : obj["l"])
 	{

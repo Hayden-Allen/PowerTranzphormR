@@ -33,6 +33,7 @@ scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json
 			g::texlib->load(abs_fname);
 		}
 	}
+	m_use_alpha = obj["use_alpha"];
 }
 scene_material::~scene_material()
 {
@@ -89,9 +90,18 @@ nlohmann::json scene_material::save(std::ofstream& out, const std::string& out_f
 			texs.push_back({ pair.first, pair.second });
 	}
 	obj["texs"] = texs;
+	obj["use_alpha"] = m_use_alpha;
 	return obj;
 }
 autotexture_params& scene_material::get_autotexture_params(const std::string& tex_name)
 {
 	return m_autotexture_params[tex_name];
+}
+bool scene_material::get_use_alpha() const
+{
+	return m_use_alpha;
+}
+void scene_material::set_use_alpha(bool alpha)
+{
+	m_use_alpha = alpha;
 }
