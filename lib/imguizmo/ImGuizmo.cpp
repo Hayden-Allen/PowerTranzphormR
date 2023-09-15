@@ -2163,7 +2163,16 @@ namespace ImGuizmo
 			deltaMatrixScale.Scale(gContext.mScale * gContext.mScaleValueOrigin);
 
 			matrix_t res = deltaMatrixScale * gContext.mModel;
-			*(matrix_t*)matrix = res;
+         float prevent0Trans[3] = { 0.0f }, prevent0Rot[3] = { 0.0f }, prevent0Scale[3] = { 0.0f };
+			DecomposeMatrixToComponents(res, prevent0Trans, prevent0Rot, prevent0Scale);
+         if (prevent0Scale[0] < 0.001f || prevent0Scale[1] < 0.001f || prevent0Scale[2] < 0.001f)
+         {
+            deltaMatrixScale = matrix_t();
+         }
+         else
+         {
+			   *(matrix_t*)matrix = res;
+         }
 
 			if (deltaMatrix)
 			{

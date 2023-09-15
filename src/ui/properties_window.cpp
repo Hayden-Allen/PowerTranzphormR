@@ -190,7 +190,7 @@ bool properties_window::handle_transform(f32* const elements)
 	{
 		dirty = true;
 	}
-	if (ImGui::DragFloat3("Scale", m_transform_scale, 0.01f, 0.01f, 1000.0f))
+	if (ImGui::DragFloat3("Scale", m_transform_scale, 0.001f, 0.01f, MAX_VALUE_TYPE(f32)))
 	{
 		dirty = true;
 	}
