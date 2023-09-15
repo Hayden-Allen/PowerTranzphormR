@@ -514,7 +514,10 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	}
 
 	f32 snap_angle = selected->get_snap_angle();
-	ImGui::SliderAngle("##Snap Angle", &snap_angle, 0.f, 360.f);
+	if (ImGui::SliderAngle("##Snap Angle", &snap_angle, 0.f, 360.f))
+	{
+		selected->set_snap_angle(snap_angle);
+	}
 
 	draw_params(selected->get_params());
 

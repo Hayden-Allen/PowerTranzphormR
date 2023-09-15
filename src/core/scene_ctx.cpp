@@ -104,6 +104,14 @@ void scene_ctx::clear(bool ready_for_default_material)
 	m_lights.clear();
 	// camera light
 	add_light(new light({}, "Camera Light"));
+	const auto& light_params = m_lights[0]->get_params();
+	for (const auto& param : light_params)
+	{
+		if (param.first == "Max Distance")
+		{
+			*static_cast<float*>(param.second.value) = 100000.0f;
+		}
+	}
 
 	for (waypoint* const w : m_waypoints)
 		delete w;

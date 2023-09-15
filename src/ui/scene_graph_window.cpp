@@ -28,27 +28,43 @@ void scene_graph_window::handle_focused(const bool focused)
 }
 void scene_graph_window::handle_frame()
 {
+	bool performed_destructive_action = false;
+
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	ImGui::PushID("hfsgn");
-	bool performed_destructive_action = false;
 	handle_node(root, performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+	}
 
+	performed_destructive_action = false;
 	ImGui::PushID("hfhmp");
-	handle_heightmaps();
+	handle_heightmaps(performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
+	}
 
+	performed_destructive_action = false;
 	ImGui::PushID("hflit");
-	handle_lights();
+	handle_lights(performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_light();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_light();
+	}
 
+	performed_destructive_action = false;
 	ImGui::PushID("hfway");
-	handle_waypoints();
+	handle_waypoints(performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
+	}
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -472,11 +488,11 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 
 	ImGui::TreePop();
 }
-void scene_graph_window::handle_heightmaps()
+void scene_graph_window::handle_heightmaps(bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
-	const bool open = ImGui::TreeNodeEx("##SGW_HMS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Heightmaps");
+	const bool open = ImGui::TreeNodeEx("##SGW_HMS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Static Meshes");
 	ImGui::PopStyleVar();
 
 	ImGui::PushID("##SGW_HMS");
@@ -495,7 +511,6 @@ void scene_graph_window::handle_heightmaps()
 		auto& sms = m_app_ctx->scene.get_static_meshes();
 		for (u32 i = 0; i < sms.size(); i++)
 		{
-			bool performed_destructive_action = false;
 			handle_heightmap(sms[i], performed_destructive_action);
 			if (performed_destructive_action)
 			{
@@ -610,7 +625,7 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 
 	ImGui::TreePop();
 }
-void scene_graph_window::handle_lights()
+void scene_graph_window::handle_lights(bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -632,7 +647,6 @@ void scene_graph_window::handle_lights()
 	{
 		for (u32 i = 0; i < m_app_ctx->scene.get_lights().size(); i++)
 		{
-			bool performed_destructive_action = false;
 			handle_light(i, performed_destructive_action);
 			if (performed_destructive_action)
 			{
@@ -724,7 +738,7 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 
 	ImGui::TreePop();
 }
-void scene_graph_window::handle_waypoints()
+void scene_graph_window::handle_waypoints(bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -747,7 +761,6 @@ void scene_graph_window::handle_waypoints()
 		auto& waypoints = m_app_ctx->scene.get_waypoints();
 		for (u32 i = 0; i < waypoints.size(); i++)
 		{
-			bool performed_destructive_action = false;
 			handle_waypoint(waypoints[i], performed_destructive_action);
 			if (performed_destructive_action)
 			{

@@ -23,11 +23,11 @@ public:
 private:
 	rect handle_node(sgnode* const node, bool& performed_destructive_action);
 	void handle_heightmap(smnode* const hmp, bool& performed_destructive_action);
-	void handle_heightmaps();
+	void handle_heightmaps(bool& performed_destructive_action);
 	void handle_light(const u32 index, bool& performed_destructive_action);
-	void handle_lights();
+	void handle_lights(bool& performed_destructive_action);
 	void handle_waypoint(waypoint* const w, bool& performed_destructive_action);
-	void handle_waypoints();
+	void handle_waypoints(bool& performed_destructive_action);
 private:
 	sgnode* m_show_add_child = nullptr;
 	sgnode* m_renaming = nullptr;

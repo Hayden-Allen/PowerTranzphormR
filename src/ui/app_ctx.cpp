@@ -184,26 +184,29 @@ bool app_ctx::has_unfrozen(const sgnode* const node) const
 }
 void app_ctx::set_sel_type(const global_selection_type t)
 {
-	sel_type = t;
-	if (sel_type == global_selection_type::sgnode)
+	if (sel_type != t)
 	{
-		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
-	}
-	else if (sel_type == global_selection_type::material)
-	{
-		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
-	}
-	else if (sel_type == global_selection_type::light)
-	{
-		m_imgui_needs_select_unfocused_light = m_selected_light;
-	}
-	else if (sel_type == global_selection_type::waypoint)
-	{
-		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
-	}
-	else if (sel_type == global_selection_type::static_mesh)
-	{
-		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
+		sel_type = t;
+		if (sel_type == global_selection_type::sgnode)
+		{
+			m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
+		}
+		else if (sel_type == global_selection_type::material)
+		{
+			m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
+		}
+		else if (sel_type == global_selection_type::light)
+		{
+			m_imgui_needs_select_unfocused_light = m_selected_light;
+		}
+		else if (sel_type == global_selection_type::waypoint)
+		{
+			m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
+		}
+		else if (sel_type == global_selection_type::static_mesh)
+		{
+			m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
+		}
 	}
 }
 void app_ctx::set_selected_sgnode(sgnode* const node)
@@ -520,7 +523,12 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	assert(parent);
 
 	generated_static_mesh* const new_gen = new generated_static_mesh(carve_clone(node->get_gen()->mesh, &scene), &scene);
-	scene.add_static_mesh(new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name()));
+	smnode* const new_sm = new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name());
+	new_sm->set_snap_angle(scene_ctx::s_snap_angle);
+	new_sm->set_should_snap_all(scene_ctx::s_snap_all);
+	new_sm->set_should_snap(true);
+	scene.add_static_mesh(new_sm);
+	set_selected_static_mesh(new_sm);
 }
 void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 {

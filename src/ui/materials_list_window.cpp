@@ -28,6 +28,8 @@ void materials_list_window::handle_focused(const bool focused)
 }
 void materials_list_window::handle_frame()
 {
+	ImGui::PushID("MtlList");
+
 	const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
 
 	for (size_t i = 0; i < sorted_mtls.size(); ++i)
@@ -103,6 +105,8 @@ void materials_list_window::handle_frame()
 	}
 
 	m_app_ctx->unset_imgui_needs_select_unfocused_mtl();
+
+	ImGui::PopID();
 }
 void materials_list_window::set_renaming(scene_material* mtl)
 {
