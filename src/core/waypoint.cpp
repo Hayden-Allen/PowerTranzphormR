@@ -28,6 +28,13 @@ const tmat<space::OBJECT, space::WORLD>& waypoint::get_mat() const
 {
 	return m_mat;
 }
+waypoint* waypoint::clone() const
+{
+	waypoint* cloned = new waypoint;
+	cloned->copy_properties_from(*this);
+	cloned->set_mat(get_mat());
+	return cloned;
+}
 void waypoint::set_mat(const tmat<space::OBJECT, space::WORLD>& m)
 {
 	m_mat = m;

@@ -10,6 +10,7 @@ public:
 public:
 	tmat<space::OBJECT, space::WORLD>& get_mat();
 	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
+	waypoint* clone() const;
 public:
 	void set_mat(const tmat<space::OBJECT, space::WORLD>& m);
 public:

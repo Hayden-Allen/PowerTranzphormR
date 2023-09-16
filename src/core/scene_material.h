@@ -36,6 +36,7 @@ public:
 	void set_use_lighting(bool light);
 	bool get_should_cull() const;
 	void set_should_cull(bool cull);
+	scene_material* clone() const;
 private:
 	std::unordered_map<std::string, std::string> m_tex_name_to_filename;
 	std::unordered_map<std::string, autotexture_params> m_autotexture_params;

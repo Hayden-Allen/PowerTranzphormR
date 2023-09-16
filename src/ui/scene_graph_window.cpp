@@ -660,9 +660,16 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 			}
 		}
 
-		// don't allow renaming or destroying camera light
+		// don't allow renaming, destroying, or duplicating camera light
 		if (index != 0)
 		{
+			ImGui::Separator();
+			if (ImGui::MenuItem("Duplicate"))
+			{
+				m_app_ctx->duplicate_selected_light();
+				performed_destructive_action = true;
+			}
+
 			ImGui::Separator();
 			if (ImGui::MenuItem("Rename"))
 			{
@@ -794,6 +801,14 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 	if (ImGui::BeginPopupContextItem())
 	{
 		m_app_ctx->set_selected_waypoint(w);
+
+		if (ImGui::MenuItem("Duplicate"))
+		{
+			m_app_ctx->duplicate_selected_waypoint();
+			performed_destructive_action = true;
+		}
+		ImGui::Separator();
+
 		if (ImGui::MenuItem("Rename"))
 		{
 			set_renaming_waypoint(w);

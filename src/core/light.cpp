@@ -94,6 +94,14 @@ light_type light::get_type() const
 {
 	return m_type;
 }
+light* light::clone() const
+{
+	light* cloned = new light;
+	cloned->copy_properties_from(*this);
+	cloned->m_type = m_type;
+	cloned->mgl_light = mgl_light;
+	return cloned;
+}
 void light::set_type(const light_type t)
 {
 	m_type = t;

@@ -129,3 +129,16 @@ void scene_material::set_should_cull(bool cull)
 {
 	m_should_cull = cull;
 }
+scene_material* scene_material::clone() const
+{
+	scene_material* cloned = new scene_material;
+	cloned->copy_properties_from(*this);
+	cloned->set_use_alpha(get_use_alpha());
+	cloned->set_use_lighting(get_use_lighting());
+	cloned->set_should_cull(get_should_cull());
+	for (const auto& it : m_tex_name_to_filename)
+	{
+		cloned->set_texture(it.first, it.second);
+	}
+	return nullptr;
+}

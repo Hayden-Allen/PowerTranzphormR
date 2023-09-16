@@ -635,6 +635,27 @@ void app_ctx::duplicate_selected_static_mesh()
 	scene.add_static_mesh(cloned);
 	set_selected_static_mesh(cloned);
 }
+void app_ctx::duplicate_selected_light()
+{
+	light* const selected = get_selected_light();
+	light* const cloned = selected->clone();
+	scene.add_light(cloned);
+	set_selected_light(cloned);
+}
+void app_ctx::duplicate_selected_waypoint()
+{
+	waypoint* const selected = get_selected_waypoint();
+	waypoint* const cloned = selected->clone();
+	scene.add_waypoint(cloned);
+	set_selected_waypoint(cloned);
+}
+void app_ctx::duplicate_selected_material()
+{
+	scene_material* const selected = get_selected_material();
+	scene_material* const cloned = selected->clone();
+	scene.add_material(cloned);
+	set_selected_material(cloned);
+}
 
 
 
@@ -1308,6 +1329,20 @@ void app_ctx::material_menu()
 		GLFW_KEY_EQUAL,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
+	shortcut_menu_item material_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_material();
+		},
+		[&]()
+		{
+			return get_selected_material();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
+	};
 	shortcut_menu_item material_rename = {
 		"Rename",
 		[&]()
@@ -1343,7 +1378,9 @@ void app_ctx::material_menu()
 
 	shortcut_menu material_menu;
 	material_menu.name = "Material";
-	material_menu.groups.push_back({ material_create, material_rename, material_destroy });
+	material_menu.groups.push_back({ material_create });
+	material_menu.groups.push_back({ material_duplicate });
+	material_menu.groups.push_back({ material_rename, material_destroy });
 	shortcut_menus.push_back(material_menu);
 }
 void app_ctx::static_meshes_menu()
@@ -1480,6 +1517,20 @@ void app_ctx::lights_menu()
 		GLFW_KEY_L,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
+	shortcut_menu_item light_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_light();
+		},
+		[&]()
+		{
+			return get_selected_light();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
+	};
 	shortcut_menu_item light_rename = {
 		"Rename",
 		[&]()
@@ -1552,7 +1603,9 @@ void app_ctx::lights_menu()
 
 	shortcut_menu light_menu;
 	light_menu.name = "Lights";
-	light_menu.groups.push_back({ light_create, light_rename, light_destroy });
+	light_menu.groups.push_back({ light_create });
+	light_menu.groups.push_back({ light_duplicate });
+	light_menu.groups.push_back({ light_rename, light_destroy });
 	light_menu.groups.push_back({ light_hide, light_show });
 	shortcut_menus.push_back(light_menu);
 }
@@ -1571,6 +1624,20 @@ void app_ctx::waypoints_menu()
 		"Ctrl+Shift+W",
 		GLFW_KEY_L,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item waypoint_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_waypoint();
+		},
+		[&]()
+		{
+			return get_selected_waypoint();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
 	};
 	shortcut_menu_item waypoint_rename = {
 		"Rename",
@@ -1607,6 +1674,8 @@ void app_ctx::waypoints_menu()
 
 	shortcut_menu waypoint_menu;
 	waypoint_menu.name = "Waypoints";
-	waypoint_menu.groups.push_back({ waypoint_create, waypoint_rename, waypoint_destroy });
+	waypoint_menu.groups.push_back({ waypoint_create });
+	waypoint_menu.groups.push_back({ waypoint_duplicate });
+	waypoint_menu.groups.push_back({ waypoint_rename, waypoint_destroy });
 	shortcut_menus.push_back(waypoint_menu);
 }

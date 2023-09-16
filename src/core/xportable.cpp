@@ -156,6 +156,14 @@ nlohmann::json xportable::save() const
 	obj["name"] = m_name;
 	return obj;
 }
+void xportable::copy_properties_from(const xportable& src)
+{
+	for (const auto& t : src.get_tagz())
+	{
+		push_tag(t);
+	}
+	set_name(src.get_name());
+}
 
 
 

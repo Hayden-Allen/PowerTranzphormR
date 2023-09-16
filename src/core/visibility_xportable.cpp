@@ -28,3 +28,8 @@ nlohmann::json visibility_xportable::save() const
 	obj["visible"] = m_visible;
 	return obj;
 }
+void visibility_xportable::copy_properties_from(const visibility_xportable& src)
+{
+	xportable::copy_properties_from(src);
+	set_visibility(src.is_visible());
+}

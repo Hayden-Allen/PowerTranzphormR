@@ -41,6 +41,7 @@ public:
 	void erase_tag(const tag& t);
 	void set_name(const std::string& n);
 	virtual nlohmann::json save() const;
+	void copy_properties_from(const xportable& src);
 private:
 	constexpr static inline u32 s_first_id = 0;
 	static inline u32 s_next_id = s_first_id;

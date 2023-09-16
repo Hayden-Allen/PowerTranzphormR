@@ -12,6 +12,7 @@ public:
 	virtual void set_visibility(const bool v);
 	bool is_visible() const;
 	virtual nlohmann::json save() const override;
+	void copy_properties_from(const visibility_xportable& src);
 private:
 	bool m_visible = true;
 };

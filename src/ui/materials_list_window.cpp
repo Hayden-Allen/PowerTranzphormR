@@ -83,9 +83,30 @@ void materials_list_window::handle_frame()
 		if (ImGui::BeginPopupContextItem())
 		{
 			m_app_ctx->set_selected_material(mtl);
+
+			if (ImGui::MenuItem("Duplicate"))
+			{
+				m_app_ctx->duplicate_selected_material();
+				
+				// performed destructive action
+				ImGui::EndPopup();
+				ImGui::PopID();
+				break;
+			}
+
 			if (ImGui::MenuItem("Rename"))
 			{
 				set_renaming(mtl);
+			}
+			if (ImGui::MenuItem("Delete"))
+			{
+				m_app_ctx->remove_material(m_app_ctx->scene.get_id_for_material(mtl));
+				m_app_ctx->set_selected_material(nullptr);
+
+				// performed destructive action
+				ImGui::EndPopup();
+				ImGui::PopID();
+				break;
 			}
 			ImGui::EndPopup();
 		}
