@@ -652,11 +652,11 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 				m_app_ctx->scene.update_light(l);
 			}
 		}
-		ImGui::Separator();
 
 		// don't allow renaming or destroying camera light
 		if (index != 0)
 		{
+			ImGui::Separator();
 			if (ImGui::MenuItem("Rename"))
 			{
 				set_renaming_light(l);
