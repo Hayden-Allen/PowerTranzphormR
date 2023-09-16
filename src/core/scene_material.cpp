@@ -140,5 +140,5 @@ scene_material* scene_material::clone() const
 	{
 		cloned->set_texture(it.first, it.second);
 	}
-	return nullptr;
+	return cloned;
 }
