@@ -128,7 +128,15 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 		const f32 x = ImGui::GetCursorPosX();
 
 		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->is_sgnode_multiselected(node);
+		if (!node->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		if (!node->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -162,7 +170,15 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 	else
 	{
 		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->is_sgnode_multiselected(node);
+		if (!node->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		if (!node->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 
@@ -384,7 +400,15 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
+		if (!hmp->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(hmp->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (hmp == m_app_ctx->get_selected_static_mesh() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", hmp->get_name().c_str());
+		if (!hmp->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -417,7 +441,15 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 	}
 	else
 	{
+		if (!hmp->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(hmp->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (hmp == m_app_ctx->get_selected_static_mesh() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", hmp->get_name().c_str());
+		if (!hmp->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 	smnode* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_static_mesh();
@@ -529,7 +561,15 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
+		if (!l->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(l->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (l == m_app_ctx->get_selected_light() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", l->get_name().c_str());
+		if (!l->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -562,7 +602,15 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 	}
 	else
 	{
+		if (!l->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(l->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (l == m_app_ctx->get_selected_light() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", l->get_name().c_str());
+		if (!l->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 	light* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_light();
@@ -665,7 +713,15 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
+		if (!w->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(w->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (w == m_app_ctx->get_selected_waypoint() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", w->get_name().c_str());
+		if (!w->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -698,7 +754,15 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 	}
 	else
 	{
+		if (!w->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(w->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (w == m_app_ctx->get_selected_waypoint() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", w->get_name().c_str());
+		if (!w->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 	waypoint* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_waypoint();
