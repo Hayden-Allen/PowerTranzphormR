@@ -665,6 +665,14 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 	for (auto it = ros.begin(); it != ros.end(); ++it)
 	{
 		const scene_material* mat = m_mtls[it->first];
+		if (mat->get_should_cull())
+		{
+			glEnable(GL_CULL_FACE);
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
+		}
 		mgl::shaders* s = mat->get_use_alpha() ? mat->alpha_shaders : mat->opaque_shaders;
 		s->bind();
 		s->uniform_mat4("u_mvp", mvp.e);
@@ -675,6 +683,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		s->uniform_1f("u_time", glctx.time.now);
 		s->uniform_1ui("u_num_lights", m_num_visible_lights);
 		s->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
+		s->uniform_1i("u_enable_lighting", mat->get_use_lighting());
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
@@ -686,6 +695,8 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 
 		glctx.draw(it->second, *s);
 	}
+
+	glEnable(GL_CULL_FACE);
 }
 void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices, const bool snap_all, const f32 snap_angle)
 {

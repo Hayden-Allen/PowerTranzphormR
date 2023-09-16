@@ -38,6 +38,8 @@ scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json
 		}
 	}
 	m_use_alpha = obj["use_alpha"];
+	m_use_lighting = obj["use_lighting"];
+	m_should_cull = obj["should_cull"];
 }
 scene_material::~scene_material()
 {
@@ -95,6 +97,8 @@ nlohmann::json scene_material::save(std::ofstream& out, const std::string& out_f
 	}
 	obj["texs"] = texs;
 	obj["use_alpha"] = m_use_alpha;
+	obj["use_lighting"] = m_use_lighting;
+	obj["should_cull"] = m_should_cull;
 	return obj;
 }
 autotexture_params& scene_material::get_autotexture_params(const std::string& tex_name)
@@ -108,4 +112,20 @@ bool scene_material::get_use_alpha() const
 void scene_material::set_use_alpha(bool alpha)
 {
 	m_use_alpha = alpha;
+}
+bool scene_material::get_use_lighting() const
+{
+	return m_use_lighting;
+}
+void scene_material::set_use_lighting(bool light)
+{
+	m_use_lighting = light;
+}
+bool scene_material::get_should_cull() const
+{
+	return m_should_cull;
+}
+void scene_material::set_should_cull(bool cull)
+{
+	m_should_cull = cull;
 }

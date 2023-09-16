@@ -32,8 +32,12 @@ public:
 	autotexture_params& get_autotexture_params(const std::string& tex_name);
 	bool get_use_alpha() const;
 	void set_use_alpha(bool alpha);
+	bool get_use_lighting() const;
+	void set_use_lighting(bool light);
+	bool get_should_cull() const;
+	void set_should_cull(bool cull);
 private:
 	std::unordered_map<std::string, std::string> m_tex_name_to_filename;
 	std::unordered_map<std::string, autotexture_params> m_autotexture_params;
-	bool m_use_alpha = false;
+	bool m_use_alpha = false, m_use_lighting = true, m_should_cull = true;
 };

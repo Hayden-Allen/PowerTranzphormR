@@ -9,7 +9,7 @@
 #include "core/smnode.h"
 
 app_ctx::app_ctx() :
-	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
+	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 1.0f, .g = 0.0f, .b = 1.0f } }),
 	actions(&scene, this),
 	preview_fb(1280, 720)
 {

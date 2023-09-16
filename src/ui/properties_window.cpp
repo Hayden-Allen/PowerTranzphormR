@@ -331,6 +331,16 @@ void properties_window::handle_material_frame(scene_material* const selected)
 
 	ImGui::SeparatorText("Shading");
 
+	bool should_cull = selected->get_should_cull();
+	if (ImGui::Checkbox("Enable Back-face Culling", &should_cull))
+	{
+		selected->set_should_cull(should_cull);
+	}
+	bool use_lighting = selected->get_use_lighting();
+	if (ImGui::Checkbox("Enable Lighting", &use_lighting))
+	{
+		selected->set_use_lighting(use_lighting);
+	}
 	bool use_alpha = selected->get_use_alpha();
 	if (ImGui::Checkbox("Use Alpha Shader", &use_alpha))
 	{

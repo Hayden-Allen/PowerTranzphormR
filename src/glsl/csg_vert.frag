@@ -20,6 +20,7 @@ uniform sampler2D u_tex0, u_tex1, u_tex2, u_tex3;
 // uniform vec3 u_cam_pos;
 // uniform mat4 u_m;
 uniform float u_time;
+uniform bool u_enable_lighting;
 
 in vec4 v_uv0, v_uv1, v_uv2, v_uv3;
 in vec4 v_weights, v_rgba;
@@ -36,6 +37,12 @@ void main()
 				texture(u_tex2, v_uv2.xy - v_uv2.zw * u_time) * v_weights[2] +
 				texture(u_tex3, v_uv3.xy - v_uv3.zw * u_time) * v_weights[3];
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
+
+	if (!u_enable_lighting)
+	{
+		o_col = vec4(clamp(mixed_res, vec3(0), vec3(1)), 1.0);
+		return;
+	}
 	
 	/*
 	vec3 world_pos = vec3(u_m * vec4(v_pos, 1));
