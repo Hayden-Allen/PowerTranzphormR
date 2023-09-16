@@ -140,5 +140,7 @@ scene_material* scene_material::clone() const
 	{
 		cloned->set_texture(it.first, it.second);
 	}
+	cloned->opaque_shaders = opaque_shaders;
+	cloned->alpha_shaders = alpha_shaders;
 	return cloned;
 }
