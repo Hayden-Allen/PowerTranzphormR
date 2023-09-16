@@ -273,23 +273,25 @@ void properties_window::handle_xportable(xportable* x)
 			const auto& suggestions = xportable::get_tag_suggestions(m_cur_tag_input);
 			const bool is_input_text_active = ImGui::IsItemActive() || ImGui::IsItemActivated();
 			if (is_input_text_active && suggestions.size() > 0)
-				ImGui::OpenPopup("##suggestions");
-			ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
-			if (ImGui::BeginPopup("##suggestions", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
 			{
-				for (const auto& s : suggestions)
+				ImGui::OpenPopup("##suggestions");
+				ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y));
+				if (ImGui::BeginPopup("##suggestions", ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_ChildWindow))
 				{
-					if (ImGui::Selectable(s))
+					for (const auto& s : suggestions)
 					{
-						x->push_tag(s);
-						m_cur_tag_input = "";
+						if (ImGui::Selectable(s))
+						{
+							x->push_tag(s);
+							m_cur_tag_input = "";
+						}
 					}
+
+					if (pressed_enter || (!is_input_text_active && !ImGui::IsWindowFocused()))
+						ImGui::CloseCurrentPopup();
+
+					ImGui::EndPopup();
 				}
-
-				if (pressed_enter || (!is_input_text_active && !ImGui::IsWindowFocused()))
-					ImGui::CloseCurrentPopup();
-
-				ImGui::EndPopup();
 			}
 		}
 	}

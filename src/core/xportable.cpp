@@ -59,9 +59,27 @@ void xportable::reset_num_tags_created()
 std::vector<const char*> xportable::get_tag_suggestions(const std::string& s)
 {
 	std::vector<const char*> result;
+	if (s.size() == 0)
+	{
+		return result;
+	}
 	for (const auto& c : s_used_tagz)
 	{
-		if (c.first.name.starts_with(s))
+		bool matched = false;
+		const size_t s_size = s.size();
+		if (s_size <= c.first.name.size())
+		{
+			matched = true;
+			for (size_t i = 0; i < s_size; ++i)
+			{
+				if (std::tolower(c.first.name[i]) != std::tolower(s[i]))
+				{
+					matched = false;
+					break;
+				}
+			}
+		}
+		if (matched)
 		{
 			result.emplace_back(c.first.name.c_str());
 		}
