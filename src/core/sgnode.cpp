@@ -262,7 +262,8 @@ sgnode* sgnode::clone_self_and_insert(app_ctx* const app, sgnode* const parent) 
 	// create action for this node will be first, skip remaining n - 1
 	const u32 skip_count = subtree_count() - 1;
 	sgnode* ret = new sgnode(this);
-	ret->m_gen = m_gen->clone(&app->scene, accumulate_mats().invert_copy());
+	// identity matrix instead of actual inverted accumulated matrix fixes copy/paste of frozen node (and doesn't seem to affect non-frozen)
+	ret->m_gen = m_gen->clone(&app->scene, tmat<space::WORLD, space::OBJECT>());
 	if (m_frozen)
 		ret->copy_local_verts();
 	app->create_action(ret, parent, skip_count);
