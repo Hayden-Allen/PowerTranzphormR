@@ -116,6 +116,7 @@ public:
 	void unfreeze_action(sgnode* const target);
 	void rename_action(sgnode* const target, const std::string& new_name);
 private:
+	void reset_camera();
 	void create_operation_action(const carve::csg::CSG::OP op);
 	template<typename FN>
 	void create_shape_action(FN fn, const std::string& name);

@@ -32,6 +32,6 @@ void main()
 	v_uv3 = vec4(i_uv3.x * u_uv_offset.x, i_uv3.y * u_uv_offset.y, i_uv3.z + u_uv_offset.z, i_uv3.w + u_uv_offset.w);
 	v_weights = i_weights;
 	v_rgba = i_rgba;
-	v_N = i_norm;
+	v_N = normalize((u_normal * vec4(i_norm, 0)).xyz);
 	v_pos = i_pos;
 }

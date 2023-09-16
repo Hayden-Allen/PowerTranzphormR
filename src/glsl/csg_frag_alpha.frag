@@ -67,7 +67,7 @@ void main()
 		// point light
 		else if(cur_type == 1)
 		{
-			vec3 d_pos = light_pos - v_pos;
+			vec3 d_pos = light_pos - world_pos;
 			float d_pos_length2 = dot(d_pos, d_pos);
 			float rmax2 = cur_light.rmax * cur_light.rmax;
 			// current fragment beyond lights AOE
@@ -77,13 +77,13 @@ void main()
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
 			amb_atten = diff_atten = spec_atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
-			L = normalize(light_pos - v_pos);
+			L = normalize(light_pos - world_pos);
 			amb_atten *= float(dot(N, L) > 0);
 		}
 		// area light
 		else if(cur_type == 2)
 		{
-			vec3 d_pos = light_pos - v_pos;
+			vec3 d_pos = light_pos - world_pos;
 			float d_pos_length2 = dot(d_pos, d_pos);
 			float rmax2 = cur_light.rmax * cur_light.rmax;
 			// current fragment beyond lights AOE
@@ -97,14 +97,14 @@ void main()
 		// spotlight
 		else if(cur_type == 3)
 		{
-			vec3 d_pos = light_pos - v_pos;
+			vec3 d_pos = light_pos - world_pos;
 			float d_pos_length2 = dot(d_pos, d_pos);
 			float rmax2 = cur_light.rmax * cur_light.rmax;
 			// current fragment beyond lights AOE
 			if(d_pos_length2 >= rmax2)
 				continue;
 
-			vec3 light_v_pos = (cur_light.w2o * vec4(v_pos, 1)).xyz;
+			vec3 light_v_pos = (cur_light.w2o * vec4(world_pos, 1)).xyz;
 			// current fragment is behind light
 			if(light_v_pos.z <= 0)
 				continue;
@@ -114,7 +114,7 @@ void main()
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
 			amb_atten = diff_atten = spec_atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
-			L = normalize(light_pos - v_pos);
+			L = normalize(light_pos - world_pos);
 			amb_atten *= float(dot(N, L) > 0);
 			amb_atten *= float(cos_theta >= cur_light.cos_tmin);
 

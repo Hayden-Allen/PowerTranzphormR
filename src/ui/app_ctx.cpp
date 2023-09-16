@@ -16,8 +16,7 @@ app_ctx::app_ctx() :
 	NFD_Init(); // Should happen after GLFW initialized
 	g::init();
 	scene.clear(); // Need to create the default material after initializing globals
-	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
-	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
+	reset_camera();
 	init_menus();
 
 	constexpr u64 nverts = 6;
@@ -56,6 +55,7 @@ void app_ctx::clear()
 	loaded_filename = "";
 	actions.clear();
 	scene.clear();
+	reset_camera();
 	deselect_all();
 	clear_clipboard();
 	frozen2unfrozen.clear();
@@ -631,6 +631,11 @@ void app_ctx::rename_action(sgnode* const target, const std::string& new_name)
 
 
 
+void app_ctx::reset_camera()
+{
+	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
+	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
+}
 void app_ctx::create_operation_action(const carve::csg::CSG::OP op)
 {
 	create(new sgnode(nullptr, op));

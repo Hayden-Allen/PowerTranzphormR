@@ -28,6 +28,9 @@ smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	visibility_xportable(obj)
 {
+	m_should_snap = obj["should_snap"];
+	m_snap_all = obj["snap_all"];
+	m_snap_angle = obj["snap_angle"];
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
 	else
@@ -170,6 +173,9 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 	obj["t"] = m_mat.e;
 	obj["m"] = m_gen->save(scene, tmat<space::WORLD, space::OBJECT>());
 	obj["s"] = is_static();
+	obj["should_snap"] = m_should_snap;
+	obj["snap_all"] = m_snap_all;
+	obj["snap_angle"] = m_snap_angle;
 	return obj;
 }
 

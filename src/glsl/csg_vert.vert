@@ -34,13 +34,6 @@ out vec3 v_light_ambient, v_light_diffuse, v_light_specular;
 void main()
 {
 	gl_Position = u_mvp * vec4(i_pos, 1);
-	
-	/*
-	// vec3 L = normalize(u_cam_pos);
-	vec3 world_pos = vec3(u_m * vec4(i_pos, 1));
-	vec3 L = normalize(u_cam_pos - world_pos);
-	v_NdL = max(0, dot(i_norm, L));
-	*/
 
 	v_uv0 = vec4(i_uv0.x * u_uv_offset.x, i_uv0.y * u_uv_offset.y, i_uv0.z + u_uv_offset.z, i_uv0.w + u_uv_offset.w);
 	v_uv1 = vec4(i_uv1.x * u_uv_offset.x, i_uv1.y * u_uv_offset.y, i_uv1.z + u_uv_offset.z, i_uv1.w + u_uv_offset.w);
@@ -48,11 +41,9 @@ void main()
 	v_uv3 = vec4(i_uv3.x * u_uv_offset.x, i_uv3.y * u_uv_offset.y, i_uv3.z + u_uv_offset.z, i_uv3.w + u_uv_offset.w);
 	v_weights = i_weights;
 	v_rgba = i_rgba;
-	// v_N = i_norm;
-	// v_pos = i_pos;
 
 	vec3 world_pos = vec3(u_m * vec4(i_pos, 1));
-	vec3 N = normalize(i_norm);
+	vec3 N = normalize((u_normal * vec4(i_norm, 0)).xyz);
 	vec3 V = normalize(world_pos - u_cam_pos);
 	vec3 total_diff = vec3(0);
 	vec3 total_spec = vec3(0);
@@ -73,7 +64,7 @@ void main()
 		// point light
 		else if(cur_type == 1)
 		{
-			vec3 d_pos = light_pos - i_pos;
+			vec3 d_pos = light_pos - world_pos;
 			float d_pos_length2 = dot(d_pos, d_pos);
 			float rmax2 = cur_light.rmax * cur_light.rmax;
 			// current fragment beyond lights AOE
@@ -83,13 +74,13 @@ void main()
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
 			atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
-			L = normalize(light_pos - i_pos);
+			L = normalize(light_pos - world_pos);
 			amb_atten = float(dot(N, L) > 0);
 		}
 		// area light
 		else if(cur_type == 2)
 		{
-			vec3 d_pos = light_pos - i_pos;
+			vec3 d_pos = light_pos - world_pos;
 			float d_pos_length2 = dot(d_pos, d_pos);
 			float rmax2 = cur_light.rmax * cur_light.rmax;
 			// current fragment beyond lights AOE
@@ -99,14 +90,14 @@ void main()
 		// spotlight
 		else if(cur_type == 3)
 		{
-			vec3 d_pos = light_pos - i_pos;
+			vec3 d_pos = light_pos - world_pos;
 			float d_pos_length2 = dot(d_pos, d_pos);
 			float rmax2 = cur_light.rmax * cur_light.rmax;
 			// current fragment beyond lights AOE
 			if(d_pos_length2 >= rmax2)
 				continue;
 
-			vec3 light_i_pos = (cur_light.w2o * vec4(i_pos, 1)).xyz;
+			vec3 light_i_pos = (cur_light.w2o * vec4(world_pos, 1)).xyz;
 			// current fragment is behind light
 			if(light_i_pos.z <= 0)
 				continue;
@@ -118,7 +109,7 @@ void main()
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
 			atten = (d_pos_length2 / rmax2) * (2 * d_pos_length / cur_light.rmax - 3) + 1;
 
-			L = normalize(light_pos - i_pos);
+			L = normalize(light_pos - world_pos);
 			amb_atten = float(dot(N, L) > 0);
 
 			float angular_atten = clamp((cos_theta - cur_light.cos_tmax) / (cur_light.cos_tmin - cur_light.cos_tmax), 0, 1);
