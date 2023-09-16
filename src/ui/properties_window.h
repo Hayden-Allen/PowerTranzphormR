@@ -25,6 +25,7 @@ private:
 	bool m_autotex_needs_load = true;
 	float m_transform_pos[3] = { 0.0f }, m_transform_rot[3] = { 0.0f }, m_transform_scale[3] = { 0.0f };
 	bool m_needs_extract_transform = true;
+	float m_reset_vertex_color[4] = { 0.0f };
 private:
 	void handle_sgnode_frame(sgnode* const selected);
 	void handle_sgnode_camera_light();

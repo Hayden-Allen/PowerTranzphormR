@@ -304,6 +304,23 @@ void properties_window::handle_sgnode_mesh(sgnode* const selected)
 			m_app_ctx->set_material(selected, new_mtl_id);
 	}
 
+	if (selected->is_frozen())
+	{
+		ImGui::SeparatorText("Phrozen Mesh");
+
+		if (ImGui::Button("Center at Origin"))
+		{
+			selected->center_frozen_vertices_at_origin();
+		}
+
+		ImGui::ColorEdit4("##RESETVTXCOL", m_reset_vertex_color);
+		ImGui::SameLine();
+		if (ImGui::Button("Reset All Vertex Colors"))
+		{
+			selected->set_frozen_vertices_color(color_t(m_reset_vertex_color[0], m_reset_vertex_color[1], m_reset_vertex_color[2], m_reset_vertex_color[3]), &m_app_ctx->scene);
+		}
+	}
+
 	const bool changed = !selected->is_frozen() ? draw_params(selected->get_gen()->get_params()) : false;
 	if (changed)
 		selected->set_gen_dirty();
@@ -558,7 +575,23 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 
 	draw_params(selected->get_params());
 
-	if (!selected->is_static())
+	if (selected->is_static())
+	{
+		ImGui::SeparatorText("Static Mesh");
+
+		if (ImGui::Button("Center at Origin"))
+		{
+			selected->center_vertices_at_origin();
+		}
+
+		ImGui::ColorEdit4("##RESETVTXCOL", m_reset_vertex_color);
+		ImGui::SameLine();
+		if (ImGui::Button("Reset All Vertex Colors"))
+		{
+			selected->set_vertices_color(color_t(m_reset_vertex_color[0], m_reset_vertex_color[1], m_reset_vertex_color[2], m_reset_vertex_color[3]), &m_app_ctx->scene);
+		}
+	}
+	else
 	{
 		ImGui::SeparatorText("Heightmap");
 		if (ImGui::Button("Load Heightmap"))

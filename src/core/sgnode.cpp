@@ -124,6 +124,18 @@ bool sgnode::is_frozen() const
 {
 	return m_frozen;
 }
+void sgnode::set_frozen_vertices_color(const color_t& col, scene_ctx* const scene)
+{
+	assert(m_frozen && !is_operation() && m_gen);
+	m_gen->set_vertices_color(col, scene);
+	set_gen_dirty();
+}
+void sgnode::center_frozen_vertices_at_origin()
+{
+	assert(m_frozen && !is_operation() && m_gen);
+	m_gen->center_verts_at_origin(m_mat);
+	set_gen_dirty();
+}
 void sgnode::set_transform(const tmat<space::OBJECT, space::PARENT>& new_mat)
 {
 	m_mat = new_mat;

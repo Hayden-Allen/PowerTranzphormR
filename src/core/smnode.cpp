@@ -103,6 +103,16 @@ void smnode::set_material(scene_ctx* const scene, const u32 mat)
 	m_gen->set_material(scene, mat);
 	set_gen_dirty();
 }
+void smnode::set_vertices_color(const color_t& col, scene_ctx* const scene)
+{
+	m_gen->set_vertices_color(col, scene);
+	set_gen_dirty();
+}
+void smnode::center_vertices_at_origin()
+{
+	m_gen->center_verts_at_origin();
+	set_gen_dirty();
+}
 void smnode::set_gen(generated_mesh* const gen)
 {
 	delete m_gen;

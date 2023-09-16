@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "geom/generated_mesh.h"
 #include "visibility_xportable.h"
+#include "util/color.h"
 
 class generated_mesh;
 class scene_ctx;
@@ -29,6 +30,8 @@ public:
 	void set_gen_dirty();
 	void set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat);
 	void set_material(scene_ctx* const scene, const u32 mat);
+	void set_vertices_color(const color_t& col, scene_ctx* const scene);
+	void center_vertices_at_origin();
 	void set_gen(generated_mesh* const gen);
 	void set_should_snap(const bool snap);
 	void set_should_snap_all(const bool all);

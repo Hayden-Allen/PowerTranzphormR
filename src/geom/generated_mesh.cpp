@@ -66,6 +66,14 @@ void generated_mesh::set_mesh(mesh_t* const m)
 	assert(!mesh);
 	mesh = m;
 }
+void generated_mesh::set_vertices_color(const color_t& col, scene_ctx* const scene)
+{
+	assert(false);
+}
+void generated_mesh::center_verts_at_origin(const tmat<space::OBJECT, space::PARENT>& mat)
+{
+	assert(false);
+}
 void generated_mesh::set_dirty()
 {
 	dirty = true;
@@ -686,6 +694,49 @@ void generated_static_mesh::set_mesh(mesh_t* const m)
 GLuint generated_static_mesh::get_material() const
 {
 	return m_material;
+}
+void generated_static_mesh::set_vertices_color(const color_t& col, scene_ctx* const scene)
+{
+	auto& vert_attrs = scene->get_vert_attrs();
+	for (mesh_t::face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+	{
+		const face_t* const f = *i;
+		for (face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+		{
+			vert_attrs.color.setAttribute(f, e.idx(), col);
+		}
+	}
+}
+void generated_static_mesh::center_verts_at_origin(const tmat<space::OBJECT, space::PARENT>& mat)
+{
+	const auto& inv_mat = mat.invert_copy();
+	point<space::OBJECT> min_point, max_point;
+	mesh->transform([&](vertex_t::vector_t& v)
+		{
+			const auto& p = point<space::PARENT>(v.x, v.y, v.z).transform_copy(inv_mat);
+			if (p.x < min_point.x)
+				min_point.x = p.x;
+			if (p.y < min_point.y)
+				min_point.y = p.y;
+			if (p.z < min_point.z)
+				min_point.z = p.z;
+			if (p.x > max_point.x)
+				max_point.x = p.x;
+			if (p.y > max_point.y)
+				max_point.y = p.y;
+			if (p.z > max_point.z)
+				max_point.z = p.z;
+			return v;
+		});
+	point<space::OBJECT> avg_point((max_point.x + min_point.x) * 0.5f, (max_point.y + min_point.y) * 0.5f, (max_point.z + min_point.z) * 0.5f);
+	mesh->transform([&](vertex_t::vector_t& v)
+		{
+			point<space::OBJECT> p = point<space::PARENT>(v.x, v.y, v.z).transform_copy(inv_mat);
+			p.x -= avg_point.x;
+			p.y -= avg_point.y;
+			p.z -= avg_point.z;
+			return u::hats2carve(p);
+		});
 }
 void generated_static_mesh::check_material_id(scene_ctx* const scene)
 {

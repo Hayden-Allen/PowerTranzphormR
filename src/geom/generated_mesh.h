@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "carve.h"
+#include "util/color.h"
 
 class scene_ctx;
 
@@ -48,6 +49,8 @@ public:
 	virtual void set_material(scene_ctx* const scene, const GLuint mat);
 	virtual void replace_material(scene_ctx* const scene, const GLuint old_mat, const GLuint new_mat);
 	virtual void set_mesh(mesh_t* const m);
+	virtual void set_vertices_color(const color_t& col, scene_ctx* const scene);
+	virtual void center_verts_at_origin(const tmat<space::OBJECT, space::PARENT>& mat = tmat<space::OBJECT, space::PARENT>());
 	void set_dirty();
 	bool is_dirty() const;
 	void clear();
@@ -208,6 +211,8 @@ public:
 	bool is_static() const override;
 	void set_mesh(mesh_t* const m) override;
 	GLuint get_material() const override;
+	void set_vertices_color(const color_t& col, scene_ctx* const scene) override;
+	void center_verts_at_origin(const tmat<space::OBJECT, space::PARENT>& inv_mat = tmat<space::OBJECT, space::PARENT>()) override;
 	std::vector<std::pair<std::string, generated_mesh_param>> get_params() const override;
 	tex_coord_t get_uv_offset() const override;
 private:

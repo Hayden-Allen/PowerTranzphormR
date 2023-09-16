@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "visibility_xportable.h"
+#include "util/color.h"
 
 class generated_mesh;
 class generated_static_mesh;
@@ -33,6 +34,8 @@ public:
 	bool is_operation() const;
 	bool is_dirty() const;
 	bool is_frozen() const;
+	void set_frozen_vertices_color(const color_t& col, scene_ctx* const scene);
+	void center_frozen_vertices_at_origin();
 	void set_transform(const tmat<space::OBJECT, space::PARENT>& new_mat);
 	void transform(const tmat<space::OBJECT, space::OBJECT>& m);
 	void set_operation(const carve::csg::CSG::OP op);
