@@ -133,7 +133,7 @@ void sgnode::set_frozen_vertices_color(const color_t& col, scene_ctx* const scen
 void sgnode::center_frozen_vertices_at_origin()
 {
 	assert(m_frozen && !is_operation() && m_gen);
-	m_gen->center_verts_at_origin(m_mat);
+	m_gen->center_verts_at_origin(accumulate_mats());
 	set_gen_dirty();
 }
 void sgnode::set_transform(const tmat<space::OBJECT, space::PARENT>& new_mat)

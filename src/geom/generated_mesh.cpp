@@ -70,7 +70,7 @@ void generated_mesh::set_vertices_color(const color_t& col, scene_ctx* const sce
 {
 	assert(false);
 }
-void generated_mesh::center_verts_at_origin(const tmat<space::OBJECT, space::PARENT>& mat)
+void generated_mesh::center_verts_at_origin(const tmat<space::OBJECT, space::WORLD>& mat)
 {
 	assert(false);
 }
@@ -707,13 +707,13 @@ void generated_static_mesh::set_vertices_color(const color_t& col, scene_ctx* co
 		}
 	}
 }
-void generated_static_mesh::center_verts_at_origin(const tmat<space::OBJECT, space::PARENT>& mat)
+void generated_static_mesh::center_verts_at_origin(const tmat<space::OBJECT, space::WORLD>& mat)
 {
 	const auto& inv_mat = mat.invert_copy();
 	point<space::OBJECT> min_point, max_point;
 	mesh->transform([&](vertex_t::vector_t& v)
 		{
-			const auto& p = point<space::PARENT>(v.x, v.y, v.z).transform_copy(inv_mat);
+			const auto& p = point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv_mat);
 			if (p.x < min_point.x)
 				min_point.x = p.x;
 			if (p.y < min_point.y)
@@ -731,7 +731,7 @@ void generated_static_mesh::center_verts_at_origin(const tmat<space::OBJECT, spa
 	point<space::OBJECT> avg_point((max_point.x + min_point.x) * 0.5f, (max_point.y + min_point.y) * 0.5f, (max_point.z + min_point.z) * 0.5f);
 	mesh->transform([&](vertex_t::vector_t& v)
 		{
-			point<space::OBJECT> p = point<space::PARENT>(v.x, v.y, v.z).transform_copy(inv_mat);
+			point<space::OBJECT> p = point<space::WORLD>(v.x, v.y, v.z).transform_copy(inv_mat);
 			p.x -= avg_point.x;
 			p.y -= avg_point.y;
 			p.z -= avg_point.z;

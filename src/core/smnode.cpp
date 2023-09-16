@@ -111,6 +111,7 @@ void smnode::set_vertices_color(const color_t& col, scene_ctx* const scene)
 void smnode::center_vertices_at_origin()
 {
 	m_gen->center_verts_at_origin();
+	copy_local_verts();
 	set_gen_dirty();
 }
 void smnode::set_gen(generated_mesh* const gen)
