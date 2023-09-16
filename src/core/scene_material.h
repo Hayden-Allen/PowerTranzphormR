@@ -26,8 +26,8 @@ public:
 public:
 	void remove_texture(const std::string& tex_name);
 	void set_texture(const std::string& tex_name, const std::string& fp);
-	const mgl::texture2d_rgb_u8* get_texture(const std::string& tex_name) const;
-	void for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgb_u8*)>& l) const;
+	const mgl::texture2d_rgba_u8* get_texture(const std::string& tex_name) const;
+	void for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgba_u8*)>& l) const;
 	nlohmann::json save(std::ofstream& out, const std::string &out_fp) const;
 	autotexture_params& get_autotexture_params(const std::string& tex_name);
 	bool get_use_alpha() const;

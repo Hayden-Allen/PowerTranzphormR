@@ -686,7 +686,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		s->uniform_1i("u_enable_lighting", mat->get_use_lighting());
 
 		u32 slot = 0;
-		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
+		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgba_u8* tex)
 			{
 				tex->bind(slot);
 				s->uniform_1i(name.c_str(), slot);

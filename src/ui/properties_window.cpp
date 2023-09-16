@@ -349,7 +349,7 @@ void properties_window::handle_material_frame(scene_material* const selected)
 
 	ImGui::SeparatorText("Textures");
 
-	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex_DONOTUSE)
+	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgba_u8* tex_DONOTUSE)
 		{
 			if (ImGui::CollapsingHeader(name.c_str()))
 			{
