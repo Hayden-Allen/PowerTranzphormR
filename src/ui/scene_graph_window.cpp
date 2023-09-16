@@ -505,6 +505,13 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 		}
 		ImGui::Separator();
 
+		if (ImGui::MenuItem("Duplicate"))
+		{
+			m_app_ctx->duplicate_selected_static_mesh();
+			performed_destructive_action = true;
+		}
+		ImGui::Separator();
+
 		if (ImGui::MenuItem("Rename"))
 		{
 			set_renaming_sm(hmp);

@@ -628,6 +628,13 @@ void app_ctx::rename_action(sgnode* const target, const std::string& new_name)
 {
 	actions.rename(target, new_name);
 }
+void app_ctx::duplicate_selected_static_mesh()
+{
+	smnode* const selected = get_selected_static_mesh();
+	smnode* const cloned = selected->clone(&scene);
+	scene.add_static_mesh(cloned);
+	set_selected_static_mesh(cloned);
+}
 
 
 
@@ -1355,6 +1362,20 @@ void app_ctx::static_meshes_menu()
 		GLFW_KEY_H,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
+	shortcut_menu_item sm_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_static_mesh();
+		},
+		[&]()
+		{
+			return get_selected_static_mesh();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
+	};
 	shortcut_menu_item sm_rename = {
 		"Rename",
 		[&]()
@@ -1436,7 +1457,9 @@ void app_ctx::static_meshes_menu()
 
 	shortcut_menu sm_menu;
 	sm_menu.name = "Static Mesh";
-	sm_menu.groups.push_back({ sm_create, sm_rename, sm_destroy });
+	sm_menu.groups.push_back({ sm_create });
+	sm_menu.groups.push_back({ sm_duplicate});
+	sm_menu.groups.push_back({ sm_rename, sm_destroy });
 	sm_menu.groups.push_back({ sm_hide, sm_show });
 	sm_menu.groups.push_back({ sm_clone_to_sg });
 	shortcut_menus.push_back(sm_menu);

@@ -115,6 +115,7 @@ public:
 	void freeze_action(sgnode* const target);
 	void unfreeze_action(sgnode* const target);
 	void rename_action(sgnode* const target, const std::string& new_name);
+	void duplicate_selected_static_mesh();
 private:
 	void reset_camera();
 	void create_operation_action(const carve::csg::CSG::OP op);
