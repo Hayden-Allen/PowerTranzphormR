@@ -97,13 +97,13 @@ smnode* smnode::clone(scene_ctx* const scene) const
 {
 	generated_mesh* cloned_gen = m_gen->clone(scene);
 	cloned_gen->recompute(scene);
-	smnode* result = new smnode(cloned_gen);
-	result->m_mat = m_mat;
-	result->m_should_snap = m_should_snap;
-	result->m_snap_all = m_snap_all;
-	result->m_snap_angle = m_snap_angle;
-	result->set_visibility(is_visible());
-	return result;
+	smnode* cloned_sm = new smnode(cloned_gen);
+	cloned_sm->copy_properties_from(*this);
+	cloned_sm->m_mat = m_mat;
+	cloned_sm->m_should_snap = m_should_snap;
+	cloned_sm->m_snap_all = m_snap_all;
+	cloned_sm->m_snap_angle = m_snap_angle;
+	return cloned_sm;
 }
 void smnode::set_gen_dirty()
 {
