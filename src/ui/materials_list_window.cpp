@@ -93,6 +93,7 @@ void materials_list_window::handle_frame()
 				ImGui::PopID();
 				break;
 			}
+			ImGui::Separator();
 
 			if (ImGui::MenuItem("Rename"))
 			{
