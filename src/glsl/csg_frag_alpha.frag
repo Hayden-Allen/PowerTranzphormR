@@ -106,9 +106,9 @@ void main()
 
 			vec3 light_v_pos = (cur_light.w2o * vec4(world_pos, 1)).xyz;
 			// current fragment is behind light
-			if(light_v_pos.z <= 0)
+			if(light_v_pos.z >= 0)
 				continue;
-			float cos_theta = light_v_pos.z / length(light_v_pos);
+			float cos_theta = -light_v_pos.z / length(light_v_pos);
 
 			float d_pos_length = length(d_pos);
 			// (r^2) / (rmax^2) * (2r / rmax - 3) + 1
