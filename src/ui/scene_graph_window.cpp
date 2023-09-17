@@ -17,7 +17,7 @@ void scene_graph_window::handle_focused(const bool focused)
 	{
 		if (!m_was_focused)
 		{
-			m_app_ctx->set_sel_type(global_selection_type::sgnode);
+			m_app_ctx->set_sel_type(m_prev_sel_type);
 		}
 		m_was_focused = true;
 	}
@@ -64,6 +64,11 @@ void scene_graph_window::handle_frame()
 	if (!performed_destructive_action)
 	{
 		m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
+	}
+
+	if (m_app_ctx->sel_type != global_selection_type::material)
+	{
+		m_prev_sel_type = m_app_ctx->sel_type;
 	}
 }
 void scene_graph_window::set_renaming(sgnode* const node)

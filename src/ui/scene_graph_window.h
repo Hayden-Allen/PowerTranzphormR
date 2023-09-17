@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "core/scene_ctx.h"
+#include "app_ctx.h"
 #include "imgui_window.h"
 
 class scene_graph_window : public imgui_window
@@ -39,4 +40,5 @@ private:
 	waypoint* m_renaming_waypoint = nullptr;
 	bool m_rename_waypoint_needs_focus = false;
 	bool m_was_focused = false;
+	global_selection_type m_prev_sel_type = global_selection_type::sgnode;
 };
