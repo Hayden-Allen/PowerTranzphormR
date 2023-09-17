@@ -488,6 +488,7 @@ void app_ctx::clear_clipboard()
 			frozen2unfrozen.erase(clipboard);
 		}
 		delete clipboard;
+		clipboard = nullptr;
 	}
 }
 void app_ctx::destroy_static_mesh(smnode* const n)
