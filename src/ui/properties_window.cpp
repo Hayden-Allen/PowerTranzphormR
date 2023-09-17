@@ -149,7 +149,7 @@ bool properties_window::handle_snap_mode(const bool value)
 		for (u32 i = 0; i < 2; i++)
 		{
 			const bool selected = value == (bool)i;
-			if (ImGui::Selectable(snap_text[i].c_str(), &selected))
+			if (ImGui::Selectable(snap_text[i].c_str(), selected))
 			{
 				if (value != (bool)i)
 					result = true;
