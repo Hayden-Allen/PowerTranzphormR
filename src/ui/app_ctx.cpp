@@ -522,13 +522,75 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	const sgnode* const parent = node->get_parent();
 	assert(parent);
 
-	generated_static_mesh* const new_gen = new generated_static_mesh(carve_clone(node->get_gen()->mesh, &scene), &scene);
+	// carve -> gluTess
+	std::unordered_map<u32, std::vector<mesh_vertex>> tesselate_verts_for_mtl;
+	const auto& all_mtls = scene.get_materials();
+	for (auto it = all_mtls.begin(); it != all_mtls.end(); ++it)
+	{
+		tesselate_verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
+	}
+	scene.tesselate_external(node->get_gen()->mesh, tesselate_verts_for_mtl);
+
+	// gluTess -> triangulated carve
+	std::vector<vertex_t*> verts_to_free;
+	std::vector<face_t*> carve_faces;
+	for (const auto& pair : tesselate_verts_for_mtl)
+	{
+		if (pair.second.size() == 0)
+		{
+			continue;
+		}
+
+		auto& mtl_id_attr = scene.get_mtl_id_attr();
+		auto& vert_attrs = scene.get_vert_attrs();
+		for (size_t i = 0; i < pair.second.size(); i += 3)
+		{
+			const u32 mtl_id = pair.first;
+			
+			vertex_t* va = new vertex_t(carve::geom::VECTOR(pair.second[i].x, pair.second[i].y, pair.second[i].z));
+			vertex_t* vb = new vertex_t(carve::geom::VECTOR(pair.second[i + 1].x, pair.second[i + 1].y, pair.second[i + 1].z));
+			vertex_t* vc = new vertex_t(carve::geom::VECTOR(pair.second[i + 2].x, pair.second[i + 2].y, pair.second[i + 2].z));
+			verts_to_free.emplace_back(va);
+			verts_to_free.emplace_back(vb);
+			verts_to_free.emplace_back(vc);
+			face_t* const new_f = new face_t(va, vb, vc);
+			mtl_id_attr.setAttribute(new_f, mtl_id);
+			for (u32 j = 0; j < 3; ++j)
+			{
+				const auto& srcv = pair.second[i + j];
+				const tex_coord_t uv0(srcv.u0, srcv.v0, srcv.uo0, srcv.vo0);
+				const tex_coord_t uv1(srcv.u1, srcv.v1, srcv.uo1, srcv.vo1);
+				const tex_coord_t uv2(srcv.u2, srcv.v2, srcv.uo2, srcv.vo2);
+				const tex_coord_t uv3(srcv.u3, srcv.v3, srcv.uo3, srcv.vo3);
+				const color_t color(srcv.r, srcv.g, srcv.b, srcv.a);
+				vert_attrs.uv0.setAttribute(new_f, j, uv0);
+				vert_attrs.uv1.setAttribute(new_f, j, uv1);
+				vert_attrs.uv2.setAttribute(new_f, j, uv2);
+				vert_attrs.uv3.setAttribute(new_f, j, uv3);
+				vert_attrs.w0.setAttribute(new_f, j, srcv.w0);
+				vert_attrs.w1.setAttribute(new_f, j, srcv.w1);
+				vert_attrs.w2.setAttribute(new_f, j, srcv.w2);
+				vert_attrs.w3.setAttribute(new_f, j, srcv.w3);
+				vert_attrs.color.setAttribute(new_f, j, color);
+			}
+			carve_faces.push_back(new_f);
+		}
+	}
+	mesh_t* const new_carve_mesh = new mesh_t(carve_faces);
+
+	// triangulated carve -> smnode
+	generated_static_mesh* const new_gen = new generated_static_mesh(new_carve_mesh, &scene);
 	smnode* const new_sm = new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name());
 	new_sm->set_snap_angle(scene_ctx::s_snap_angle);
 	new_sm->set_should_snap_all(scene_ctx::s_snap_all);
 	new_sm->set_should_snap(true);
 	scene.add_static_mesh(new_sm);
 	set_selected_static_mesh(new_sm);
+
+	for (vertex_t* v : verts_to_free)
+	{
+		delete v;
+	}
 }
 void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 {

@@ -87,6 +87,7 @@ public:
 	generated_mesh* generated_textured_torus(const GLuint mtl_id, const torus_options& options = {});
 	generated_mesh* generated_textured_heightmap(const GLuint mtl_id, const heightmap_options& options = {});
 	generated_mesh* generated_textured_heightmap_static(const GLuint mtl_id, const heightmap_options& options = {});
+	void tesselate_external(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl);
 private:
 	static inline u32 s_next_mtl_id = 1;
 	constexpr static u32 s_num_lights = 128;

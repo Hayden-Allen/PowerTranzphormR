@@ -501,7 +501,49 @@ generated_mesh* scene_ctx::generated_textured_heightmap_static(const GLuint mtl_
 	mesh_t* const hm = textured_heightmap(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 	return new generated_static_mesh(hm, this);
 }
+void scene_ctx::tesselate_external(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl)
+{
+	GLUtesselator* tess = gluNewTess();
+	gluTessCallback(tess, GLU_TESS_BEGIN, (GLUTessCallback)tess_callback_begin);
+	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)(tess_callback_vertex_data));
+	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
+	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
+	gluTessCallback(tess, GLU_TESS_ERROR, (GLUTessCallback)tess_callback_error);
+	if (mesh)
+	{
+		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+		{
+			const mesh_t::face_t* f = *i;
+			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
 
+			std::vector<tess_vtx> verts;
+			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+			{
+				const tex_coord_t& t0 = m_vert_attrs.uv0.getAttribute(f, e.idx());
+				const tex_coord_t& t1 = m_vert_attrs.uv1.getAttribute(f, e.idx());
+				const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
+				const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
+				const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const f64 w1 = m_vert_attrs.w1.getAttribute(f, e.idx());
+				const f64 w2 = m_vert_attrs.w2.getAttribute(f, e.idx());
+				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
+				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
+
+				tess_vtx v(e->vert->v.x, e->vert->v.y, e->vert->v.z, t0, t1, t2, t3, w0, w1, w2, w3, color);
+				v.target = &out_verts_for_mtl.at(mtl_id);
+				verts.emplace_back(v);
+			}
+
+			gluTessBeginPolygon(tess, nullptr);
+			gluTessBeginContour(tess);
+			for (const tess_vtx& v : verts)
+				gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
+			gluTessEndContour(tess);
+			gluTessEndPolygon(tess);
+		}
+	}
+	gluDeleteTess(tess);
+}
 
 
 void scene_ctx::m_build_light_buffer()
@@ -606,47 +648,7 @@ void scene_ctx::m_build_sm_vaos()
 }
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms)
 {
-	GLUtesselator* tess = gluNewTess();
-	gluTessCallback(tess, GLU_TESS_BEGIN, (GLUTessCallback)tess_callback_begin);
-	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
-	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
-	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
-	gluTessCallback(tess, GLU_TESS_ERROR, (GLUTessCallback)tess_callback_error);
-	if (mesh)
-	{
-		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
-		{
-			const mesh_t::face_t* f = *i;
-			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
-
-			std::vector<tess_vtx> verts;
-			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
-			{
-				const tex_coord_t& t0 = m_vert_attrs.uv0.getAttribute(f, e.idx());
-				const tex_coord_t& t1 = m_vert_attrs.uv1.getAttribute(f, e.idx());
-				const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
-				const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
-				const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
-				const f64 w1 = m_vert_attrs.w1.getAttribute(f, e.idx());
-				const f64 w2 = m_vert_attrs.w2.getAttribute(f, e.idx());
-				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
-				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
-
-				tess_vtx v(e->vert->v.x, e->vert->v.y, e->vert->v.z, t0, t1, t2, t3, w0, w1, w2, w3, color);
-				v.target = &out_verts_for_mtl.at(mtl_id);
-				verts.emplace_back(v);
-			}
-
-			gluTessBeginPolygon(tess, nullptr);
-			gluTessBeginContour(tess);
-			for (const tess_vtx& v : verts)
-				gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
-			gluTessEndContour(tess);
-			gluTessEndPolygon(tess);
-		}
-	}
-	gluDeleteTess(tess);
-
+	tesselate_external(mesh, out_verts_for_mtl);
 	for (auto& pair : out_verts_for_mtl)
 	{
 		if (snap_norms)
