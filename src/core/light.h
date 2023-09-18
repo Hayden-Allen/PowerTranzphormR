@@ -39,6 +39,7 @@ public:
 	tmat<space::OBJECT, space::WORLD>& get_mat();
 	const tmat<space::OBJECT, space::WORLD>& get_mat() const;
 	light_type get_type() const;
+	light* clone() const;
 public:
 	void set_mat(const tmat<space::OBJECT, space::WORLD>& m);
 	void set_type(const light_type t);

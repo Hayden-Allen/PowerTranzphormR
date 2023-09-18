@@ -157,7 +157,7 @@ namespace u
 		return carve::geom::VECTOR(p.x, p.y, p.z);
 	}
 
-	static mgl::texture2d_rgb_u8* load_texture2d_rgb_u8(const std::string& fp)
+	static mgl::texture2d_rgba_u8* load_texture2d_rgba_u8(const std::string& fp)
 	{
 		std::ifstream test(fp);
 		if (!test.is_open())
@@ -170,9 +170,9 @@ namespace u
 
 		stbi_set_flip_vertically_on_load(true);
 		int w = -1, h = -1, c = -1;
-		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 3);
+		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 4);
 		assert(c >= 3);
-		mgl::texture2d_rgb_u8* tex = new mgl::texture2d_rgb_u8(GL_RGB, w, h, tex_data);
+		mgl::texture2d_rgba_u8* tex = new mgl::texture2d_rgba_u8(GL_RGBA, w, h, tex_data);
 		stbi_image_free(tex_data);
 		return tex;
 	}

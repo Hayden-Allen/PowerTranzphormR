@@ -6,15 +6,15 @@
 namespace g
 {
 	texture_library* texlib = nullptr;
-	mgl::shaders* shaders = nullptr;
+	mgl::shaders* opaque_shaders = nullptr, *alpha_shaders = nullptr;
 	f32 font_size = 0.0f;
 
 	void init()
 	{
 		texlib = new texture_library();
 		texlib->init_deftex();
-		// shaders = new mgl::shaders("src/glsl/csg_vert.vert", "src/glsl/csg_vert.frag");
-		shaders = new mgl::shaders("src/glsl/csg_frag.vert", "src/glsl/csg_frag.frag");
+		opaque_shaders = new mgl::shaders("src/glsl/csg_frag.vert", "src/glsl/csg_frag.frag");
+		alpha_shaders = new mgl::shaders("src/glsl/csg_frag.vert", "src/glsl/csg_frag_alpha.frag");
 	}
 	void clear()
 	{
@@ -23,7 +23,8 @@ namespace g
 	}
 	void destroy()
 	{
-		delete shaders;
+		delete opaque_shaders;
+		delete alpha_shaders;
 		delete texlib;
 	}
 } // namespace g

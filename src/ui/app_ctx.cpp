@@ -9,15 +9,14 @@
 #include "core/smnode.h"
 
 app_ctx::app_ctx() :
-	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 0.25f, .g = 0.25f, .b = 0.25f } }),
+	mgl_ctx(1280, 720, "PowerTranzphormR", { .vsync = true, .clear = { .r = 1.0f, .g = 0.0f, .b = 1.0f } }),
 	actions(&scene, this),
 	preview_fb(1280, 720)
 {
 	NFD_Init(); // Should happen after GLFW initialized
 	g::init();
 	scene.clear(); // Need to create the default material after initializing globals
-	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
-	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
+	reset_camera();
 	init_menus();
 
 	constexpr u64 nverts = 6;
@@ -56,6 +55,7 @@ void app_ctx::clear()
 	loaded_filename = "";
 	actions.clear();
 	scene.clear();
+	reset_camera();
 	deselect_all();
 	clear_clipboard();
 	frozen2unfrozen.clear();
@@ -184,26 +184,29 @@ bool app_ctx::has_unfrozen(const sgnode* const node) const
 }
 void app_ctx::set_sel_type(const global_selection_type t)
 {
-	sel_type = t;
-	if (sel_type == global_selection_type::sgnode)
+	if (sel_type != t)
 	{
-		m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
-	}
-	else if (sel_type == global_selection_type::material)
-	{
-		m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
-	}
-	else if (sel_type == global_selection_type::light)
-	{
-		m_imgui_needs_select_unfocused_light = m_selected_light;
-	}
-	else if (sel_type == global_selection_type::waypoint)
-	{
-		m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
-	}
-	else if (sel_type == global_selection_type::static_mesh)
-	{
-		m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
+		sel_type = t;
+		if (sel_type == global_selection_type::sgnode)
+		{
+			m_imgui_needs_select_unfocused_sgnode = m_selected_sgnode;
+		}
+		else if (sel_type == global_selection_type::material)
+		{
+			m_imgui_needs_select_unfocused_mtl = m_selected_mtl;
+		}
+		else if (sel_type == global_selection_type::light)
+		{
+			m_imgui_needs_select_unfocused_light = m_selected_light;
+		}
+		else if (sel_type == global_selection_type::waypoint)
+		{
+			m_imgui_needs_select_unfocused_waypoint = m_selected_waypoint;
+		}
+		else if (sel_type == global_selection_type::static_mesh)
+		{
+			m_imgui_needs_select_unfocused_static_mesh = m_selected_static_mesh;
+		}
 	}
 }
 void app_ctx::set_selected_sgnode(sgnode* const node)
@@ -486,6 +489,7 @@ void app_ctx::clear_clipboard()
 			frozen2unfrozen.erase(clipboard);
 		}
 		delete clipboard;
+		clipboard = nullptr;
 	}
 }
 void app_ctx::destroy_static_mesh(smnode* const n)
@@ -520,8 +524,85 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	const sgnode* const parent = node->get_parent();
 	assert(parent);
 
-	generated_static_mesh* const new_gen = new generated_static_mesh(carve_clone(node->get_gen()->mesh, &scene), &scene);
-	scene.add_static_mesh(new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name()));
+	// carve -> gluTess
+	std::unordered_map<u32, std::vector<mesh_vertex>> tesselate_verts_for_mtl;
+	const auto& all_mtls = scene.get_materials();
+	for (auto it = all_mtls.begin(); it != all_mtls.end(); ++it)
+	{
+		tesselate_verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
+	}
+	scene.tesselate_external(node->get_gen()->mesh, tesselate_verts_for_mtl);
+
+	// deduplicate vertices by position
+	std::unordered_map<std::string, vertex_t*> verts_map;
+	for (const auto& pair : tesselate_verts_for_mtl)
+	{
+		for (const auto &v : pair.second)
+		{
+			const std::string& k = v.hash_pos();
+			if (!verts_map.contains(k))
+			{
+				verts_map.insert({ k, new vertex_t(carve::geom::VECTOR(v.x, v.y, v.z)) });
+			}
+		}
+	}
+
+	// gluTess -> triangulated carve
+	std::vector<face_t*> carve_faces;
+	for (const auto& pair : tesselate_verts_for_mtl)
+	{
+		if (pair.second.size() == 0)
+		{
+			continue;
+		}
+
+		auto& mtl_id_attr = scene.get_mtl_id_attr();
+		auto& vert_attrs = scene.get_vert_attrs();
+		for (size_t i = 0; i < pair.second.size(); i += 3)
+		{
+			const u32 mtl_id = pair.first;
+			
+			vertex_t* va = verts_map.at(pair.second[i].hash_pos());
+			vertex_t* vb = verts_map.at(pair.second[i + 1].hash_pos());
+			vertex_t* vc = verts_map.at(pair.second[i + 2].hash_pos());
+			face_t* const new_f = new face_t(va, vb, vc);
+			mtl_id_attr.setAttribute(new_f, mtl_id);
+			for (u32 j = 0; j < 3; ++j)
+			{
+				const auto& srcv = pair.second[i + j];
+				const tex_coord_t uv0(srcv.u0, srcv.v0, srcv.uo0, srcv.vo0);
+				const tex_coord_t uv1(srcv.u1, srcv.v1, srcv.uo1, srcv.vo1);
+				const tex_coord_t uv2(srcv.u2, srcv.v2, srcv.uo2, srcv.vo2);
+				const tex_coord_t uv3(srcv.u3, srcv.v3, srcv.uo3, srcv.vo3);
+				const color_t color(srcv.r, srcv.g, srcv.b, srcv.a);
+				vert_attrs.uv0.setAttribute(new_f, j, uv0);
+				vert_attrs.uv1.setAttribute(new_f, j, uv1);
+				vert_attrs.uv2.setAttribute(new_f, j, uv2);
+				vert_attrs.uv3.setAttribute(new_f, j, uv3);
+				vert_attrs.w0.setAttribute(new_f, j, srcv.w0);
+				vert_attrs.w1.setAttribute(new_f, j, srcv.w1);
+				vert_attrs.w2.setAttribute(new_f, j, srcv.w2);
+				vert_attrs.w3.setAttribute(new_f, j, srcv.w3);
+				vert_attrs.color.setAttribute(new_f, j, color);
+			}
+			carve_faces.push_back(new_f);
+		}
+	}
+	mesh_t* const new_carve_mesh = new mesh_t(carve_faces);
+
+	// triangulated carve -> smnode
+	generated_static_mesh* const new_gen = new generated_static_mesh(new_carve_mesh, &scene);
+	smnode* const new_sm = new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name());
+	new_sm->set_snap_angle(scene_ctx::s_snap_angle);
+	new_sm->set_should_snap_all(scene_ctx::s_snap_all);
+	new_sm->set_should_snap(true);
+	scene.add_static_mesh(new_sm);
+	set_selected_static_mesh(new_sm);
+
+	for (const auto& pair : verts_map)
+	{
+		delete pair.second;
+	}
 }
 void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 {
@@ -621,9 +702,42 @@ void app_ctx::rename_action(sgnode* const target, const std::string& new_name)
 {
 	actions.rename(target, new_name);
 }
+void app_ctx::duplicate_selected_static_mesh()
+{
+	smnode* const selected = get_selected_static_mesh();
+	smnode* const cloned = selected->clone(&scene);
+	scene.add_static_mesh(cloned);
+	set_selected_static_mesh(cloned);
+}
+void app_ctx::duplicate_selected_light()
+{
+	light* const selected = get_selected_light();
+	light* const cloned = selected->clone();
+	scene.add_light(cloned);
+	set_selected_light(cloned);
+}
+void app_ctx::duplicate_selected_waypoint()
+{
+	waypoint* const selected = get_selected_waypoint();
+	waypoint* const cloned = selected->clone();
+	scene.add_waypoint(cloned);
+	set_selected_waypoint(cloned);
+}
+void app_ctx::duplicate_selected_material()
+{
+	scene_material* const selected = get_selected_material();
+	scene_material* const cloned = selected->clone();
+	scene.add_material(cloned);
+	set_selected_material(cloned);
+}
 
 
 
+void app_ctx::reset_camera()
+{
+	f32 ar = static_cast<f32>(preview_fb.get_width()) / static_cast<f32>(preview_fb.get_height());
+	preview_cam = mgl::camera({ 0, 0, 5 }, 0, 0, 108 / ar, ar, 0.1f, 1000.0f, 5.0f);
+}
 void app_ctx::create_operation_action(const carve::csg::CSG::OP op)
 {
 	create(new sgnode(nullptr, op));
@@ -730,6 +844,7 @@ void app_ctx::file_menu()
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
 	*/
+	/*
 	shortcut_menu_item file_export = {
 		"Export...",
 		[&]()
@@ -744,7 +859,8 @@ void app_ctx::file_menu()
 		0,
 		0,
 	};
-	file_menu.groups.push_back({ file_new, file_open, file_save /* , file_save_as */, file_export });
+	*/
+	file_menu.groups.push_back({ file_new, file_open, file_save /* , file_save_as , file_export */  });
 	shortcut_menus.push_back(file_menu);
 }
 void app_ctx::phorm_menu()
@@ -1289,6 +1405,20 @@ void app_ctx::material_menu()
 		GLFW_KEY_EQUAL,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
+	shortcut_menu_item material_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_material();
+		},
+		[&]()
+		{
+			return get_selected_material();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
+	};
 	shortcut_menu_item material_rename = {
 		"Rename",
 		[&]()
@@ -1324,7 +1454,9 @@ void app_ctx::material_menu()
 
 	shortcut_menu material_menu;
 	material_menu.name = "Material";
-	material_menu.groups.push_back({ material_create, material_rename, material_destroy });
+	material_menu.groups.push_back({ material_create });
+	material_menu.groups.push_back({ material_duplicate });
+	material_menu.groups.push_back({ material_rename, material_destroy });
 	shortcut_menus.push_back(material_menu);
 }
 void app_ctx::static_meshes_menu()
@@ -1342,6 +1474,20 @@ void app_ctx::static_meshes_menu()
 		"Ctrl+Shift+H",
 		GLFW_KEY_H,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item sm_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_static_mesh();
+		},
+		[&]()
+		{
+			return get_selected_static_mesh();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
 	};
 	shortcut_menu_item sm_rename = {
 		"Rename",
@@ -1424,7 +1570,9 @@ void app_ctx::static_meshes_menu()
 
 	shortcut_menu sm_menu;
 	sm_menu.name = "Static Mesh";
-	sm_menu.groups.push_back({ sm_create, sm_rename, sm_destroy });
+	sm_menu.groups.push_back({ sm_create });
+	sm_menu.groups.push_back({ sm_duplicate});
+	sm_menu.groups.push_back({ sm_rename, sm_destroy });
 	sm_menu.groups.push_back({ sm_hide, sm_show });
 	sm_menu.groups.push_back({ sm_clone_to_sg });
 	shortcut_menus.push_back(sm_menu);
@@ -1445,6 +1593,21 @@ void app_ctx::lights_menu()
 		GLFW_KEY_L,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
+	shortcut_menu_item light_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_light();
+		},
+		[&]()
+		{
+			const bool is_camera_light = (get_selected_light() == scene.get_lights()[0]);
+			return get_selected_light() && !is_camera_light;
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
+	};
 	shortcut_menu_item light_rename = {
 		"Rename",
 		[&]()
@@ -1456,7 +1619,7 @@ void app_ctx::lights_menu()
 		[&]()
 		{
 			const bool is_camera_light = (get_selected_light() == scene.get_lights()[0]);
-			return !is_camera_light;
+			return get_selected_light() && !is_camera_light;
 		},
 		"Ctrl+R",
 		GLFW_KEY_R,
@@ -1473,7 +1636,7 @@ void app_ctx::lights_menu()
 		[&]()
 		{
 			const bool is_camera_light = (get_selected_light() == scene.get_lights()[0]);
-			return !is_camera_light;
+			return get_selected_light() && !is_camera_light;
 		},
 		"Delete",
 		GLFW_KEY_DELETE,
@@ -1517,7 +1680,9 @@ void app_ctx::lights_menu()
 
 	shortcut_menu light_menu;
 	light_menu.name = "Lights";
-	light_menu.groups.push_back({ light_create, light_rename, light_destroy });
+	light_menu.groups.push_back({ light_create });
+	light_menu.groups.push_back({ light_duplicate });
+	light_menu.groups.push_back({ light_rename, light_destroy });
 	light_menu.groups.push_back({ light_hide, light_show });
 	shortcut_menus.push_back(light_menu);
 }
@@ -1536,6 +1701,20 @@ void app_ctx::waypoints_menu()
 		"Ctrl+Shift+W",
 		GLFW_KEY_L,
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
+	};
+	shortcut_menu_item waypoint_duplicate = {
+		"Duplicate",
+		[&]()
+		{
+			duplicate_selected_waypoint();
+		},
+		[&]()
+		{
+			return get_selected_waypoint();
+		},
+		"Ctrl+D",
+		GLFW_KEY_D,
+		GLFW_MOD_CONTROL,
 	};
 	shortcut_menu_item waypoint_rename = {
 		"Rename",
@@ -1572,6 +1751,8 @@ void app_ctx::waypoints_menu()
 
 	shortcut_menu waypoint_menu;
 	waypoint_menu.name = "Waypoints";
-	waypoint_menu.groups.push_back({ waypoint_create, waypoint_rename, waypoint_destroy });
+	waypoint_menu.groups.push_back({ waypoint_create });
+	waypoint_menu.groups.push_back({ waypoint_duplicate });
+	waypoint_menu.groups.push_back({ waypoint_rename, waypoint_destroy });
 	shortcut_menus.push_back(waypoint_menu);
 }

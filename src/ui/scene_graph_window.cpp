@@ -17,7 +17,7 @@ void scene_graph_window::handle_focused(const bool focused)
 	{
 		if (!m_was_focused)
 		{
-			m_app_ctx->set_sel_type(global_selection_type::sgnode);
+			m_app_ctx->set_sel_type(m_prev_sel_type);
 		}
 		m_was_focused = true;
 	}
@@ -28,27 +28,48 @@ void scene_graph_window::handle_focused(const bool focused)
 }
 void scene_graph_window::handle_frame()
 {
+	bool performed_destructive_action = false;
+
 	sgnode* const root = m_app_ctx->scene.get_sg_root();
 	ImGui::PushID("hfsgn");
-	bool performed_destructive_action = false;
 	handle_node(root, performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_sgnode();
+	}
 
+	performed_destructive_action = false;
 	ImGui::PushID("hfhmp");
-	handle_heightmaps();
+	handle_heightmaps(performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_static_mesh();
+	}
 
+	performed_destructive_action = false;
 	ImGui::PushID("hflit");
-	handle_lights();
+	handle_lights(performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_light();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_light();
+	}
 
+	performed_destructive_action = false;
 	ImGui::PushID("hfway");
-	handle_waypoints();
+	handle_waypoints(performed_destructive_action);
 	ImGui::PopID();
-	m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
+	if (!performed_destructive_action)
+	{
+		m_app_ctx->unset_imgui_needs_select_unfocused_waypoint();
+	}
+
+	if (m_app_ctx->sel_type != global_selection_type::material)
+	{
+		m_prev_sel_type = m_app_ctx->sel_type;
+	}
 }
 void scene_graph_window::set_renaming(sgnode* const node)
 {
@@ -112,7 +133,15 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 		const f32 x = ImGui::GetCursorPosX();
 
 		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->is_sgnode_multiselected(node);
+		if (!node->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		if (!node->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -146,7 +175,15 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 	else
 	{
 		bool is_sel_or_multisel = (m_app_ctx->get_selected_sgnode() == node) || m_app_ctx->is_sgnode_multiselected(node);
+		if (!node->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		open = ImGui::TreeNodeEx(node->get_id().c_str(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | (is_sel_or_multisel ? ImGuiTreeNodeFlags_Selected : 0) | (node->get_children().size() == 0 ? ImGuiTreeNodeFlags_Leaf : 0), "%s", display_name.c_str());
+		if (!node->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 
@@ -368,7 +405,15 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
+		if (!hmp->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(hmp->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (hmp == m_app_ctx->get_selected_static_mesh() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", hmp->get_name().c_str());
+		if (!hmp->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -401,7 +446,15 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 	}
 	else
 	{
+		if (!hmp->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(hmp->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (hmp == m_app_ctx->get_selected_static_mesh() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", hmp->get_name().c_str());
+		if (!hmp->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 	smnode* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_static_mesh();
@@ -457,6 +510,13 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 		}
 		ImGui::Separator();
 
+		if (ImGui::MenuItem("Duplicate"))
+		{
+			m_app_ctx->duplicate_selected_static_mesh();
+			performed_destructive_action = true;
+		}
+		ImGui::Separator();
+
 		if (ImGui::MenuItem("Rename"))
 		{
 			set_renaming_sm(hmp);
@@ -472,11 +532,11 @@ void scene_graph_window::handle_heightmap(smnode* const hmp, bool& performed_des
 
 	ImGui::TreePop();
 }
-void scene_graph_window::handle_heightmaps()
+void scene_graph_window::handle_heightmaps(bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
-	const bool open = ImGui::TreeNodeEx("##SGW_HMS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Heightmaps");
+	const bool open = ImGui::TreeNodeEx("##SGW_HMS", ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, "Static Meshes");
 	ImGui::PopStyleVar();
 
 	ImGui::PushID("##SGW_HMS");
@@ -495,7 +555,6 @@ void scene_graph_window::handle_heightmaps()
 		auto& sms = m_app_ctx->scene.get_static_meshes();
 		for (u32 i = 0; i < sms.size(); i++)
 		{
-			bool performed_destructive_action = false;
 			handle_heightmap(sms[i], performed_destructive_action);
 			if (performed_destructive_action)
 			{
@@ -514,7 +573,15 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
+		if (!l->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(l->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (l == m_app_ctx->get_selected_light() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", l->get_name().c_str());
+		if (!l->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -547,7 +614,15 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 	}
 	else
 	{
+		if (!l->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(l->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (l == m_app_ctx->get_selected_light() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", l->get_name().c_str());
+		if (!l->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 	light* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_light();
@@ -589,11 +664,18 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 				m_app_ctx->scene.update_light(l);
 			}
 		}
-		ImGui::Separator();
 
-		// don't allow renaming or destroying camera light
+		// don't allow renaming, destroying, or duplicating camera light
 		if (index != 0)
 		{
+			ImGui::Separator();
+			if (ImGui::MenuItem("Duplicate"))
+			{
+				m_app_ctx->duplicate_selected_light();
+				performed_destructive_action = true;
+			}
+
+			ImGui::Separator();
 			if (ImGui::MenuItem("Rename"))
 			{
 				set_renaming_light(l);
@@ -610,7 +692,7 @@ void scene_graph_window::handle_light(const u32 index, bool& performed_destructi
 
 	ImGui::TreePop();
 }
-void scene_graph_window::handle_lights()
+void scene_graph_window::handle_lights(bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -632,7 +714,6 @@ void scene_graph_window::handle_lights()
 	{
 		for (u32 i = 0; i < m_app_ctx->scene.get_lights().size(); i++)
 		{
-			bool performed_destructive_action = false;
 			handle_light(i, performed_destructive_action);
 			if (performed_destructive_action)
 			{
@@ -651,7 +732,15 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 	{
 		const f32 x = ImGui::GetCursorPosX();
 
+		if (!w->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(w->get_id().c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (w == m_app_ctx->get_selected_waypoint() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", w->get_name().c_str());
+		if (!w->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 
 		constexpr u32 BUF_SIZE = 32;
 		char buf[32] = { 0 };
@@ -684,7 +773,15 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 	}
 	else
 	{
+		if (!w->is_visible())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
 		ImGui::TreeNodeEx(w->get_id().c_str(), ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | (w == m_app_ctx->get_selected_waypoint() ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf, "%s", w->get_name().c_str());
+		if (!w->is_visible())
+		{
+			ImGui::PopStyleColor();
+		}
 	}
 
 	waypoint* needs_select = m_app_ctx->get_imgui_needs_select_unfocused_waypoint();
@@ -709,6 +806,14 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 	if (ImGui::BeginPopupContextItem())
 	{
 		m_app_ctx->set_selected_waypoint(w);
+
+		if (ImGui::MenuItem("Duplicate"))
+		{
+			m_app_ctx->duplicate_selected_waypoint();
+			performed_destructive_action = true;
+		}
+		ImGui::Separator();
+
 		if (ImGui::MenuItem("Rename"))
 		{
 			set_renaming_waypoint(w);
@@ -724,7 +829,7 @@ void scene_graph_window::handle_waypoint(waypoint* const w, bool& performed_dest
 
 	ImGui::TreePop();
 }
-void scene_graph_window::handle_waypoints()
+void scene_graph_window::handle_waypoints(bool& performed_destructive_action)
 {
 	const f32 padding_x = 3.f;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, 2.f));
@@ -747,7 +852,6 @@ void scene_graph_window::handle_waypoints()
 		auto& waypoints = m_app_ctx->scene.get_waypoints();
 		for (u32 i = 0; i < waypoints.size(); i++)
 		{
-			bool performed_destructive_action = false;
 			handle_waypoint(waypoints[i], performed_destructive_action);
 			if (performed_destructive_action)
 			{

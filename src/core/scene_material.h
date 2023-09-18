@@ -16,24 +16,29 @@ struct autotexture_params
 struct scene_material : public xportable
 {
 public:
-	mgl::shaders* shaders;
+	mgl::shaders* opaque_shaders = nullptr, *alpha_shaders = nullptr;
 public:
 	scene_material();
-	scene_material(const std::string& n, mgl::shaders* const s);
+	scene_material(const std::string& n, mgl::shaders* const os, mgl::shaders* const as);
 	scene_material(const scene_material& o) noexcept;
-	scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const s);
+	scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const os, mgl::shaders* const as);
 	~scene_material();
 public:
 	void remove_texture(const std::string& tex_name);
 	void set_texture(const std::string& tex_name, const std::string& fp);
-	const mgl::texture2d_rgb_u8* get_texture(const std::string& tex_name) const;
-	void for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgb_u8*)>& l) const;
+	const mgl::texture2d_rgba_u8* get_texture(const std::string& tex_name) const;
+	void for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgba_u8*)>& l) const;
 	nlohmann::json save(std::ofstream& out, const std::string &out_fp) const;
 	autotexture_params& get_autotexture_params(const std::string& tex_name);
 	bool get_use_alpha() const;
 	void set_use_alpha(bool alpha);
+	bool get_use_lighting() const;
+	void set_use_lighting(bool light);
+	bool get_should_cull() const;
+	void set_should_cull(bool cull);
+	scene_material* clone() const;
 private:
 	std::unordered_map<std::string, std::string> m_tex_name_to_filename;
 	std::unordered_map<std::string, autotexture_params> m_autotexture_params;
-	bool m_use_alpha = false;
+	bool m_use_alpha = false, m_use_lighting = true, m_should_cull = true;
 };

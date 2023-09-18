@@ -82,3 +82,10 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+#ifndef _DEBUG
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+	main(0, nullptr);
+}
+#endif

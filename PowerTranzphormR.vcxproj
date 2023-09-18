@@ -259,7 +259,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -396,6 +396,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\core\action.h" />
     <ClInclude Include="src\core\action_stack.h" />
     <ClInclude Include="src\core\light.h" />
@@ -429,6 +430,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PowerTranzphormR.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="msvc-res\app.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

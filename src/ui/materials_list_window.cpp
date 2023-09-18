@@ -28,6 +28,8 @@ void materials_list_window::handle_focused(const bool focused)
 }
 void materials_list_window::handle_frame()
 {
+	ImGui::PushID("MtlList");
+
 	const auto& sorted_mtls = m_app_ctx->get_sorted_materials();
 
 	for (size_t i = 0; i < sorted_mtls.size(); ++i)
@@ -81,9 +83,31 @@ void materials_list_window::handle_frame()
 		if (ImGui::BeginPopupContextItem())
 		{
 			m_app_ctx->set_selected_material(mtl);
+
+			if (ImGui::MenuItem("Duplicate"))
+			{
+				m_app_ctx->duplicate_selected_material();
+				
+				// performed destructive action
+				ImGui::EndPopup();
+				ImGui::PopID();
+				break;
+			}
+			ImGui::Separator();
+
 			if (ImGui::MenuItem("Rename"))
 			{
 				set_renaming(mtl);
+			}
+			if (ImGui::MenuItem("Delete"))
+			{
+				m_app_ctx->remove_material(m_app_ctx->scene.get_id_for_material(mtl));
+				m_app_ctx->set_selected_material(nullptr);
+
+				// performed destructive action
+				ImGui::EndPopup();
+				ImGui::PopID();
+				break;
 			}
 			ImGui::EndPopup();
 		}
@@ -103,6 +127,8 @@ void materials_list_window::handle_frame()
 	}
 
 	m_app_ctx->unset_imgui_needs_select_unfocused_mtl();
+
+	ImGui::PopID();
 }
 void materials_list_window::set_renaming(scene_material* mtl)
 {

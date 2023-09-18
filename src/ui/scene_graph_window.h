@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "core/scene_ctx.h"
+#include "app_ctx.h"
 #include "imgui_window.h"
 
 class scene_graph_window : public imgui_window
@@ -23,11 +24,11 @@ public:
 private:
 	rect handle_node(sgnode* const node, bool& performed_destructive_action);
 	void handle_heightmap(smnode* const hmp, bool& performed_destructive_action);
-	void handle_heightmaps();
+	void handle_heightmaps(bool& performed_destructive_action);
 	void handle_light(const u32 index, bool& performed_destructive_action);
-	void handle_lights();
+	void handle_lights(bool& performed_destructive_action);
 	void handle_waypoint(waypoint* const w, bool& performed_destructive_action);
-	void handle_waypoints();
+	void handle_waypoints(bool& performed_destructive_action);
 private:
 	sgnode* m_show_add_child = nullptr;
 	sgnode* m_renaming = nullptr;
@@ -39,4 +40,5 @@ private:
 	waypoint* m_renaming_waypoint = nullptr;
 	bool m_rename_waypoint_needs_focus = false;
 	bool m_was_focused = false;
+	global_selection_type m_prev_sel_type = global_selection_type::sgnode;
 };

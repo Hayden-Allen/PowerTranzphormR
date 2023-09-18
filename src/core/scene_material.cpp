@@ -3,19 +3,23 @@
 
 scene_material::scene_material() :
 	xportable(std::string("Material")),
-	shaders(nullptr)
+	opaque_shaders(nullptr),
+	alpha_shaders(nullptr)
 {}
-scene_material::scene_material(const std::string& n, mgl::shaders* const s) :
+scene_material::scene_material(const std::string& n, mgl::shaders* const os, mgl::shaders* const as) :
 	xportable(n),
-	shaders(s)
+	opaque_shaders(os),
+	alpha_shaders(as)
 {}
 scene_material::scene_material(const scene_material& o) noexcept :
 	xportable(o.get_name()),
-	shaders(o.shaders)
+	opaque_shaders(o.opaque_shaders),
+	alpha_shaders(o.alpha_shaders)
 {}
-scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const s) :
+scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json& obj, mgl::shaders* const os, mgl::shaders* const as) :
 	xportable(obj),
-	shaders(s)
+	opaque_shaders(os),
+	alpha_shaders(as)
 {
 	const nlohmann::json::array_t& texs = obj["texs"];
 	for (const nlohmann::json::array_t& tex : texs)
@@ -34,6 +38,8 @@ scene_material::scene_material(const std::string& phorm_fp, const nlohmann::json
 		}
 	}
 	m_use_alpha = obj["use_alpha"];
+	m_use_lighting = obj["use_lighting"];
+	m_should_cull = obj["should_cull"];
 }
 scene_material::~scene_material()
 {
@@ -64,12 +70,12 @@ void scene_material::set_texture(const std::string& tex_name, const std::string&
 	g::texlib->load(fp);
 	m_tex_name_to_filename[tex_name] = fp;
 }
-const mgl::texture2d_rgb_u8* scene_material::get_texture(const std::string& tex_name) const
+const mgl::texture2d_rgba_u8* scene_material::get_texture(const std::string& tex_name) const
 {
 	assert(m_tex_name_to_filename.contains(tex_name));
 	return g::texlib->get(m_tex_name_to_filename.at(tex_name));
 }
-void scene_material::for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgb_u8*)>& l) const
+void scene_material::for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgba_u8*)>& l) const
 {
 	for (const auto& pair : m_tex_name_to_filename)
 	{
@@ -91,6 +97,8 @@ nlohmann::json scene_material::save(std::ofstream& out, const std::string& out_f
 	}
 	obj["texs"] = texs;
 	obj["use_alpha"] = m_use_alpha;
+	obj["use_lighting"] = m_use_lighting;
+	obj["should_cull"] = m_should_cull;
 	return obj;
 }
 autotexture_params& scene_material::get_autotexture_params(const std::string& tex_name)
@@ -104,4 +112,35 @@ bool scene_material::get_use_alpha() const
 void scene_material::set_use_alpha(bool alpha)
 {
 	m_use_alpha = alpha;
+}
+bool scene_material::get_use_lighting() const
+{
+	return m_use_lighting;
+}
+void scene_material::set_use_lighting(bool light)
+{
+	m_use_lighting = light;
+}
+bool scene_material::get_should_cull() const
+{
+	return m_should_cull;
+}
+void scene_material::set_should_cull(bool cull)
+{
+	m_should_cull = cull;
+}
+scene_material* scene_material::clone() const
+{
+	scene_material* cloned = new scene_material;
+	cloned->copy_properties_from(*this);
+	cloned->set_use_alpha(get_use_alpha());
+	cloned->set_use_lighting(get_use_lighting());
+	cloned->set_should_cull(get_should_cull());
+	for (const auto& it : m_tex_name_to_filename)
+	{
+		cloned->set_texture(it.first, it.second);
+	}
+	cloned->opaque_shaders = opaque_shaders;
+	cloned->alpha_shaders = alpha_shaders;
+	return cloned;
 }

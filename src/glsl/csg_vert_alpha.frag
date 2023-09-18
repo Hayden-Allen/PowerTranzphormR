@@ -30,12 +30,14 @@ in vec3 v_light_ambient, v_light_diffuse, v_light_specular;
 
 void main()
 {
-	// vec3 N = normalize(v_N);
-
 	vec4 multi_tex_res =	texture(u_tex0, v_uv0.xy - v_uv0.zw * u_time) * v_weights[0] +
 				texture(u_tex1, v_uv1.xy - v_uv1.zw * u_time) * v_weights[1] +
 				texture(u_tex2, v_uv2.xy - v_uv2.zw * u_time) * v_weights[2] +
 				texture(u_tex3, v_uv3.xy - v_uv3.zw * u_time) * v_weights[3];
+	if (multi_tex_res.a < 0.01)
+	{
+		discard;
+	}
 	vec3 mixed_res = mix(multi_tex_res.rgb, v_rgba.rgb, v_rgba.a);
 
 	if (!u_enable_lighting)
@@ -43,6 +45,6 @@ void main()
 		o_col = vec4(clamp(mixed_res, vec3(0), vec3(1)), 1.0);
 		return;
 	}
-
+	
 	o_col = vec4(clamp((v_light_ambient + v_light_diffuse) * mixed_res + v_light_specular, vec3(0), vec3(1)), 1);
 }

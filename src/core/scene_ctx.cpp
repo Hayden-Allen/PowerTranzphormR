@@ -104,6 +104,18 @@ void scene_ctx::clear(bool ready_for_default_material)
 	m_lights.clear();
 	// camera light
 	add_light(new light({}, "Camera Light"));
+	const auto& light_params = m_lights[0]->get_params();
+	for (const auto& param : light_params)
+	{
+		if (param.first == "Max Distance")
+		{
+			*static_cast<float*>(param.second.value) = 100000.0f;
+		}
+		if (param.first == "Ambient Color")
+		{
+			static_cast<float*>(param.second.value)[3] = 0.3f;
+		}
+	}
 
 	for (waypoint* const w : m_waypoints)
 		delete w;
@@ -198,7 +210,7 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 	for (const nlohmann::json::array_t& mtl : obj["m"])
 	{
 		const u32 id = mtl[0];
-		scene_material* const sm = new scene_material(in_fp, mtl[1], g::shaders);
+		scene_material* const sm = new scene_material(in_fp, mtl[1], g::opaque_shaders, g::alpha_shaders);
 		m_mtls.insert({ id, sm });
 	}
 
@@ -304,7 +316,8 @@ const std::unordered_map<u32, scene_material*>& scene_ctx::get_materials()
 scene_material* scene_ctx::create_default_material()
 {
 	scene_material* mtl = new scene_material;
-	mtl->shaders = g::shaders;
+	mtl->opaque_shaders = g::opaque_shaders;
+	mtl->alpha_shaders = g::alpha_shaders;
 	mtl->set_texture("u_tex0", g::null_tex_fp);
 	mtl->set_texture("u_tex1", g::null_tex_fp);
 	mtl->set_texture("u_tex2", g::null_tex_fp);
@@ -488,7 +501,49 @@ generated_mesh* scene_ctx::generated_textured_heightmap_static(const GLuint mtl_
 	mesh_t* const hm = textured_heightmap(m_vert_attrs, m_mtl_id_attr, mtl_id, options);
 	return new generated_static_mesh(hm, this);
 }
+void scene_ctx::tesselate_external(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl)
+{
+	GLUtesselator* tess = gluNewTess();
+	gluTessCallback(tess, GLU_TESS_BEGIN, (GLUTessCallback)tess_callback_begin);
+	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)(tess_callback_vertex_data));
+	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
+	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
+	gluTessCallback(tess, GLU_TESS_ERROR, (GLUTessCallback)tess_callback_error);
+	if (mesh)
+	{
+		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+		{
+			const mesh_t::face_t* f = *i;
+			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
 
+			std::vector<tess_vtx> verts;
+			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+			{
+				const tex_coord_t& t0 = m_vert_attrs.uv0.getAttribute(f, e.idx());
+				const tex_coord_t& t1 = m_vert_attrs.uv1.getAttribute(f, e.idx());
+				const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
+				const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
+				const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
+				const f64 w1 = m_vert_attrs.w1.getAttribute(f, e.idx());
+				const f64 w2 = m_vert_attrs.w2.getAttribute(f, e.idx());
+				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
+				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
+
+				tess_vtx v(e->vert->v.x, e->vert->v.y, e->vert->v.z, t0, t1, t2, t3, w0, w1, w2, w3, color);
+				v.target = &out_verts_for_mtl.at(mtl_id);
+				verts.emplace_back(v);
+			}
+
+			gluTessBeginPolygon(tess, nullptr);
+			gluTessBeginContour(tess);
+			for (const tess_vtx& v : verts)
+				gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
+			gluTessEndContour(tess);
+			gluTessEndPolygon(tess);
+		}
+	}
+	gluDeleteTess(tess);
+}
 
 
 void scene_ctx::m_build_light_buffer()
@@ -593,47 +648,7 @@ void scene_ctx::m_build_sm_vaos()
 }
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms)
 {
-	GLUtesselator* tess = gluNewTess();
-	gluTessCallback(tess, GLU_TESS_BEGIN, (GLUTessCallback)tess_callback_begin);
-	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, (GLUTessCallback)tess_callback_vertex_data);
-	gluTessCallback(tess, GLU_TESS_EDGE_FLAG, (GLUTessCallback)tess_callback_edge_flag); // Edge flag forces only triangles
-	gluTessCallback(tess, GLU_TESS_END, (GLUTessCallback)tess_callback_end);
-	gluTessCallback(tess, GLU_TESS_ERROR, (GLUTessCallback)tess_callback_error);
-	if (mesh)
-	{
-		for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
-		{
-			const mesh_t::face_t* f = *i;
-			u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
-
-			std::vector<tess_vtx> verts;
-			for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
-			{
-				const tex_coord_t& t0 = m_vert_attrs.uv0.getAttribute(f, e.idx());
-				const tex_coord_t& t1 = m_vert_attrs.uv1.getAttribute(f, e.idx());
-				const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
-				const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
-				const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
-				const f64 w1 = m_vert_attrs.w1.getAttribute(f, e.idx());
-				const f64 w2 = m_vert_attrs.w2.getAttribute(f, e.idx());
-				const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
-				const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
-
-				tess_vtx v(e->vert->v.x, e->vert->v.y, e->vert->v.z, t0, t1, t2, t3, w0, w1, w2, w3, color);
-				v.target = &out_verts_for_mtl.at(mtl_id);
-				verts.emplace_back(v);
-			}
-
-			gluTessBeginPolygon(tess, nullptr);
-			gluTessBeginContour(tess);
-			for (const tess_vtx& v : verts)
-				gluTessVertex(tess, (GLdouble*)&v, (GLvoid*)&v);
-			gluTessEndContour(tess);
-			gluTessEndPolygon(tess);
-		}
-	}
-	gluDeleteTess(tess);
-
+	tesselate_external(mesh, out_verts_for_mtl);
 	for (auto& pair : out_verts_for_mtl)
 	{
 		if (snap_norms)
@@ -652,26 +667,38 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 	for (auto it = ros.begin(); it != ros.end(); ++it)
 	{
 		const scene_material* mat = m_mtls[it->first];
-		mat->shaders->bind();
-		mat->shaders->uniform_mat4("u_mvp", mvp.e);
-		mat->shaders->uniform_mat4("u_mv", mv.e);
-		mat->shaders->uniform_mat4("u_m", model.e);
-		mat->shaders->uniform_mat4("u_normal", normal.e);
-		mat->shaders->uniform_3fv("u_cam_pos", mats.cam_pos.e);
-		mat->shaders->uniform_1f("u_time", glctx.time.now);
-		mat->shaders->uniform_1ui("u_num_lights", m_num_visible_lights);
-		mat->shaders->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
+		if (mat->get_should_cull())
+		{
+			glEnable(GL_CULL_FACE);
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
+		}
+		mgl::shaders* s = mat->get_use_alpha() ? mat->alpha_shaders : mat->opaque_shaders;
+		s->bind();
+		s->uniform_mat4("u_mvp", mvp.e);
+		s->uniform_mat4("u_mv", mv.e);
+		s->uniform_mat4("u_m", model.e);
+		s->uniform_mat4("u_normal", normal.e);
+		s->uniform_3fv("u_cam_pos", mats.cam_pos.e);
+		s->uniform_1f("u_time", glctx.time.now);
+		s->uniform_1ui("u_num_lights", m_num_visible_lights);
+		s->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
+		s->uniform_1i("u_enable_lighting", mat->get_use_lighting());
 
 		u32 slot = 0;
-		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgb_u8* tex)
+		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgba_u8* tex)
 			{
 				tex->bind(slot);
-				mat->shaders->uniform_1i(name.c_str(), slot);
+				s->uniform_1i(name.c_str(), slot);
 				++slot;
 			});
 
-		glctx.draw(it->second, *mat->shaders);
+		glctx.draw(it->second, *s);
 	}
+
+	glEnable(GL_CULL_FACE);
 }
 void scene_ctx::m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices, const bool snap_all, const f32 snap_angle)
 {

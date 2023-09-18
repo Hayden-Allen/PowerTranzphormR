@@ -28,6 +28,9 @@ smnode::smnode(generated_mesh* const gen, const tmat<space::OBJECT, space::WORLD
 smnode::smnode(const nlohmann::json& obj, scene_ctx* const scene) :
 	visibility_xportable(obj)
 {
+	m_should_snap = obj["should_snap"];
+	m_snap_all = obj["snap_all"];
+	m_snap_angle = obj["snap_angle"];
 	if (obj["s"])
 		m_gen = new generated_static_mesh(obj["m"], scene);
 	else
@@ -90,6 +93,18 @@ tex_coord_t smnode::get_uv_offset() const
 {
 	return m_gen->get_uv_offset();
 }
+smnode* smnode::clone(scene_ctx* const scene) const
+{
+	generated_mesh* cloned_gen = m_gen->clone(scene);
+	cloned_gen->recompute(scene);
+	smnode* cloned_sm = new smnode(cloned_gen);
+	cloned_sm->copy_properties_from(*this);
+	cloned_sm->m_mat = m_mat;
+	cloned_sm->m_should_snap = m_should_snap;
+	cloned_sm->m_snap_all = m_snap_all;
+	cloned_sm->m_snap_angle = m_snap_angle;
+	return cloned_sm;
+}
 void smnode::set_gen_dirty()
 {
 	m_gen->set_dirty();
@@ -101,6 +116,17 @@ void smnode::set_transform(const tmat<space::OBJECT, space::WORLD>& new_mat)
 void smnode::set_material(scene_ctx* const scene, const u32 mat)
 {
 	m_gen->set_material(scene, mat);
+	set_gen_dirty();
+}
+void smnode::set_vertices_color(const color_t& col, scene_ctx* const scene)
+{
+	m_gen->set_vertices_color(col, scene);
+	set_gen_dirty();
+}
+void smnode::center_vertices_at_origin()
+{
+	m_gen->center_verts_at_origin();
+	copy_local_verts();
 	set_gen_dirty();
 }
 void smnode::set_gen(generated_mesh* const gen)
@@ -159,6 +185,9 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 	obj["t"] = m_mat.e;
 	obj["m"] = m_gen->save(scene, tmat<space::WORLD, space::OBJECT>());
 	obj["s"] = is_static();
+	obj["should_snap"] = m_should_snap;
+	obj["snap_all"] = m_snap_all;
+	obj["snap_angle"] = m_snap_angle;
 	return obj;
 }
 
