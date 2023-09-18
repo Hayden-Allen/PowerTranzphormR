@@ -89,7 +89,7 @@ void properties_window::handle_sgnode_frame(sgnode* const selected)
 {
 	handle_xportable(selected);
 
-	if (handle_transform(selected->get_mat().e))
+	if (handle_transform(selected->get_mat().e, selected))
 	{
 		selected->set_transform(selected->get_mat().e);
 	}
@@ -159,8 +159,20 @@ bool properties_window::handle_snap_mode(const bool value)
 	}
 	return result;
 }
-bool properties_window::handle_transform(f32* const elements)
+bool properties_window::handle_transform(f32* const elements, sgnode* const node)
 {
+	// in case you select something else while in the middle of editing a previous node,
+	// save the transformation of the previous node
+	if (node != m_transforming_sgnode)
+	{
+		if (m_transforming_sgnode)
+		{
+			m_app_ctx->transform_action(m_transforming_sgnode, m_transform_undo_mat, m_transforming_sgnode->get_mat());
+			m_transforming_sgnode = nullptr;
+		}
+		m_was_transforming = false;
+	}
+
 	if (m_needs_extract_transform) // true when selection has changed
 	{
 		ImGuizmo::DecomposeMatrixToComponents(elements, m_transform_pos, m_transform_rot, m_transform_scale);
@@ -181,22 +193,44 @@ bool properties_window::handle_transform(f32* const elements)
 
 	// actual UI and recompose the new matrix after change
 	bool dirty = false;
+	bool is_editing_transform = false;
 	ImGui::SeparatorText("Transform");
 	if (ImGui::DragFloat3("Position", m_transform_pos, 0.01f))
 	{
 		dirty = true;
 	}
+	if (node)
+	{
+		is_editing_transform = ImGui::IsItemActive() || is_editing_transform;
+		check_begin_transforming_sgnode(node, is_editing_transform);
+	}
 	if (ImGui::DragFloat3("Rotation", m_transform_rot, 0.2f))
 	{
 		dirty = true;
+	}
+	if (node)
+	{
+		is_editing_transform = ImGui::IsItemActive() || is_editing_transform;
+		check_begin_transforming_sgnode(node, is_editing_transform);
 	}
 	if (ImGui::DragFloat3("Scale", m_transform_scale, 0.01f, 0.001f, MAX_VALUE_TYPE(f32)))
 	{
 		dirty = true;
 	}
+	if (node)
+	{
+		is_editing_transform = ImGui::IsItemActive() || is_editing_transform;
+		check_begin_transforming_sgnode(node, is_editing_transform);
+	}
 	if (dirty)
 	{
 		ImGuizmo::RecomposeMatrixFromComponents(m_transform_pos, m_transform_rot, m_transform_scale, elements);
+	}
+	if (node && !is_editing_transform && m_was_transforming)
+	{
+		m_app_ctx->transform_action(node, m_transform_undo_mat, node->get_mat());
+		m_was_transforming = false;
+		m_transforming_sgnode = nullptr;
 	}
 	return dirty;
 }
@@ -782,6 +816,15 @@ void properties_window::handle_material_autotexture_generate(scene_material* con
 	delete[] dst_data;
 
 	selected_mtl->set_texture(name, outp.string());
+}
+void properties_window::check_begin_transforming_sgnode(sgnode* const node, bool active)
+{
+	if (active && !m_was_transforming)
+	{
+		m_transform_undo_mat = node->get_mat();
+		m_was_transforming = true;
+		m_transforming_sgnode = node;
+	}
 }
 void properties_window::load_autotex_settings()
 {
