@@ -532,8 +532,21 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	}
 	scene.tesselate_external(node->get_gen()->mesh, tesselate_verts_for_mtl);
 
+	// deduplicate vertices by position
+	std::unordered_map<std::string, vertex_t*> verts_map;
+	for (const auto& pair : tesselate_verts_for_mtl)
+	{
+		for (const auto &v : pair.second)
+		{
+			const std::string& k = v.hash_pos();
+			if (!verts_map.contains(k))
+			{
+				verts_map.insert({ k, new vertex_t(carve::geom::VECTOR(v.x, v.y, v.z)) });
+			}
+		}
+	}
+
 	// gluTess -> triangulated carve
-	std::vector<vertex_t*> verts_to_free;
 	std::vector<face_t*> carve_faces;
 	for (const auto& pair : tesselate_verts_for_mtl)
 	{
@@ -548,12 +561,9 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 		{
 			const u32 mtl_id = pair.first;
 			
-			vertex_t* va = new vertex_t(carve::geom::VECTOR(pair.second[i].x, pair.second[i].y, pair.second[i].z));
-			vertex_t* vb = new vertex_t(carve::geom::VECTOR(pair.second[i + 1].x, pair.second[i + 1].y, pair.second[i + 1].z));
-			vertex_t* vc = new vertex_t(carve::geom::VECTOR(pair.second[i + 2].x, pair.second[i + 2].y, pair.second[i + 2].z));
-			verts_to_free.emplace_back(va);
-			verts_to_free.emplace_back(vb);
-			verts_to_free.emplace_back(vc);
+			vertex_t* va = verts_map.at(pair.second[i].hash_pos());
+			vertex_t* vb = verts_map.at(pair.second[i + 1].hash_pos());
+			vertex_t* vc = verts_map.at(pair.second[i + 2].hash_pos());
 			face_t* const new_f = new face_t(va, vb, vc);
 			mtl_id_attr.setAttribute(new_f, mtl_id);
 			for (u32 j = 0; j < 3; ++j)
@@ -588,9 +598,9 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	scene.add_static_mesh(new_sm);
 	set_selected_static_mesh(new_sm);
 
-	for (vertex_t* v : verts_to_free)
+	for (const auto& pair : verts_map)
 	{
-		delete v;
+		delete pair.second;
 	}
 }
 void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
