@@ -275,6 +275,24 @@ scene_graph_window::rect scene_graph_window::handle_node(sgnode* const node, boo
 					m_app_ctx->create_intersect_action();
 					performed_destructive_action = true;
 				}
+
+				if (!node->is_root())
+				{
+					ImGui::Separator();
+					const auto& op = node->get_operation();
+					if (op != carve::csg::CSG::OP::UNION && ImGui::MenuItem("Make Union"))
+					{
+						m_app_ctx->set_operation_action(node, carve::csg::CSG::OP::UNION);
+					}
+					if (op != carve::csg::CSG::OP::A_MINUS_B && ImGui::MenuItem("Make Subtract"))
+					{
+						m_app_ctx->set_operation_action(node, carve::csg::CSG::OP::A_MINUS_B);
+					}
+					if (op != carve::csg::CSG::OP::INTERSECTION && ImGui::MenuItem("Make Intersection"))
+					{
+						m_app_ctx->set_operation_action(node, carve::csg::CSG::OP::INTERSECTION);
+					}
+				}
 			}
 
 			if (!node->is_root())

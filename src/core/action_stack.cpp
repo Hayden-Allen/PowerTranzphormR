@@ -63,6 +63,10 @@ void action_stack::rename(sgnode* const target, const std::string& new_name)
 {
 	new_action(new rename_action(target, new_name), true);
 }
+void action_stack::set_operation(sgnode* const target, const carve::csg::CSG::OP new_op)
+{
+	new_action(new set_op_action(target, new_op), true);
+}
 bool action_stack::can_undo()
 {
 	return m_past.size() > 0;

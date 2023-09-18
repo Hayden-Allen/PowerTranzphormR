@@ -537,7 +537,7 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	std::unordered_map<std::string, vertex_t*> verts_map;
 	for (const auto& pair : tesselate_verts_for_mtl)
 	{
-		for (const auto &v : pair.second)
+		for (const auto& v : pair.second)
 		{
 			const std::string& k = v.hash_pos();
 			if (!verts_map.contains(k))
@@ -561,7 +561,7 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 		for (size_t i = 0; i < pair.second.size(); i += 3)
 		{
 			const u32 mtl_id = pair.first;
-			
+
 			vertex_t* va = verts_map.at(pair.second[i].hash_pos());
 			vertex_t* vb = verts_map.at(pair.second[i + 1].hash_pos());
 			vertex_t* vc = verts_map.at(pair.second[i + 2].hash_pos());
@@ -701,6 +701,10 @@ void app_ctx::unfreeze_action(sgnode* const target)
 void app_ctx::rename_action(sgnode* const target, const std::string& new_name)
 {
 	actions.rename(target, new_name);
+}
+void app_ctx::set_operation_action(sgnode* const target, const carve::csg::CSG::OP new_op)
+{
+	actions.set_operation(target, new_op);
 }
 void app_ctx::duplicate_selected_static_mesh()
 {
@@ -860,7 +864,7 @@ void app_ctx::file_menu()
 		0,
 	};
 	*/
-	file_menu.groups.push_back({ file_new, file_open, file_save /* , file_save_as , file_export */  });
+	file_menu.groups.push_back({ file_new, file_open, file_save /* , file_save_as , file_export */ });
 	shortcut_menus.push_back(file_menu);
 }
 void app_ctx::phorm_menu()
@@ -1571,7 +1575,7 @@ void app_ctx::static_meshes_menu()
 	shortcut_menu sm_menu;
 	sm_menu.name = "Static Mesh";
 	sm_menu.groups.push_back({ sm_create });
-	sm_menu.groups.push_back({ sm_duplicate});
+	sm_menu.groups.push_back({ sm_duplicate });
 	sm_menu.groups.push_back({ sm_rename, sm_destroy });
 	sm_menu.groups.push_back({ sm_hide, sm_show });
 	sm_menu.groups.push_back({ sm_clone_to_sg });

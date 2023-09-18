@@ -337,3 +337,43 @@ nlohmann::json rename_action::save() const
 	obj["n"] = new_name;
 	return obj;
 }
+
+
+
+set_op_action::set_op_action(sgnode* const target, const op_t newo) :
+	action(target),
+	old_op(target->get_operation()),
+	new_op(newo)
+{
+	assert(target->is_operation());
+	assert(old_op == op_t::A_MINUS_B || old_op == op_t::INTERSECTION || old_op == op_t::UNION);
+	assert(new_op == op_t::A_MINUS_B || new_op == op_t::INTERSECTION || new_op == op_t::UNION);
+}
+set_op_action::set_op_action(const nlohmann::json& obj, const std::unordered_map<std::string, sgnode*>& nodes) :
+	action(obj, nodes),
+	old_op(obj["o"]),
+	new_op(obj["n"])
+{}
+void set_op_action::apply(scene_ctx* const ctx, app_ctx* const a_ctx)
+{
+	const std::string display_name = target->get_name();
+	const std::string& op_name = u::operation_to_string(target->get_operation());
+	if (display_name == op_name)
+		target->set_name(u::operation_to_string(new_op));
+	target->set_operation(new_op);
+}
+void set_op_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
+{
+	const std::string display_name = target->get_name();
+	const std::string& op_name = u::operation_to_string(target->get_operation());
+	if (display_name == op_name)
+		target->set_name(u::operation_to_string(old_op));
+	target->set_operation(old_op);
+}
+nlohmann::json set_op_action::save() const
+{
+	nlohmann::json obj = action::save();
+	obj["o"] = old_op;
+	obj["n"] = new_op;
+	return obj;
+}

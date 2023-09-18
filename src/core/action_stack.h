@@ -20,6 +20,7 @@ public:
 	sgnode* freeze(sgnode* const target);
 	void unfreeze(sgnode* const target, sgnode* const unfrozen);
 	void rename(sgnode* const target, const std::string& new_name);
+	void set_operation(sgnode* const target, const carve::csg::CSG::OP new_op);
 	bool can_undo();
 	bool can_redo();
 	action* undo();
