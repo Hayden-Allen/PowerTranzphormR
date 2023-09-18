@@ -833,7 +833,7 @@ void scene_ctx::m_compute_norms(std::vector<mesh_vertex>& input_verts, std::vect
 	for (u64 i = 0; i < input_verts.size(); i++)
 	{
 		const mesh_vertex& mv = input_verts[i];
-		const std::string hash = mv.hash_all();
+		const std::string hash = mv.hash_pos();
 		if (vert2index.contains(hash))
 		{
 			indices.push_back(vert2index.at(hash));

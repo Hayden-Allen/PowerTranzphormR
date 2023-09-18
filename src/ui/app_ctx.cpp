@@ -329,7 +329,8 @@ void app_ctx::set_material(sgnode* const node, const u32 id)
 	const auto& it = frozen2unfrozen.find(node);
 	if (it != frozen2unfrozen.end())
 	{
-		it->second->set_material(&scene, id);
+		if (!it->second->is_operation())
+			it->second->set_material(&scene, id);
 	}
 }
 void app_ctx::add_light()
