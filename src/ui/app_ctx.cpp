@@ -1363,6 +1363,7 @@ void app_ctx::phorm_menu()
 		GLFW_KEY_R,
 		0,
 	};
+	/*
 	shortcut_menu_item gizmo_scale = {
 		"Scale",
 		[&]()
@@ -1377,7 +1378,8 @@ void app_ctx::phorm_menu()
 		GLFW_KEY_E,
 		0,
 	};
-	gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate, gizmo_scale });
+	*/
+	gizmodes.groups.push_back({ gizmo_translate, gizmo_rotate /* , gizmo_scale */ });
 
 	shortcut_menu phorm_menu;
 	phorm_menu.name = "Phorm";
