@@ -26,13 +26,16 @@ private:
 	float m_transform_pos[3] = { 0.0f }, m_transform_rot[3] = { 0.0f }, m_transform_scale[3] = { 0.0f };
 	bool m_needs_extract_transform = true;
 	float m_reset_vertex_color[4] = { 0.0f };
+	bool m_was_transforming = false;
+	tmat<space::OBJECT, space::PARENT> m_transform_undo_mat;
+	sgnode* m_transforming_sgnode = nullptr;
 private:
 	void handle_sgnode_frame(sgnode* const selected);
 	void handle_sgnode_camera_light();
 	void handle_sgnode_snapping_angle();
 	void handle_sgnode_skybox();
 	bool handle_snap_mode(const bool value);
-	bool handle_transform(f32* const elements);
+	bool handle_transform(f32* const elements, sgnode* const node = nullptr);
 	void handle_xportable(xportable* x);
 	void handle_sgnode_mesh(sgnode* const selected);
 private:
@@ -47,6 +50,7 @@ private:
 	u32 material_combo_box(const u32 selected);
 	bool draw_params(const std::vector<std::pair<std::string, generated_mesh_param>>& params);
 	void handle_material_autotexture_generate(scene_material* const selected_mtl, const std::string& name);
+	void check_begin_transforming_sgnode(sgnode* const node, bool active);
 private:
 	void load_autotex_settings();
 	void save_autotex_settings();
