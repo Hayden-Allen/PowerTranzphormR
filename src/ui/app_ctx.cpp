@@ -482,7 +482,7 @@ void app_ctx::clear_clipboard()
 {
 	if (clipboard)
 	{
-		if (clipboard->is_frozen())
+		if (clipboard->is_frozen() && frozen2unfrozen.contains(clipboard))
 		{
 			sgnode* const unfrozen = frozen2unfrozen.at(clipboard);
 			delete unfrozen;
@@ -612,6 +612,7 @@ void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 	const tmat<space::OBJECT, space::OBJECT>& inv = root_inv * node->get_mat();
 	sgnode* const new_node = new sgnode(nullptr, new_gen, "Phrozen " + node->get_name(), inv);
 	create_action(new_node, root);
+	set_selected_sgnode(new_node);
 }
 void app_ctx::group_to_operation_action(const carve::csg::CSG::OP op_type)
 {
@@ -1033,7 +1034,7 @@ void app_ctx::phorm_menu()
 			clear_clipboard();
 			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this);
-			if (selected->is_frozen())
+			if (selected->is_frozen() && frozen2unfrozen.contains(selected))
 			{
 				// transfer ownership of unfrozen node to new clone
 				sgnode* const unfrozen = frozen2unfrozen.at(selected);
@@ -1058,7 +1059,7 @@ void app_ctx::phorm_menu()
 			clear_clipboard();
 			sgnode* const selected = get_selected_sgnode();
 			clipboard = selected->clone(this);
-			if (selected->is_frozen())
+			if (selected->is_frozen() && frozen2unfrozen.contains(selected))
 			{
 				sgnode* const unfrozen = frozen2unfrozen.at(selected);
 				sgnode* const unfrozen_clone = unfrozen->clone(this);
@@ -1090,9 +1091,8 @@ void app_ctx::phorm_menu()
 			}
 			set_selected_sgnode(clone);
 
-			if (clipboard->is_frozen())
+			if (clipboard->is_frozen() && frozen2unfrozen.contains(clipboard))
 			{
-				assert(frozen2unfrozen.contains(clipboard));
 				sgnode* const unfrozen = frozen2unfrozen.at(clipboard);
 				sgnode* const unfrozen_clone = unfrozen->clone_self_and_insert(this, nullptr);
 				frozen2unfrozen.insert({ clone, unfrozen_clone });
