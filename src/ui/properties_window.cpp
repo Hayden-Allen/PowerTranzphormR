@@ -619,7 +619,7 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 		selected->set_snap_angle(snap_angle);
 	}
 
-	draw_params(selected->get_params());
+	bool params_changed = draw_params(selected->get_params());
 
 	if (selected->is_static())
 	{
@@ -639,6 +639,10 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	}
 	else
 	{
+		if (params_changed)
+		{
+			selected->set_gen_dirty();
+		}
 		ImGui::SeparatorText("Heightmap");
 		if (ImGui::Button("Load Heightmap"))
 		{
