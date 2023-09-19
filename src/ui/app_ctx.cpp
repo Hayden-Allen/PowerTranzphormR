@@ -119,10 +119,6 @@ bool app_ctx::export_as() const
 }
 bool app_ctx::confirm_unsaved_changes()
 {
-	if (!actions.get_modified())
-	{
-		return true; // Safe to continue if no unsaved changes
-	}
 	const s32 res = u::confirm_message_box(mgl_ctx.window, L"Do you want to save your changes?", L"PowerTranzphormR");
 	if (res == IDYES)
 	{
