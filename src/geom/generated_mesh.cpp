@@ -533,20 +533,9 @@ generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ct
 	generated_mesh(nullptr),
 	m_material(obj["mat"])
 {
-	// HOORAY, our first ugly backwards compatibility check!
-	if (obj["uvo"][0].is_array())
+	for (u32 i = 0; i < 4; i++)
 	{
-		for (u32 i = 0; i < 4; i++)
-		{
-			m_uv_offset[i] = tex_coord_t(obj["uvo"][i][0], obj["uvo"][i][1], obj["uvo"][i][2], obj["uvo"][i][3]);
-		}
-	}
-	else
-	{
-		for (u32 i = 0; i < 4; i++)
-		{
-			m_uv_offset[i] = tex_coord_t(obj["uvo"][0], obj["uvo"][1], obj["uvo"][2], obj["uvo"][3]);
-		}
+		m_uv_offset[i] = tex_coord_t(obj["uvo"][i][0], obj["uvo"][i][1], obj["uvo"][i][2], obj["uvo"][i][3]);
 	}
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& vert_attrs = scene->get_vert_attrs();
