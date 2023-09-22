@@ -657,7 +657,7 @@ void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vec
 			m_compute_norms(pair.second, out_indices_for_mtl.at(pair.first));
 	}
 }
-void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model, const tex_coord_t& offset)
+void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model, const tex_coord_t* offset)
 {
 	const tmat<space::OBJECT, space::CAMERA>& mv = mats.view * model;
 	const mat<space::OBJECT, space::CLIP> mvp = mats.vp * model;
@@ -684,8 +684,21 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		s->uniform_3fv("u_cam_pos", mats.cam_pos.e);
 		s->uniform_1f("u_time", glctx.time.now);
 		s->uniform_1ui("u_num_lights", m_num_visible_lights);
-		s->uniform_4f("u_uv_offset", offset.u, offset.v, offset.uo, offset.vo);
 		s->uniform_1i("u_enable_lighting", mat->get_use_lighting());
+		if (offset)
+		{
+			s->uniform_4f("u_uv0_offset", offset[0].u, offset[0].v, offset[0].uo, offset[0].vo);
+			s->uniform_4f("u_uv1_offset", offset[1].u, offset[1].v, offset[1].uo, offset[1].vo);
+			s->uniform_4f("u_uv2_offset", offset[2].u, offset[2].v, offset[2].uo, offset[2].vo);
+			s->uniform_4f("u_uv3_offset", offset[3].u, offset[3].v, offset[3].uo, offset[3].vo);
+		}
+		else
+		{
+			s->uniform_4f("u_uv0_offset", 1, 1, 0, 0);
+			s->uniform_4f("u_uv1_offset", 1, 1, 0, 0);
+			s->uniform_4f("u_uv2_offset", 1, 1, 0, 0);
+			s->uniform_4f("u_uv3_offset", 1, 1, 0, 0);
+		}
 
 		u32 slot = 0;
 		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgba_u8* tex)

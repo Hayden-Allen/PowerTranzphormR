@@ -462,12 +462,12 @@ void read_weights(const mgl::retained_texture2d_rgba_u8* const map, const u32 x,
 	*w2 = (f64)(1.f * map->get_pixel_component(x, y, 2) / MAX_VALUE_TYPE(u8));
 	// normalize
 	const f64 total = *w0 + *w1 + *w2;
-	*w0 /= total;
-	*w1 /= total;
-	*w2 /= total;
-	// if no weights given, make first texture full weight
-	if (*w0 == 0 && *w1 == 0 && *w2 == 0)
-		*w0 = 1;
+	if (total != 0)
+	{
+		*w0 /= total;
+		*w1 /= total;
+		*w2 /= total;
+	}
 	*w3 = 1 - *w0 - *w1 - *w2;
 }
 mesh_t* textured_heightmap(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const heightmap_options& options)

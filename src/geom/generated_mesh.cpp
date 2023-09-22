@@ -105,9 +105,9 @@ bool generated_mesh::is_static() const
 {
 	return false;
 }
-tex_coord_t generated_mesh::get_uv_offset() const
+const tex_coord_t* generated_mesh::get_uv_offset() const
 {
-	return tex_coord_t(1, 1);
+	return nullptr;
 }
 
 
@@ -522,17 +522,32 @@ generated_heightmap::generated_heightmap(const GLuint material, const heightmap_
 
 
 generated_static_mesh::generated_static_mesh(mesh_t* const m, scene_ctx* const scene) :
-	generated_mesh(m),
-	m_uv_offset(1, 1)
+	generated_mesh(m)
 {
+	for (u32 i = 0; i < 4; i++)
+		m_uv_offset[i] = tex_coord_t(1, 1);
 	check_material_id(scene);
 	dirty = false;
 }
 generated_static_mesh::generated_static_mesh(const nlohmann::json& obj, scene_ctx* const scene) :
 	generated_mesh(nullptr),
-	m_material(obj["mat"]),
-	m_uv_offset(obj["uvo"][0], obj["uvo"][1], obj["uvo"][2], obj["uvo"][3])
+	m_material(obj["mat"])
 {
+	// HOORAY, our first ugly backwards compatibility check!
+	if (obj["uvo"][0].is_array())
+	{
+		for (u32 i = 0; i < 4; i++)
+		{
+			m_uv_offset[i] = tex_coord_t(obj["uvo"][i][0], obj["uvo"][i][1], obj["uvo"][i][2], obj["uvo"][i][3]);
+		}
+	}
+	else
+	{
+		for (u32 i = 0; i < 4; i++)
+		{
+			m_uv_offset[i] = tex_coord_t(obj["uvo"][0], obj["uvo"][1], obj["uvo"][2], obj["uvo"][3]);
+		}
+	}
 	auto& mtl_id_attr = scene->get_mtl_id_attr();
 	auto& vert_attrs = scene->get_vert_attrs();
 
@@ -624,7 +639,9 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 	nlohmann::json obj;
 	obj["type"] = 6;
 	obj["mat"] = m_material;
-	obj["uvo"] = { m_uv_offset.u, m_uv_offset.v, m_uv_offset.uo, m_uv_offset.vo };
+	obj["uvo"] = nlohmann::json::array_t();
+	for (u32 i = 0; i < 4; i++)
+		obj["uvo"].push_back({ m_uv_offset[0].u, m_uv_offset[0].v, m_uv_offset[0].uo, m_uv_offset[0].vo });
 
 	nlohmann::json::array_t verts;
 	std::unordered_map<const vertex_t*, u64> vert2index;
@@ -767,12 +784,15 @@ std::vector<std::pair<std::string, generated_mesh_param>> generated_static_mesh:
 {
 	auto m = generated_mesh::get_params();
 	std::vector<std::pair<std::string, generated_mesh_param>> t = {
-		{ "UV Offset", { generated_mesh_param_type::FLOAT_4, (void*)&m_uv_offset.u, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV0 Offset", { generated_mesh_param_type::FLOAT_4, (void*)&m_uv_offset[0].u, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV1 Offset", { generated_mesh_param_type::FLOAT_4, (void*)&m_uv_offset[1].u, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV2 Offset", { generated_mesh_param_type::FLOAT_4, (void*)&m_uv_offset[2].u, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
+		{ "UV3 Offset", { generated_mesh_param_type::FLOAT_4, (void*)&m_uv_offset[3].u, -MAX_PARAM_VALUE, MAX_PARAM_VALUE, DRAG_PARAM_STEP } },
 	};
 	m.insert(m.end(), t.begin(), t.end());
 	return m;
 }
-tex_coord_t generated_static_mesh::get_uv_offset() const
+const tex_coord_t* generated_static_mesh::get_uv_offset() const
 {
 	return m_uv_offset;
 }

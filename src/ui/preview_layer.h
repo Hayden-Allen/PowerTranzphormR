@@ -12,4 +12,5 @@ public:
 	bool on_key(const s32 key, const s32 scancode, const s32 action, const s32 mods) override;
 private:
 	app_ctx* const m_app_ctx = nullptr;
+	bool m_turbo_mode = false;
 };

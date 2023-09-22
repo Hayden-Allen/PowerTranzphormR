@@ -18,7 +18,8 @@ bool preview_layer::on_frame(const f32 dt)
 		get_key(GLFW_KEY_SPACE) - get_key(GLFW_KEY_LEFT_SHIFT),
 		get_key(GLFW_KEY_S) - get_key(GLFW_KEY_W));
 	const auto& mouse_delta = get_mouse().delta;
-	m_app_ctx->preview_cam.move(dt, move_dir * (get_key(GLFW_KEY_LEFT_ALT) ? .2f : 1.f), mouse_delta.x, mouse_delta.y);
+	const f32 speed = m_turbo_mode ? 10.f : (get_key(GLFW_KEY_LEFT_ALT) ? .2f : 1.f);
+	m_app_ctx->preview_cam.move(dt, move_dir * speed, mouse_delta.x, mouse_delta.y);
 
 	// const tmat<space::OBJECT, space::WORLD> obj;
 	const tmat<space::WORLD, space::CAMERA>& view = m_app_ctx->preview_cam.get_view();
@@ -48,5 +49,7 @@ bool preview_layer::on_key(const s32 key, const s32 scancode, const s32 action, 
 		disable();
 		return true;
 	}
+	if (action == GLFW_PRESS && key == GLFW_KEY_CAPS_LOCK)
+		m_turbo_mode ^= 1;
 	return false;
 }
