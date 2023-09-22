@@ -630,7 +630,7 @@ nlohmann::json generated_static_mesh::save(scene_ctx* const scene, const tmat<sp
 	obj["mat"] = m_material;
 	obj["uvo"] = nlohmann::json::array_t();
 	for (u32 i = 0; i < 4; i++)
-		obj["uvo"].push_back({ m_uv_offset[0].u, m_uv_offset[0].v, m_uv_offset[0].uo, m_uv_offset[0].vo });
+		obj["uvo"].push_back({ m_uv_offset[i].u, m_uv_offset[i].v, m_uv_offset[i].uo, m_uv_offset[i].vo });
 
 	nlohmann::json::array_t verts;
 	std::unordered_map<const vertex_t*, u64> vert2index;
