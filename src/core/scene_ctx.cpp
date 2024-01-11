@@ -248,11 +248,11 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
 {
+	// phormz
 	u64 ro_count = m_sg_ros_for_mtl.size();
 	for (const auto& pair : m_sm_ros)
 		ro_count += pair.second.size();
 	out.ulong(ro_count);
-
 	for (const auto& pair : m_sg_ros_for_mtl)
 	{
 		pair.second.save(out);
@@ -261,6 +261,20 @@ void scene_ctx::save_xport(mgl::output_file& out) const
 	{
 		for (const auto& pair2 : pair.second)
 			pair2.second.save(out);
+	}
+
+	// lightz
+	out.ulong(m_lights.size());
+	for (const light* const l : m_lights)
+	{
+		l->mgl_light.save(out);
+	}
+
+	// waypointz
+	out.ulong(m_waypoints.size());
+	for (const waypoint* const w : m_waypoints)
+	{
+		w->xport(out);
 	}
 }
 void scene_ctx::load_skybox(const std::string& rel_folder, const std::string& phorm_base)
