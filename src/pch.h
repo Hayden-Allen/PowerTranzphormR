@@ -49,3 +49,5 @@
 #include "util/util.h"
 #include "util/globals.h"
 #include "util/texture_library.h"
+
+#include "haul/haul.h"

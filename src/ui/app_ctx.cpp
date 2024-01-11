@@ -845,7 +845,7 @@ void app_ctx::file_menu()
 		GLFW_MOD_CONTROL | GLFW_MOD_SHIFT,
 	};
 	*/
-	/*
+
 	shortcut_menu_item file_export = {
 		"Export...",
 		[&]()
@@ -860,8 +860,8 @@ void app_ctx::file_menu()
 		0,
 		0,
 	};
-	*/
-	file_menu.groups.push_back({ file_new, file_open, file_save /* , file_save_as , file_export */ });
+
+	file_menu.groups.push_back({ file_new, file_open, file_save, file_export /* , file_save_as , file_export */ });
 	shortcut_menus.push_back(file_menu);
 }
 void app_ctx::phorm_menu()
