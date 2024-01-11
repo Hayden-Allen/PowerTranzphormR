@@ -8,7 +8,7 @@ layout (location = 5) in vec4 i_uv3;
 layout (location = 6) in vec4 i_weights;
 layout (location = 7) in vec4 i_rgba;
 
-uniform mat4 u_mvp, u_m, u_normal;
+uniform mat4 u_mvp, u_mv, u_m, u_normal;
 uniform vec3 u_cam_pos;
 uniform vec4 u_uv0_offset, u_uv1_offset, u_uv2_offset, u_uv3_offset;
 

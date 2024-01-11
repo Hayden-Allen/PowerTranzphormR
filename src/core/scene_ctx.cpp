@@ -267,7 +267,7 @@ void scene_ctx::save_xport(mgl::output_file& out) const
 	out.ulong(m_lights.size());
 	for (const light* const l : m_lights)
 	{
-		l->mgl_light.save(out);
+		l->mgl_light.save(&out);
 	}
 
 	// waypointz
@@ -696,27 +696,43 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		}
 		mgl::shaders* s = mat->get_use_alpha() ? mat->alpha_shaders : mat->opaque_shaders;
 		s->bind();
-		s->uniform_mat4("u_mvp", mvp.e);
-		s->uniform_mat4("u_mv", mv.e);
-		s->uniform_mat4("u_m", model.e);
-		s->uniform_mat4("u_normal", normal.e);
-		s->uniform_3fv("u_cam_pos", mats.cam_pos.e);
-		s->uniform_1f("u_time", glctx.time.now);
-		s->uniform_1ui("u_num_lights", m_num_visible_lights);
-		s->uniform_1i("u_enable_lighting", mat->get_use_lighting());
+		if (s->has_uniform("u_mvp"))
+			s->uniform_mat4("u_mvp", mvp.e);
+		if (s->has_uniform("u_mv"))
+			s->uniform_mat4("u_mv", mv.e);
+		if (s->has_uniform("u_m"))
+			s->uniform_mat4("u_m", model.e);
+		if (s->has_uniform("u_normal"))
+			s->uniform_mat4("u_normal", normal.e);
+		if (s->has_uniform("u_cam_pos"))
+			s->uniform_3fv("u_cam_pos", mats.cam_pos.e);
+		if (s->has_uniform("u_time"))
+			s->uniform_1f("u_time", glctx.time.now);
+		if (s->has_uniform("u_num_lights"))
+			s->uniform_1ui("u_num_lights", m_num_visible_lights);
+		if (s->has_uniform("u_enable_lighting"))
+			s->uniform_1i("u_enable_lighting", mat->get_use_lighting());
 		if (offset)
 		{
-			s->uniform_4f("u_uv0_offset", offset[0].u, offset[0].v, offset[0].uo, offset[0].vo);
-			s->uniform_4f("u_uv1_offset", offset[1].u, offset[1].v, offset[1].uo, offset[1].vo);
-			s->uniform_4f("u_uv2_offset", offset[2].u, offset[2].v, offset[2].uo, offset[2].vo);
-			s->uniform_4f("u_uv3_offset", offset[3].u, offset[3].v, offset[3].uo, offset[3].vo);
+			if (s->has_uniform("u_uv0_offset"))
+				s->uniform_4f("u_uv0_offset", offset[0].u, offset[0].v, offset[0].uo, offset[0].vo);
+			if (s->has_uniform("u_uv1_offset"))
+				s->uniform_4f("u_uv1_offset", offset[1].u, offset[1].v, offset[1].uo, offset[1].vo);
+			if (s->has_uniform("u_uv2_offset"))
+				s->uniform_4f("u_uv2_offset", offset[2].u, offset[2].v, offset[2].uo, offset[2].vo);
+			if (s->has_uniform("u_uv3_offset"))
+				s->uniform_4f("u_uv3_offset", offset[3].u, offset[3].v, offset[3].uo, offset[3].vo);
 		}
 		else
 		{
-			s->uniform_4f("u_uv0_offset", 1, 1, 0, 0);
-			s->uniform_4f("u_uv1_offset", 1, 1, 0, 0);
-			s->uniform_4f("u_uv2_offset", 1, 1, 0, 0);
-			s->uniform_4f("u_uv3_offset", 1, 1, 0, 0);
+			if (s->has_uniform("u_uv0_offset"))
+				s->uniform_4f("u_uv0_offset", 1, 1, 0, 0);
+			if (s->has_uniform("u_uv1_offset"))
+				s->uniform_4f("u_uv1_offset", 1, 1, 0, 0);
+			if (s->has_uniform("u_uv2_offset"))
+				s->uniform_4f("u_uv2_offset", 1, 1, 0, 0);
+			if (s->has_uniform("u_uv3_offset"))
+				s->uniform_4f("u_uv3_offset", 1, 1, 0, 0);
 		}
 
 		u32 slot = 0;

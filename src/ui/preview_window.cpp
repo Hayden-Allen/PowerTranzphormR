@@ -24,7 +24,7 @@ void preview_window::handle_frame()
 	const ImVec2 img_pos(ox + win_min.x, oy + win_min.y);
 	ImGui::SetCursorPos(img_pos);
 	const ImVec2 img_dim(fb_w * r, fb_h * r);
-	ImGui::Image(fb.get_imgui_color_id(), img_dim, ImVec2(0, 1), ImVec2(1, 0));
+	ImGui::Image(fb.get_imgui_color_id(0), img_dim, ImVec2(0, 1), ImVec2(1, 0));
 
 	// if something in the scene graph is selected, and the cursor is not locked, then show a transform gizmo for it
 	if (!m_app_ctx->mgl_ctx.is_cursor_locked())

@@ -203,7 +203,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>lib\httplib;lib\base64;lib\nfd-ex\src\include;lib\json\include;lib\imguizmo;src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/haul/include;lib\httplib;lib\base64;lib\nfd-ex\src\include;lib\json\include;lib\imguizmo;src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -226,7 +226,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>lib\httplib;lib\base64;lib\nfd-ex\src\include;lib\json\include;lib\imguizmo;src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/haul/include;lib\httplib;lib\base64;lib\nfd-ex\src\include;lib\json\include;lib\imguizmo;src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -250,7 +250,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalIncludeDirectories>lib\httplib;lib\base64;lib\nfd-ex\src\include;lib\json\include;lib\imguizmo;src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib/haul/include;lib\httplib;lib\base64;lib\nfd-ex\src\include;lib\json\include;lib\imguizmo;src\;lib\mingl\lib\hats\include;lib\mingl\include;lib\glad\include\;lib\GLFW\include\;lib\carve\include\;lib\stb_image\include\;lib\spdlog\include;lib\imgui\</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -395,6 +395,7 @@
     <ClCompile Include="src\core\xportable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\haul\include\haul\haul.h" />
     <ClInclude Include="lib\mingl\include\mingl\mingl.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\core\action.h" />
