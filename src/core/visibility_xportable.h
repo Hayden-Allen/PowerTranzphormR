@@ -13,6 +13,6 @@ public:
 	bool is_visible() const;
 	virtual nlohmann::json save() const override;
 	void copy_properties_from(const visibility_xportable& src);
-private:
+protected:
 	bool m_visible = true;
 };

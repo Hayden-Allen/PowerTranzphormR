@@ -42,18 +42,19 @@ public:
 	void set_name(const std::string& n);
 	virtual nlohmann::json save() const;
 	void copy_properties_from(const xportable& src);
-private:
+	virtual void xport(mgl::output_file& out) const;
+protected:
 	constexpr static inline u32 s_first_id = 0;
 	static inline u32 s_next_id = s_first_id;
 	static inline u32 s_num_tags_created = 0;
 	static inline std::unordered_set<std::string> s_used_kustomz = {};
 	static inline std::map<tag, u32, tag_comparator> s_used_tagz = {};
-private:
+protected:
 	std::string m_id;
 	std::string m_kustom_id, m_kustom_display;
 	std::string m_name;
 	std::set<tag, tag_comparator> m_tagz;
-private:
+protected:
 	static void decrement_tag_refcount(const tag& t);
 	void push_tag(const tag& t);
 };

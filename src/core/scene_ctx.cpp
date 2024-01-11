@@ -263,11 +263,11 @@ void scene_ctx::save_xport(mgl::output_file& out) const
 			pair2.second.save(out);
 	}
 
-	// lightz
-	out.ulong(m_lights.size());
-	for (const light* const l : m_lights)
+	// lightz (skip camera light)
+	out.ulong(m_lights.size() - 1);
+	for (u64 i = 1; i < m_lights.size(); i++)
 	{
-		l->mgl_light.save(&out);
+		m_lights[i]->xport(out);
 	}
 
 	// waypointz
