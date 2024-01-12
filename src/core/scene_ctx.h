@@ -44,7 +44,8 @@ public:
 	void destroy();
 	void save(std::ofstream& out, const std::string& out_fp);
 	const std::string load(std::ifstream& in, const std::string& in_fp);
-	void save_xport(mgl::output_file& out) const;
+	void xport_sgnode(sgnode* const cur, std::vector<std::unordered_map<u32, mgl::static_retained_render_object>*>* const phorm_ros);
+	void save_xport(mgl::output_file& out);
 	void load_skybox(const std::string& folder, const std::string& phorm_base);
 public:
 	sgnode* get_sg_root();

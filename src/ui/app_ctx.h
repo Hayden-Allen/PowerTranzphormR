@@ -49,7 +49,7 @@ public:
 	bool save();
 	void save(const std::string& fp);
 	bool save_as();
-	bool export_as() const;
+	bool export_as();
 	bool confirm_unsaved_changes();
 	void load(const std::string& fp);
 	void undo();

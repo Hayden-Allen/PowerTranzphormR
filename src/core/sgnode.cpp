@@ -332,6 +332,58 @@ void sgnode::recompute(scene_ctx* const scene)
 		transform_verts();
 	}
 }
+const generated_mesh* sgnode::compute_xport(scene_ctx* const scene) const
+{
+	generated_mesh* const gen = new generated_mesh(nullptr);
+	if (is_operation())
+	{
+		for (sgnode* const child : m_children)
+		{
+			const generated_mesh* child_gen = nullptr;
+			if (child->is_separate_xport())
+				continue;
+			if (!child->is_visible())
+				continue;
+			child_gen = child->compute_xport(scene);
+			// sometimes carve makes weird cases with empty meshes
+			if (!(child_gen->mesh && child_gen->mesh->meshes.size()))
+			{
+				delete child_gen;
+				continue;
+			}
+			// happens on subtract nodes when subtracting from empty mesh
+			if (gen->mesh && !gen->mesh->meshes.size())
+			{
+				delete child_gen;
+				continue;
+			}
+
+			if (!gen->mesh)
+			{
+				gen->copy_mesh_from(child_gen, scene);
+			}
+			else
+			{
+				try
+				{
+					mesh_t* const new_mesh = scene->get_csg().compute(gen->mesh, child_gen->mesh, m_operation);
+					gen->clear();
+					gen->set_mesh(new_mesh);
+				}
+				catch (std::exception& ex)
+				{
+					std::cerr << "carve::exception happened: " << ex.what() << "\n";
+				}
+			}
+			delete child_gen;
+		}
+	}
+	else
+	{
+		gen->copy_mesh_from(m_gen, scene);
+	}
+	return gen;
+}
 nlohmann::json sgnode::save(scene_ctx* const scene) const
 {
 	nlohmann::json obj = visibility_xportable::save();
@@ -363,6 +415,11 @@ void sgnode::destroy(std::unordered_set<sgnode*>& freed)
 	// this node will soon be deleted, don't want any double frees
 	m_children.clear();
 	m_gen = nullptr;
+}
+
+bool sgnode::is_separate_xport() const
+{
+	return (!m_kustom_id.empty()) || m_tagz.size();
 }
 
 

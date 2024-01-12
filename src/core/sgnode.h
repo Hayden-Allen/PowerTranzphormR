@@ -55,8 +55,10 @@ public:
 	sgnode* clone_self_and_insert(app_ctx* const app, sgnode* const parent) const;
 	sgnode* freeze(scene_ctx* const scene) const;
 	void recompute(scene_ctx* const scene);
+	const generated_mesh* compute_xport(scene_ctx* const scene) const;
 	nlohmann::json save(scene_ctx* const scene) const;
 	void destroy(std::unordered_set<sgnode*>& freed);
+	bool is_separate_xport() const;
 private:
 	sgnode* m_parent = nullptr;
 	std::vector<sgnode*> m_children;

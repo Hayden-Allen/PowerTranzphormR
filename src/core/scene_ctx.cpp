@@ -246,7 +246,31 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 
 	return obj["rid"];
 }
-void scene_ctx::save_xport(mgl::output_file& out) const
+void scene_ctx::xport_sgnode(sgnode* const cur, std::vector<std::unordered_map<u32, mgl::static_retained_render_object>*>* const phorm_ros)
+{
+	std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
+	std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
+	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
+	{
+		verts_for_mtl.insert(std::make_pair(it->first, std::vector<mesh_vertex>()));
+		indices_for_mtl.insert(std::make_pair(it->first, std::vector<u32>()));
+	}
+	const generated_mesh* const gen = cur->compute_xport(this);
+	m_tesselate(gen->mesh, verts_for_mtl, indices_for_mtl, true);
+
+	phorm_ros->emplace_back(new std::unordered_map<u32, mgl::static_retained_render_object>());
+	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
+	{
+		const auto& verts = verts_for_mtl.at(it->first);
+		if (verts.empty())
+			continue;
+		const auto& indices = indices_for_mtl.at(it->first);
+		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
+		phorm_ros->back()->emplace(it->first, std::move(ro));
+	}
+	delete gen;
+}
+void scene_ctx::save_xport(mgl::output_file& out)
 {
 	// texturez
 	std::unordered_map<std::string, u64> texname2idx;
@@ -268,7 +292,7 @@ void scene_ctx::save_xport(mgl::output_file& out) const
 	}
 
 	// phormz
-	u64 ro_count = m_sg_ros_for_mtl.size();
+	/*u64 ro_count = m_sg_ros_for_mtl.size();
 	for (const auto& pair : m_sm_ros)
 		ro_count += pair.second.size();
 	out.ulong(ro_count);
@@ -280,7 +304,45 @@ void scene_ctx::save_xport(mgl::output_file& out) const
 	{
 		for (const auto& pair2 : pair.second)
 			pair2.second.save(out);
+	}*/
+	std::vector<std::unordered_map<u32, mgl::static_retained_render_object>*> phorm_ros;
+	std::vector<tmat<space::OBJECT, space::WORLD>> phorm_mats;
+	std::vector<sgnode*> stack;
+	stack.push_back(m_sg_root);
+	while (!stack.empty())
+	{
+		sgnode* const cur = stack.back();
+		stack.pop_back();
+
+		if (cur->is_separate_xport())
+		{
+			xport_sgnode(cur, &phorm_ros);
+			phorm_mats.push_back(cur->accumulate_mats());
+		}
+		else
+		{
+			const auto& children = cur->get_children();
+			stack.insert(stack.end(), children.begin(), children.end());
+		}
 	}
+	// sg root
+	xport_sgnode(m_sg_root, &phorm_ros);
+	phorm_mats.push_back(m_sg_root->accumulate_mats());
+	assert(phorm_ros.size() == phorm_mats.size());
+	out.ulong(phorm_ros.size());
+	for (u64 i = 0; i < phorm_ros.size(); i++)
+	{
+		out.write(phorm_mats[i].e, 16);
+		const auto& phorm = phorm_ros[i];
+		out.ulong(phorm->size());
+		for (const auto& pair : *phorm)
+		{
+			out.uint(pair.first);
+			pair.second.save(out);
+		}
+	}
+
+	// smnodes
 
 	// lightz (skip camera light)
 	out.ulong(m_lights.size() - 1);

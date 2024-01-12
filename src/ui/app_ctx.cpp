@@ -106,7 +106,7 @@ bool app_ctx::save_as()
 	}
 	return false;
 }
-bool app_ctx::export_as() const
+bool app_ctx::export_as()
 {
 	const std::string& fp = u::save_dialog(mgl_ctx.window, "PowerTranzphormR X-Port", "xport");
 	if (!fp.empty())
