@@ -190,6 +190,11 @@ nlohmann::json smnode::save(scene_ctx* const scene) const
 	obj["snap_angle"] = m_snap_angle;
 	return obj;
 }
+void smnode::xport(mgl::output_file& out) const
+{
+	visibility_xportable::xport(out);
+	// out.write(m_mat.e, 16);
+}
 
 
 

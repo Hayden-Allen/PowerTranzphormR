@@ -122,6 +122,7 @@ private:
 	void m_build_light_buffer();
 	void m_build_sg_vaos();
 	void m_build_sm_vaos();
+	std::unordered_map<u32, mgl::static_retained_render_object> m_build_sm_vaos_world(smnode* const node);
 	void m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms);
 	void m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms& mats, const std::unordered_map<u32, mgl::static_retained_render_object>& ros, const tmat<space::OBJECT, space::WORLD>& model = tmat<space::OBJECT, space::WORLD>(), const tex_coord_t* offset = nullptr);
 	void m_compute_norms_snap(std::vector<mesh_vertex>& input_verts, std::vector<u32>& indices, const bool snap_all, const f32 snap_angle);

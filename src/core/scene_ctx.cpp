@@ -258,12 +258,17 @@ void scene_ctx::xport_sgnode(sgnode* const cur, std::vector<std::unordered_map<u
 	const generated_mesh* const gen = cur->compute_xport(this);
 	m_tesselate(gen->mesh, verts_for_mtl, indices_for_mtl, true);
 
+	const tmat<space::OBJECT, space::WORLD>& mat = cur->accumulate_mats();
 	phorm_ros->emplace_back(new std::unordered_map<u32, mgl::static_retained_render_object>());
 	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
 	{
-		const auto& verts = verts_for_mtl.at(it->first);
+		auto& verts = verts_for_mtl.at(it->first);
 		if (verts.empty())
 			continue;
+		for (mesh_vertex& vert : verts)
+		{
+			vert.transform(mat);
+		}
 		const auto& indices = indices_for_mtl.at(it->first);
 		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
 		phorm_ros->back()->emplace(it->first, std::move(ro));
@@ -274,8 +279,11 @@ void scene_ctx::save_xport(mgl::output_file& out)
 {
 	// texturez
 	std::unordered_map<std::string, u64> texname2idx;
+	out.ulong(g::texlib->get_all().size() + 1);
+	printf("t: %zu\n", g::texlib->get_all().size() + 1);
+	g::texlib->get_deftex()->save(&out);
+	texname2idx.insert({ g::null_tex_fp, 0 });
 	u64 textures_xported = 1; // index 0 represents <NULL> texture
-	out.ulong(g::texlib->get_all().size());
 	for (const auto& pair : g::texlib->get_all())
 	{
 		pair.second->save(&out);
@@ -285,6 +293,7 @@ void scene_ctx::save_xport(mgl::output_file& out)
 
 	// materialz
 	out.ulong(m_mtls.size());
+	printf("m: %zu\n", m_mtls.size());
 	for (const auto& pair : m_mtls)
 	{
 		out.uint(pair.first);
@@ -292,21 +301,8 @@ void scene_ctx::save_xport(mgl::output_file& out)
 	}
 
 	// phormz
-	/*u64 ro_count = m_sg_ros_for_mtl.size();
-	for (const auto& pair : m_sm_ros)
-		ro_count += pair.second.size();
-	out.ulong(ro_count);
-	for (const auto& pair : m_sg_ros_for_mtl)
-	{
-		pair.second.save(out);
-	}
-	for (const auto& pair : m_sm_ros)
-	{
-		for (const auto& pair2 : pair.second)
-			pair2.second.save(out);
-	}*/
 	std::vector<std::unordered_map<u32, mgl::static_retained_render_object>*> phorm_ros;
-	std::vector<tmat<space::OBJECT, space::WORLD>> phorm_mats;
+	std::vector<sgnode*> phorms;
 	std::vector<sgnode*> stack;
 	stack.push_back(m_sg_root);
 	while (!stack.empty())
@@ -317,7 +313,7 @@ void scene_ctx::save_xport(mgl::output_file& out)
 		if (cur->is_separate_xport())
 		{
 			xport_sgnode(cur, &phorm_ros);
-			phorm_mats.push_back(cur->accumulate_mats());
+			phorms.push_back(cur);
 		}
 		else
 		{
@@ -325,14 +321,14 @@ void scene_ctx::save_xport(mgl::output_file& out)
 			stack.insert(stack.end(), children.begin(), children.end());
 		}
 	}
-	// sg root
 	xport_sgnode(m_sg_root, &phorm_ros);
-	phorm_mats.push_back(m_sg_root->accumulate_mats());
-	assert(phorm_ros.size() == phorm_mats.size());
+	phorms.push_back(m_sg_root);
+	assert(phorm_ros.size() == phorms.size());
 	out.ulong(phorm_ros.size());
+	printf("sg: %zu\n", phorm_ros.size());
 	for (u64 i = 0; i < phorm_ros.size(); i++)
 	{
-		out.write(phorm_mats[i].e, 16);
+		phorms[i]->xport(out);
 		const auto& phorm = phorm_ros[i];
 		out.ulong(phorm->size());
 		for (const auto& pair : *phorm)
@@ -343,9 +339,23 @@ void scene_ctx::save_xport(mgl::output_file& out)
 	}
 
 	// smnodes
+	out.ulong(m_sm_ros.size());
+	printf("sm: %zu\n", m_sm_ros.size());
+	for (const auto& pair : m_sm_ros)
+	{
+		pair.first->xport(out);
+		const auto& materials = m_build_sm_vaos_world(pair.first);
+		out.ulong(materials.size());
+		for (const auto& material : materials)
+		{
+			out.uint(material.first);
+			material.second.save(out);
+		}
+	}
 
 	// lightz (skip camera light)
 	out.ulong(m_lights.size() - 1);
+	printf("l: %zu\n", m_lights.size() - 1);
 	for (u64 i = 1; i < m_lights.size(); i++)
 	{
 		m_lights[i]->xport(out);
@@ -353,6 +363,7 @@ void scene_ctx::save_xport(mgl::output_file& out)
 
 	// waypointz
 	out.ulong(m_waypoints.size());
+	printf("w: %zu\n", m_waypoints.size());
 	for (const waypoint* const w : m_waypoints)
 	{
 		w->xport(out);
@@ -745,6 +756,63 @@ void scene_ctx::m_build_sm_vaos()
 			m_sm_ros[sm2ro.first].emplace(it->first, std::move(ro));
 		}
 	}
+}
+std::unordered_map<u32, mgl::static_retained_render_object> scene_ctx::m_build_sm_vaos_world(smnode* const node)
+{
+	node->recompute(this);
+
+	std::unordered_map<u32, std::vector<mesh_vertex>> verts_for_mtl;
+	std::unordered_map<u32, std::vector<u32>> indices_for_mtl;
+	const mesh_t* const mesh = node->get_mesh();
+	for (mesh_t::const_face_iter i = mesh->faceBegin(); i != mesh->faceEnd(); ++i)
+	{
+		const mesh_t::face_t* f = *i;
+		u32 mtl_id = m_mtl_id_attr.getAttribute(f, 0);
+		if (!indices_for_mtl.contains(mtl_id))
+			indices_for_mtl.insert(std::make_pair(mtl_id, std::vector<u32>()));
+
+		std::vector<tess_vtx> verts;
+		for (mesh_t::face_t::const_edge_iter_t e = f->begin(); e != f->end(); ++e)
+		{
+			const tex_coord_t& t0 = m_vert_attrs.uv0.getAttribute(f, e.idx());
+			const tex_coord_t& t1 = m_vert_attrs.uv1.getAttribute(f, e.idx());
+			const tex_coord_t& t2 = m_vert_attrs.uv2.getAttribute(f, e.idx());
+			const tex_coord_t& t3 = m_vert_attrs.uv3.getAttribute(f, e.idx());
+			const f64 w0 = m_vert_attrs.w0.getAttribute(f, e.idx());
+			const f64 w1 = m_vert_attrs.w1.getAttribute(f, e.idx());
+			const f64 w2 = m_vert_attrs.w2.getAttribute(f, e.idx());
+			const f64 w3 = m_vert_attrs.w3.getAttribute(f, e.idx());
+			const color_t& color = m_vert_attrs.color.getAttribute(f, e.idx());
+
+			verts_for_mtl[mtl_id].emplace_back((f32)e->vert->v.x, (f32)e->vert->v.y, (f32)e->vert->v.z, t0, t1, t2, t3, (f32)w0, (f32)w1, (f32)w2, (f32)w3, color);
+		}
+	}
+
+	const bool snap_norms = true;
+	for (auto& pair : verts_for_mtl)
+	{
+		if (node->should_snap())
+			m_compute_norms_snap(pair.second, indices_for_mtl.at(pair.first), node->should_snap_all(), node->get_snap_angle());
+		else
+			m_compute_norms(pair.second, indices_for_mtl.at(pair.first));
+	}
+
+	const tmat<space::OBJECT, space::WORLD>& mat = node->get_mat();
+	std::unordered_map<u32, mgl::static_retained_render_object> ret;
+	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
+	{
+		auto& verts = it->second;
+		if (verts.empty())
+			continue;
+		for (mesh_vertex& vert : verts)
+		{
+			vert.transform(mat);
+		}
+		const auto& indices = indices_for_mtl.at(it->first);
+		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
+		ret.emplace(it->first, std::move(ro));
+	}
+	return ret;
 }
 void scene_ctx::m_tesselate(const mesh_t* mesh, std::unordered_map<u32, std::vector<mesh_vertex>>& out_verts_for_mtl, std::unordered_map<u32, std::vector<u32>>& out_indices_for_mtl, const bool snap_norms)
 {

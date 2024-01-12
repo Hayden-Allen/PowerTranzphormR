@@ -157,12 +157,7 @@ void scene_material::xport(mgl::output_file& out, const std::unordered_map<std::
 	}
 	for (const auto& pair : sorted)
 	{
-		if (pair.second == g::null_tex_fp)
-			out.ulong(0);
-		else
-		{
-			assert(texname2idx.contains(pair.second));
-			out.ulong(texname2idx.at(pair.second));
-		}
+		assert(texname2idx.contains(pair.second));
+		out.ulong(texname2idx.at(pair.second));
 	}
 }

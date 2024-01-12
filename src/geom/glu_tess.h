@@ -52,6 +52,20 @@ struct mesh_vertex
 		sprintf_s(buf, 512, "%f %f %f", x, y, z);
 		return buf;
 	}
+	void transform(const tmat<space::OBJECT, space::WORLD>& mat)
+	{
+		const tmat<space::OBJECT, space::WORLD>& normal_mat = mat.invert_copy().transpose_copy();
+		const point<space::OBJECT> op(x, y, z);
+		const direction<space::OBJECT> on(nx, ny, nz);
+		const point<space::WORLD>& wp = op.transform_copy(mat);
+		const direction<space::WORLD>& wn = on.transform_copy(normal_mat);
+		x = wp.x;
+		y = wp.y;
+		z = wp.z;
+		nx = wn.x;
+		ny = wn.y;
+		nz = wn.z;
+	}
 };
 struct tess_vtx
 {

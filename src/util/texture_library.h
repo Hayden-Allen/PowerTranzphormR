@@ -115,6 +115,10 @@ public:
 	{
 		m_autotex_cleanup_enabled = enabled;
 	}
+	const mgl::retained_texture2d_rgba_u8* get_deftex() const
+	{
+		return m_deftex;
+	}
 private:
 	static mgl::retained_texture2d_rgba_u8* load_file(const std::string& fp)
 	{
