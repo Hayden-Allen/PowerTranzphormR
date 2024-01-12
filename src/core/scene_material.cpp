@@ -144,3 +144,25 @@ scene_material* scene_material::clone() const
 	cloned->alpha_shaders = alpha_shaders;
 	return cloned;
 }
+void scene_material::xport(mgl::output_file& out, const std::unordered_map<std::string, u64>& texname2idx) const
+{
+	out.ubyte(m_use_alpha);
+	out.ubyte(m_use_lighting);
+	out.ubyte(m_should_cull);
+	assert(m_tex_name_to_filename.size() == 4);
+	std::map<std::string, std::string> sorted;
+	for (const auto& pair : m_tex_name_to_filename)
+	{
+		sorted.insert(pair);
+	}
+	for (const auto& pair : sorted)
+	{
+		if (pair.second == g::null_tex_fp)
+			out.ulong(0);
+		else
+		{
+			assert(texname2idx.contains(pair.second));
+			out.ulong(texname2idx.at(pair.second));
+		}
+	}
+}

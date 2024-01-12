@@ -248,6 +248,25 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 }
 void scene_ctx::save_xport(mgl::output_file& out) const
 {
+	// texturez
+	std::unordered_map<std::string, u64> texname2idx;
+	u64 textures_xported = 1; // index 0 represents <NULL> texture
+	out.ulong(g::texlib->get_all().size());
+	for (const auto& pair : g::texlib->get_all())
+	{
+		pair.second->save(&out);
+		texname2idx.insert({ pair.first, textures_xported });
+		textures_xported++;
+	}
+
+	// materialz
+	out.ulong(m_mtls.size());
+	for (const auto& pair : m_mtls)
+	{
+		out.uint(pair.first);
+		pair.second->xport(out, texname2idx);
+	}
+
 	// phormz
 	u64 ro_count = m_sg_ros_for_mtl.size();
 	for (const auto& pair : m_sm_ros)
