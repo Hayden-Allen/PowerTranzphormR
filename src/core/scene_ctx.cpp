@@ -375,7 +375,7 @@ void scene_ctx::load_skybox(const std::string& rel_folder, const std::string& ph
 	if (rel_folder.empty())
 	{
 		m_skybox_folder = "";
-		m_skybox = u::load_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
+		m_skybox = u::load_retained_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
 			{
 				"res/skybox/px.png",
 				"res/skybox/nx.png",
@@ -389,7 +389,7 @@ void scene_ctx::load_skybox(const std::string& rel_folder, const std::string& ph
 	{
 		std::filesystem::path folder(phorm_base.empty() ? rel_folder : u::relative_to_absolute(rel_folder, phorm_base));
 		m_skybox_folder = folder.string();
-		m_skybox = u::load_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
+		m_skybox = u::load_retained_skybox_rgb_u8("src/glsl/sky.vert", "src/glsl/sky.frag",
 			{
 				(folder / "px.png").string(),
 				(folder / "nx.png").string(),

@@ -116,7 +116,7 @@ private:
 	sgnode* m_sg_root = nullptr;
 	mgl::static_uniform_buffer m_light_buffer;
 	u32 m_num_visible_lights = 0;
-	mgl::skybox_rgb_u8* m_skybox = nullptr;
+	mgl::retained_skybox_rgb_u8* m_skybox = nullptr;
 	std::string m_skybox_folder;
 private:
 	void m_build_light_buffer();

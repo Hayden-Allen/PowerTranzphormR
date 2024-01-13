@@ -197,7 +197,7 @@ namespace u
 		return tex;
 	}
 
-	static mgl::skybox_rgb_u8* load_skybox_rgb_u8(const std::string& vert_fp, const std::string& frag_fp, const std::array<std::string, 6>& fps)
+	static mgl::retained_skybox_rgb_u8* load_retained_skybox_rgb_u8(const std::string& vert_fp, const std::string& frag_fp, const std::array<std::string, 6>& fps)
 	{
 		int aw = -1, ah = -1;
 		const u8* tex[6] = { nullptr };
@@ -229,7 +229,7 @@ namespace u
 			}
 		}
 
-		mgl::skybox_rgb_u8* ret = new mgl::skybox_rgb_u8(vert_fp, frag_fp, std::move(mgl::cubemap_rgb_u8(GL_RGB, aw, ah, tex)));
+		mgl::retained_skybox_rgb_u8* ret = new mgl::retained_skybox_rgb_u8(vert_fp, frag_fp, std::move(mgl::retained_cubemap_rgb_u8(GL_RGB, aw, ah, tex)));
 		for (s32 i = 0; i < 6; i++)
 			delete tex[i];
 		return ret;
