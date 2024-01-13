@@ -801,6 +801,8 @@ std::unordered_map<u32, mgl::static_retained_render_object> scene_ctx::m_build_s
 	}
 
 	const tmat<space::OBJECT, space::WORLD>& mat = node->get_mat();
+	const tex_coord_t* const offset = node->get_uv_offset();
+
 	std::unordered_map<u32, mgl::static_retained_render_object> ret;
 	for (auto it = verts_for_mtl.begin(); it != verts_for_mtl.end(); ++it)
 	{
@@ -810,6 +812,8 @@ std::unordered_map<u32, mgl::static_retained_render_object> scene_ctx::m_build_s
 		for (mesh_vertex& vert : verts)
 		{
 			vert.transform(mat);
+			if (offset)
+				vert.apply_uv_offset(offset);
 		}
 		const auto& indices = indices_for_mtl.at(it->first);
 		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());

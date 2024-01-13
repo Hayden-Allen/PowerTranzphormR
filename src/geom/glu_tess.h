@@ -66,6 +66,25 @@ struct mesh_vertex
 		ny = wn.y;
 		nz = wn.z;
 	}
+	void apply_uv_offset(const tex_coord_t* const off)
+	{
+		u0 *= off[0].u;
+		v0 *= off[0].v;
+		uo0 += off[0].uo;
+		vo0 += off[0].vo;
+		u1 *= off[1].u;
+		v1 *= off[1].v;
+		uo1 += off[1].uo;
+		vo1 += off[1].vo;
+		u2 *= off[2].u;
+		v2 *= off[2].v;
+		uo2 += off[2].uo;
+		vo2 += off[2].vo;
+		u3 *= off[3].u;
+		v3 *= off[3].v;
+		uo3 += off[3].uo;
+		vo3 += off[3].vo;
+	}
 };
 struct tess_vtx
 {
