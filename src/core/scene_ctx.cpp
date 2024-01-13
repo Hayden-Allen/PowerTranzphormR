@@ -291,6 +291,9 @@ void scene_ctx::save_xport(mgl::output_file& out)
 		textures_xported++;
 	}
 
+	// skybox
+	m_skybox->get_texture().save(&out);
+
 	// materialz
 	out.ulong(m_mtls.size());
 	printf("m: %zu\n", m_mtls.size());
