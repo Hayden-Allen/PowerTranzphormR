@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 
+typedef mgl::retained_texture_array<mgl::retained_texture2d_rgba_u8> texture;
+
 class texture_library
 {
 public:
@@ -20,9 +22,9 @@ public:
 	void init_deftex()
 	{
 		u8 deftex_pixels[16] = { 255, 0, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 0, 255, 255 };
-		m_deftex = new mgl::retained_texture2d_rgba_u8(GL_RGBA, 2, 2, deftex_pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST });
+		m_deftex = new texture(GL_RGBA, 2, 2, deftex_pixels, { .min_filter = GL_NEAREST, .mag_filter = GL_NEAREST });
 	}
-	const mgl::retained_texture2d_rgba_u8* get(const std::string& fp) const
+	const texture* get(const std::string& fp) const
 	{
 		if (fp == g::null_tex_fp)
 		{
@@ -32,7 +34,7 @@ public:
 		assert(it != m_lib.end());
 		return it->second;
 	}
-	mgl::retained_texture2d_rgba_u8* get(const std::string& fp)
+	texture* get(const std::string& fp)
 	{
 		if (fp == g::null_tex_fp)
 		{
@@ -42,7 +44,7 @@ public:
 		assert(it != m_lib.end());
 		return it->second;
 	}
-	const std::unordered_map<std::string, mgl::retained_texture2d_rgba_u8*>& get_all() const
+	const std::unordered_map<std::string, texture*>& get_all() const
 	{
 		return m_lib;
 	}
@@ -65,7 +67,7 @@ public:
 			m_counts.insert({ fp, 1 });
 		}
 		// ALWAYS reload because file may have been resaved
-		mgl::retained_texture2d_rgba_u8* const new_tex = load_file(fp);
+		texture* const new_tex = load_file(fp);
 		m_lib.insert({ fp, new_tex });
 	}
 	void unload(const std::string& fp)
@@ -115,18 +117,23 @@ public:
 	{
 		m_autotex_cleanup_enabled = enabled;
 	}
-	const mgl::retained_texture2d_rgba_u8* get_deftex() const
+	const texture* get_deftex() const
 	{
 		return m_deftex;
 	}
-private:
-	static mgl::retained_texture2d_rgba_u8* load_file(const std::string& fp)
+	void update(const f32 time)
 	{
-		return u::load_retained_texture2d_rgba_u8(fp);
+		for (auto& pair : m_lib)
+			pair.second->update((u64)time);
 	}
 private:
-	mgl::retained_texture2d_rgba_u8* m_deftex = nullptr;
-	std::unordered_map<std::string, mgl::retained_texture2d_rgba_u8*> m_lib;
+	static texture* load_file(const std::string& fp)
+	{
+		return u::load_texture_array(fp);
+	}
+private:
+	texture* m_deftex = nullptr;
+	std::unordered_map<std::string, texture*> m_lib;
 	std::unordered_map<std::string, u32> m_counts;
 	bool m_autotex_cleanup_enabled = true;
 };

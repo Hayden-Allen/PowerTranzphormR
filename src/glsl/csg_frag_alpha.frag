@@ -29,10 +29,10 @@ void main()
 {
 	vec3 N = normalize(v_N);
 
-	vec4 multi_tex_res =	texture(u_tex0, v_uv0.xy - v_uv0.zw * u_time) * v_weights[0] +
-				texture(u_tex1, v_uv1.xy - v_uv1.zw * u_time) * v_weights[1] +
-				texture(u_tex2, v_uv2.xy - v_uv2.zw * u_time) * v_weights[2] +
-				texture(u_tex3, v_uv3.xy - v_uv3.zw * u_time) * v_weights[3];
+	vec4 multi_tex_res = texture(u_tex0, v_uv0.xy - v_uv0.zw * u_time) * v_weights[0] +
+			     texture(u_tex1, v_uv1.xy - v_uv1.zw * u_time) * v_weights[1] +
+			     texture(u_tex2, v_uv2.xy - v_uv2.zw * u_time) * v_weights[2] +
+			     texture(u_tex3, v_uv3.xy - v_uv3.zw * u_time) * v_weights[3];
 	if (multi_tex_res.a < 0.01)
 	{
 		discard;

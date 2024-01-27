@@ -70,12 +70,12 @@ void scene_material::set_texture(const std::string& tex_name, const std::string&
 	g::texlib->load(fp);
 	m_tex_name_to_filename[tex_name] = fp;
 }
-const mgl::texture2d_rgba_u8* scene_material::get_texture(const std::string& tex_name) const
+const texture* scene_material::get_texture(const std::string& tex_name) const
 {
 	assert(m_tex_name_to_filename.contains(tex_name));
 	return g::texlib->get(m_tex_name_to_filename.at(tex_name));
 }
-void scene_material::for_each_texture(const std::function<void(const std::string&, const mgl::texture2d_rgba_u8*)>& l) const
+void scene_material::for_each_texture(const std::function<void(const std::string&, const texture*)>& l) const
 {
 	for (const auto& pair : m_tex_name_to_filename)
 	{

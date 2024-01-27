@@ -157,28 +157,9 @@ namespace u
 		return carve::geom::VECTOR(p.x, p.y, p.z);
 	}
 
-	static mgl::texture2d_rgba_u8* load_texture2d_rgba_u8(const std::string& fp)
-	{
-		std::ifstream test(fp);
-		if (!test.is_open())
-		{
-			LOG_FATAL("Invalid texture filepath {}", fp.c_str());
-			MGL_ASSERT(false);
-			return nullptr;
-		}
-		test.close();
-
-		stbi_set_flip_vertically_on_load(true);
-		int w = -1, h = -1, c = -1;
-		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 4);
-		assert(c >= 3);
-		mgl::texture2d_rgba_u8* tex = new mgl::texture2d_rgba_u8(GL_RGBA, w, h, tex_data);
-		stbi_image_free(tex_data);
-		return tex;
-	}
-
 	static mgl::retained_texture2d_rgba_u8* load_retained_texture2d_rgba_u8(const std::string& fp)
 	{
+		stbi_set_flip_vertically_on_load(true);
 		std::ifstream test(fp);
 		if (!test.is_open())
 		{
@@ -188,13 +169,51 @@ namespace u
 		}
 		test.close();
 
-		stbi_set_flip_vertically_on_load(true);
 		int w = -1, h = -1, c = -1;
 		stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 4);
 		assert(c >= 3);
-		mgl::retained_texture2d_rgba_u8* tex = new mgl::retained_texture2d_rgba_u8(GL_RGBA, w, h, tex_data);
+		mgl::retained_texture2d_rgba_u8* const ret = new mgl::retained_texture2d_rgba_u8(GL_RGBA, w, h, tex_data);
 		stbi_image_free(tex_data);
-		return tex;
+		return ret;
+	}
+
+	static mgl::retained_texture_array<mgl::retained_texture2d_rgba_u8>* load_texture_array(const std::string& fp)
+	{
+		stbi_set_flip_vertically_on_load(true);
+		std::ifstream test(fp);
+		if (!test.is_open())
+		{
+			LOG_FATAL("Invalid texture filepath {}", fp.c_str());
+			MGL_ASSERT(false);
+			return nullptr;
+		}
+		test.close();
+
+		mgl::retained_texture_array<mgl::retained_texture2d_rgba_u8>* ret = nullptr;
+		if (fp.ends_with(".gif"))
+		{
+			std::ifstream ifs(fp, std::ios::binary | std::ios::ate);
+			const u64 size = ifs.tellg();
+			ifs.seekg(0, std::ios::beg);
+			std::vector<char> raw(size);
+			ifs.read((char*)raw.data(), size);
+
+			s32* delays = nullptr;
+			s32 x, y, z, comp;
+			stbi_uc* const tex_data = stbi_load_gif_from_memory((stbi_uc*)raw.data(), (s32)raw.size(), &delays, &x, &y, &z, &comp, 4);
+			ret = new mgl::retained_texture_array<mgl::retained_texture2d_rgba_u8>(GL_RGBA, x, y, tex_data, z, delays);
+			stbi_image_free(tex_data);
+			free(delays);
+		}
+		else
+		{
+			int w = -1, h = -1, c = -1;
+			stbi_uc* const tex_data = stbi_load(fp.c_str(), &w, &h, &c, 4);
+			assert(c >= 3);
+			ret = new mgl::retained_texture_array<mgl::retained_texture2d_rgba_u8>(GL_RGBA, w, h, tex_data);
+			stbi_image_free(tex_data);
+		}
+		return ret;
 	}
 
 	static mgl::retained_skybox_rgb_u8* load_retained_skybox_rgb_u8(const std::string& vert_fp, const std::string& frag_fp, const std::array<std::string, 6>& fps)

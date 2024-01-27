@@ -385,7 +385,7 @@ void properties_window::handle_material_frame(scene_material* const selected)
 
 	ImGui::SeparatorText("Textures");
 
-	selected->for_each_texture([&](const std::string& name, const mgl::texture2d_rgba_u8* tex_DONOTUSE)
+	selected->for_each_texture([&](const std::string& name, const texture* tex_DONOTUSE)
 		{
 			if (ImGui::CollapsingHeader(name.c_str()))
 			{
@@ -441,7 +441,7 @@ void properties_window::handle_material_texture(scene_material* const selected_m
 	{
 		if (ImGui::ImageButton("imgbtn", selected_mtl->get_texture(name)->get_imgui_id(), img_dim, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)))
 		{
-			const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp");
+			const std::string& fp = u::open_dialog(m_app_ctx->mgl_ctx.window, "Image File", "png,jpg,bmp,gif");
 			if (!fp.empty())
 				selected_mtl->set_texture(name, fp);
 		}

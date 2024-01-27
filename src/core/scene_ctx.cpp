@@ -168,6 +168,7 @@ void scene_ctx::save(std::ofstream& out, const std::string& out_fp)
 		obj["sb"] = u::absolute_to_relative(m_skybox_folder, out_fp);
 	}
 
+	obj["mid"] = s_next_mtl_id;
 	obj["nm"] = m_mtls.size();
 	std::vector<nlohmann::json::array_t> mtls;
 	for (const auto& pair : m_mtls)
@@ -206,6 +207,7 @@ const std::string scene_ctx::load(std::ifstream& in, const std::string& in_fp)
 {
 	const nlohmann::json& obj = u::next_line_json(in);
 
+	s_next_mtl_id = obj["mid"];
 	m_mtls.reserve(obj["nm"]);
 	for (const nlohmann::json::array_t& mtl : obj["m"])
 	{
@@ -892,7 +894,7 @@ void scene_ctx::m_draw_vaos(const mgl::context& glctx, const scene_ctx_uniforms&
 		}
 
 		u32 slot = 0;
-		mat->for_each_texture([&](const std::string& name, const mgl::texture2d_rgba_u8* tex)
+		mat->for_each_texture([&](const std::string& name, const texture* tex)
 			{
 				tex->bind(slot);
 				s->uniform_1i(name.c_str(), slot);

@@ -13,6 +13,8 @@ preview_layer::preview_layer(app_ctx* const a_ctx) :
 
 bool preview_layer::on_frame(const f32 dt)
 {
+	g::texlib->update(m_app_ctx->mgl_ctx.time.now * 1000);
+
 	const direction<space::CAMERA> move_dir(
 		get_key(GLFW_KEY_D) - get_key(GLFW_KEY_A),
 		get_key(GLFW_KEY_SPACE) - get_key(GLFW_KEY_LEFT_SHIFT),
