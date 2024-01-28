@@ -416,7 +416,6 @@ void sgnode::destroy(std::unordered_set<sgnode*>& freed)
 	m_children.clear();
 	m_gen = nullptr;
 }
-
 bool sgnode::is_separate_xport() const
 {
 	return (!m_kustom_id.empty()) || m_tagz.size();

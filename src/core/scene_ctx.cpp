@@ -260,7 +260,7 @@ void scene_ctx::xport_sgnode(sgnode* const cur, std::vector<std::unordered_map<u
 	const generated_mesh* const gen = cur->compute_xport(this);
 	m_tesselate(gen->mesh, verts_for_mtl, indices_for_mtl, true);
 
-	const tmat<space::OBJECT, space::WORLD>& mat = cur->accumulate_mats();
+	const tmat<space::PARENT, space::WORLD>& mat = cur->accumulate_parent_mats();
 	phorm_ros->emplace_back(new std::unordered_map<u32, mgl::static_retained_render_object>());
 	for (auto it = m_mtls.begin(); it != m_mtls.end(); ++it)
 	{
@@ -269,7 +269,7 @@ void scene_ctx::xport_sgnode(sgnode* const cur, std::vector<std::unordered_map<u
 			continue;
 		for (mesh_vertex& vert : verts)
 		{
-			vert.transform(mat);
+			// vert.transform(mat);
 		}
 		const auto& indices = indices_for_mtl.at(it->first);
 		mgl::static_retained_render_object ro((f32*)verts.data(), (u32)verts.size(), get_vert_layout(), (u32*)indices.data(), (u32)indices.size());
