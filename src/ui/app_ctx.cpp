@@ -589,6 +589,7 @@ void app_ctx::make_sgnode_static(const sgnode* const node)
 	// triangulated carve -> smnode
 	generated_static_mesh* const new_gen = new generated_static_mesh(new_carve_mesh, &scene);
 	smnode* const new_sm = new smnode(new_gen, node->accumulate_mats(), "Static " + node->get_name());
+	new_sm->copy_properties_from(*node);
 	new_sm->set_snap_angle(scene_ctx::s_snap_angle);
 	new_sm->set_should_snap_all(scene_ctx::s_snap_all);
 	new_sm->set_should_snap(true);
@@ -607,6 +608,7 @@ void app_ctx::make_frozen_sgnode_from_smnode(const smnode* const node)
 	const tmat<space::WORLD, space::OBJECT>& root_inv = root->accumulate_mats().invert_copy();
 	const tmat<space::OBJECT, space::OBJECT>& inv = root_inv * node->get_mat();
 	sgnode* const new_node = new sgnode(nullptr, new_gen, "Phrozen " + node->get_name(), inv);
+	new_node->copy_properties_from(*node);
 	create_action(new_node, root);
 	set_selected_sgnode(new_node);
 }

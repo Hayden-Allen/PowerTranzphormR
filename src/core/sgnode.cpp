@@ -250,7 +250,6 @@ s64 sgnode::remove_child(sgnode* const node)
 sgnode* sgnode::clone(app_ctx* const app) const
 {
 	sgnode* ret = new sgnode(this);
-	ret->copy_properties_from(*this);
 	ret->m_gen = m_gen->clone(&app->scene, accumulate_mats().invert_copy());
 	if (m_frozen)
 		ret->copy_local_verts();
@@ -433,7 +432,9 @@ sgnode::sgnode(const sgnode* const original) :
 	m_operation(original->m_operation),
 	m_frozen(original->m_frozen),
 	m_mat(original->m_mat)
-{}
+{
+	copy_properties_from(*original);
+}
 
 
 
