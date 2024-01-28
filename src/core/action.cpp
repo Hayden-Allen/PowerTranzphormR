@@ -24,6 +24,7 @@ action* action::create(const nlohmann::json& obj, const std::unordered_map<std::
 	case 4: return new freeze_action(obj, nodes);
 	case 5: return new unfreeze_action(obj, nodes);
 	case 6: return new rename_action(obj, nodes);
+	case 7: return new set_op_action(obj, nodes);
 	default: assert(false);
 	}
 	return nullptr;
@@ -373,6 +374,8 @@ void set_op_action::undo(scene_ctx* const ctx, app_ctx* const a_ctx)
 nlohmann::json set_op_action::save() const
 {
 	nlohmann::json obj = action::save();
+	obj["type"] = 7;
+	obj["t"] = target->get_id();
 	obj["o"] = old_op;
 	obj["n"] = new_op;
 	return obj;

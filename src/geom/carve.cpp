@@ -350,7 +350,7 @@ mesh_t* textured_torus(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_att
 mesh_t* textured_ellipsoid(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr, const GLuint mtl_id, const ellipsoid_options& options)
 {
 	assert(options.num_horizontal_steps > 2);
-	assert(options.num_vertical_steps > 3);
+	assert(options.num_vertical_steps > 2);
 
 	const u32 nv = options.num_vertical_steps, nh = options.num_horizontal_steps;
 	const f32 DPHI = c::PI / nv, DTHETA = c::TWO_PI / nh;
