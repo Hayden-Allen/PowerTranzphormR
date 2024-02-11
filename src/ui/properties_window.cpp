@@ -596,10 +596,13 @@ void properties_window::handle_static_mesh_frame(smnode* const selected)
 	handle_transform(selected->get_mat().e);
 
 	const u32 old_mtl_id = selected->get_material();
-	const u32 new_mtl_id = material_combo_box(old_mtl_id);
-	if (new_mtl_id != old_mtl_id)
+	if (old_mtl_id != MAX_VALUE_TYPE(GLuint))
 	{
-		selected->set_material(&m_app_ctx->scene, new_mtl_id);
+		const u32 new_mtl_id = material_combo_box(old_mtl_id);
+		if (new_mtl_id != old_mtl_id)
+		{
+			selected->set_material(&m_app_ctx->scene, new_mtl_id);
+		}
 	}
 	bool snap = selected->should_snap();
 	if (ImGui::Checkbox("Snap Normals", &snap))

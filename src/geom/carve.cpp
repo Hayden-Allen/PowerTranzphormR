@@ -253,22 +253,25 @@ mesh_t* textured_cone(carve_vert_attrs& vert_attrs, attr_material_t& mtl_id_attr
 	// single face for cirular base of cone (wound clockwise)
 	for (u32 i = 0; i < STEPS; i++)
 	{
+		// center of base
 		const u32 ia = STEPS;
 		const u32 ib = i, ic = (i + 1) % STEPS;
 		face_t* const face = new face_t(vertices[ia], vertices[ib], vertices[ic]);
 		faces.push_back(face);
 
-		const f32 ub = (cosf(i * DTHETA) + 1) / 2, vb = (sinf(i * DTHETA) + 1) / 2;
-		const f32 uc = (cosf(((i + 1) % STEPS) * DTHETA) + 1) / 2, vc = (sinf(((i + 1) % STEPS) * DTHETA) + 1) / 2;
+		const f32 ub = (cosf(ib * DTHETA) + 1) / 2, vb = (sinf(ib * DTHETA) + 1) / 2;
+		const f32 uc = (cosf(ic * DTHETA) + 1) / 2, vc = (sinf(ic * DTHETA) + 1) / 2;
 		vert_attrs.set_attribute(face, 0, options, tex_coord_t(.5f, .5f));
-		vert_attrs.set_attribute(face, 1, options, tex_coord_t(uc, vc));
-		vert_attrs.set_attribute(face, 2, options, tex_coord_t(ub, vb));
+		vert_attrs.set_attribute(face, 1, options, tex_coord_t(ub, vb));
+		vert_attrs.set_attribute(face, 2, options, tex_coord_t(uc, vc));
 	}
 
 	//  generate vertical strips for cone
 	for (u32 i = 0; i < STEPS; i++)
 	{
-		const u32 a = i, b = (i + 1) % STEPS, c = STEPS + 1;
+		const u32 a = i, b = (i + 1) % STEPS;
+		// top point
+		const u32 c = STEPS + 1;
 		face_t* const face = new face_t(vertices[a], vertices[c], vertices[b]);
 		vert_attrs.set_attribute(face, 0, options, tex_coord_t(1.f * i / STEPS, 0.f));
 		vert_attrs.set_attribute(face, 1, options, tex_coord_t(.5f, 1.f));
