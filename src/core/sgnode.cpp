@@ -419,10 +419,9 @@ bool sgnode::is_separate_xport() const
 {
 	return (!m_kustom_id.empty()) || m_tagz.size();
 }
-void sgnode::xport(mgl::output_file& out) const
+void sgnode::xport(haul::output_file* const out) const
 {
 	visibility_xportable::xport(out);
-	// out.write(m_mat.e, 16);
 }
 
 

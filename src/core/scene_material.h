@@ -37,7 +37,7 @@ public:
 	bool get_should_cull() const;
 	void set_should_cull(bool cull);
 	scene_material* clone() const;
-	void xport(mgl::output_file& out, const std::unordered_map<std::string, u64>& texname2idx) const;
+	void xport(haul::output_file* const out, const std::unordered_map<std::string, u64>& texname2idx) const;
 private:
 	std::unordered_map<std::string, std::string> m_tex_name_to_filename;
 	std::unordered_map<std::string, autotexture_params> m_autotexture_params;

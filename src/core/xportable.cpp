@@ -182,13 +182,13 @@ void xportable::copy_properties_from(const xportable& src)
 	}
 	set_name(src.get_name());
 }
-void xportable::xport(mgl::output_file& out) const
+void xportable::xport(haul::output_file* const out) const
 {
-	out.string(m_kustom_id);
-	out.ulong(m_tagz.size());
+	out->put_string(m_kustom_id);
+	out->put64(m_tagz.size());
 	for (const tag& t : m_tagz)
 	{
-		out.string(t.name);
+		out->put_string(t.name);
 	}
 }
 

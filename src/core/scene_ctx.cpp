@@ -277,31 +277,31 @@ void scene_ctx::xport_sgnode(sgnode* const cur, std::vector<std::unordered_map<u
 	}
 	delete gen;
 }
-void scene_ctx::save_xport(mgl::output_file& out)
+void scene_ctx::save_xport(haul::output_file* const out)
 {
 	// texturez
 	std::unordered_map<std::string, u64> texname2idx;
-	out.ulong(g::texlib->get_all().size() + 1);
+	out->put64(g::texlib->get_all().size() + 1);
 	printf("t: %zu\n", g::texlib->get_all().size() + 1);
-	g::texlib->get_deftex()->save(&out);
+	g::texlib->get_deftex()->save(out);
 	texname2idx.insert({ g::null_tex_fp, 0 });
 	u64 textures_xported = 1; // index 0 represents <NULL> texture
 	for (const auto& pair : g::texlib->get_all())
 	{
-		pair.second->save(&out);
+		pair.second->save(out);
 		texname2idx.insert({ pair.first, textures_xported });
 		textures_xported++;
 	}
 
 	// skybox
-	m_skybox->get_texture().save(&out);
+	m_skybox->get_texture().save(out);
 
 	// materialz
-	out.ulong(m_mtls.size());
+	out->put64(m_mtls.size());
 	printf("m: %zu\n", m_mtls.size());
 	for (const auto& pair : m_mtls)
 	{
-		out.uint(pair.first);
+		out->put32(pair.first);
 		pair.second->xport(out, texname2idx);
 	}
 
@@ -329,37 +329,37 @@ void scene_ctx::save_xport(mgl::output_file& out)
 	xport_sgnode(m_sg_root, &phorm_ros);
 	phorms.push_back(m_sg_root);
 	assert(phorm_ros.size() == phorms.size());
-	out.ulong(phorm_ros.size());
+	out->put64(phorm_ros.size());
 	printf("sg: %zu\n", phorm_ros.size());
 	for (u64 i = 0; i < phorm_ros.size(); i++)
 	{
 		phorms[i]->xport(out);
 		const auto& phorm = phorm_ros[i];
-		out.ulong(phorm->size());
+		out->put64(phorm->size());
 		for (const auto& pair : *phorm)
 		{
-			out.uint(pair.first);
+			out->put32(pair.first);
 			pair.second.save(out);
 		}
 	}
 
 	// smnodes
-	out.ulong(m_sm_ros.size());
+	out->put64(m_sm_ros.size());
 	printf("sm: %zu\n", m_sm_ros.size());
 	for (const auto& pair : m_sm_ros)
 	{
 		pair.first->xport(out);
 		const auto& materials = m_build_sm_vaos_world(pair.first);
-		out.ulong(materials.size());
+		out->put64(materials.size());
 		for (const auto& material : materials)
 		{
-			out.uint(material.first);
+			out->put32(material.first);
 			material.second.save(out);
 		}
 	}
 
 	// lightz (skip camera light)
-	out.ulong(m_lights.size() - 1);
+	out->put64(m_lights.size() - 1);
 	printf("l: %zu\n", m_lights.size() - 1);
 	for (u64 i = 1; i < m_lights.size(); i++)
 	{
@@ -367,7 +367,7 @@ void scene_ctx::save_xport(mgl::output_file& out)
 	}
 
 	// waypointz
-	out.ulong(m_waypoints.size());
+	out->put64(m_waypoints.size());
 	printf("w: %zu\n", m_waypoints.size());
 	for (const waypoint* const w : m_waypoints)
 	{

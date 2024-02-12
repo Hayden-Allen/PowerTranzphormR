@@ -111,8 +111,8 @@ bool app_ctx::export_as()
 	const std::string& fp = u::save_dialog(mgl_ctx.window, "PowerTranzphormR X-Port", "xport");
 	if (!fp.empty())
 	{
-		mgl::output_file out(fp);
-		scene.save_xport(out);
+		haul::output_file out(fp);
+		scene.save_xport(&out);
 		return true;
 	}
 	return false;

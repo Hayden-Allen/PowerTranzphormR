@@ -13,3 +13,9 @@
 [submodule "lib/nfd-ex"]
 	path = lib/nfd-ex
 	url = https://github.com/btzy/nativefiledialog-extended.git
+[submodule "lib/haul"]
+	path = lib/haul
+	url = https://github.com/Hayden-Allen/haul.git
+[submodule "lib/hats"]
+	path = lib/hats
+	url = https://github.com/Hayden-Allen/hats.git

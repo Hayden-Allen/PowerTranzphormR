@@ -59,7 +59,7 @@ public:
 	nlohmann::json save(scene_ctx* const scene) const;
 	void destroy(std::unordered_set<sgnode*>& freed);
 	bool is_separate_xport() const;
-	void xport(mgl::output_file& out) const override;
+	void xport(haul::output_file* const out) const override;
 private:
 	sgnode* m_parent = nullptr;
 	std::vector<sgnode*> m_children;

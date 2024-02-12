@@ -45,6 +45,7 @@
 #include "stb_image/stb_image_write.h"
 
 #include "hats/hats.h"
+#include "haul/haul.h"
 #include "mingl/mingl.h"
 #include "util/util.h"
 #include "util/globals.h"

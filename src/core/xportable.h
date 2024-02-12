@@ -42,7 +42,7 @@ public:
 	void set_name(const std::string& n);
 	virtual nlohmann::json save() const;
 	void copy_properties_from(const xportable& src);
-	virtual void xport(mgl::output_file& out) const;
+	virtual void xport(haul::output_file* const out) const;
 protected:
 	constexpr static inline u32 s_first_id = 0;
 	static inline u32 s_next_id = s_first_id;

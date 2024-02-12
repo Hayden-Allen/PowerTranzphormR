@@ -39,8 +39,8 @@ void waypoint::set_mat(const tmat<space::OBJECT, space::WORLD>& m)
 {
 	m_mat = m;
 }
-void waypoint::xport(mgl::output_file& out) const
+void waypoint::xport(haul::output_file* const out) const
 {
 	xportable::xport(out);
-	out.write(m_mat.e, 16);
+	out->put(m_mat.e, 16);
 }

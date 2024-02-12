@@ -45,7 +45,7 @@ public:
 	void set_type(const light_type t);
 public:
 	nlohmann::json save() const override;
-	void xport(mgl::output_file& out) const override;
+	void xport(haul::output_file* const out) const override;
 private:
 	light_type m_type;
 };

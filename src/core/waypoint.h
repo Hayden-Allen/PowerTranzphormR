@@ -13,7 +13,7 @@ public:
 	waypoint* clone() const;
 public:
 	void set_mat(const tmat<space::OBJECT, space::WORLD>& m);
-	void xport(mgl::output_file& out) const override;
+	void xport(haul::output_file* const out) const override;
 public:
 	nlohmann::json save() const override;
 private:

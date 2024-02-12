@@ -75,10 +75,10 @@ nlohmann::json light::save() const
 	obj["tmax"] = mgl_light.cos_tmax;
 	return obj;
 }
-void light::xport(mgl::output_file& out) const
+void light::xport(haul::output_file* const out) const
 {
 	xportable::xport(out);
-	mgl_light.save(&out);
+	mgl_light.save(out);
 }
 tmat<space::OBJECT, space::WORLD>& light::get_mat()
 {

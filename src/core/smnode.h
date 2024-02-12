@@ -44,7 +44,7 @@ public:
 	void recompute(scene_ctx* const scene);
 	void make_static(scene_ctx* const scene);
 	nlohmann::json save(scene_ctx* const scene) const;
-	void xport(mgl::output_file& out) const override;
+	void xport(haul::output_file* const out) const override;
 private:
 	tmat<space::OBJECT, space::WORLD> m_mat;
 	generated_mesh* m_gen;
